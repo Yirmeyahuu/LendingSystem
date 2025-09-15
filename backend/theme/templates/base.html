@@ -1,26 +1,25 @@
-{% load static tailwind_tags %}
+{% load static %}
+{% load tailwind_tags %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Django Tailwind</title>
+    <title>{% block title %}Avendro{% endblock title%}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
     {% tailwind_css %}
+    <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    
+
 </head>
 
-<body class="bg-gray-50 text-black font-serif leading-normal tracking-normal">
+<body class="bg-gray-50 text-black leading-normal tracking-normal" style="font-family: 'Poppins', sans-serif;">
 
-    <div class="toast toast-top toast-end">
-        <div class="alert alert-info">
-            <span>Hello from daisyUi 👋</span>
-        </div>
-    </div>
+    {% block content %}
 
-<div class="container mx-auto">
-    <section class="flex items-center justify-center h-screen">
-        <h1 class="text-5xl">Django + Tailwind = ❤️</h1>
-    </section>
-</div>
+    {% endblock %}
 </body>
 </html>
