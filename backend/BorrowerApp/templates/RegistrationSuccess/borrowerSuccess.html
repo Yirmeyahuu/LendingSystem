@@ -1,0 +1,52 @@
+{% extends "Borrower/borrowerBase.html" %}
+
+{% block title %}Registration Successful - Avendro{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-white py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i class="fas fa-check text-green-600 text-2xl"></i>
+            </div>
+            
+            <h1 class="text-3xl font-bold text-gray-900 mb-4">Registration Successful!</h1>
+            
+            <p class="text-lg text-gray-600 mb-6">
+                Thank you for registering with Avendro as a lending partner. Your application has been submitted successfully.
+            </p>
+            
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-blue-800 mb-2">What happens next?</h3>
+                <ul class="text-left text-blue-700 space-y-2">
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-blue-600 mt-1 mr-2"></i>
+                        Our team will review your application within 2-3 business days
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-blue-600 mt-1 mr-2"></i>
+                        We may contact you for additional information if needed
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-blue-600 mt-1 mr-2"></i>
+                        You'll receive an email notification once your account is approved
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-check-circle text-blue-600 mt-1 mr-2"></i>
+                        After approval, you can log in and start connecting with borrowers
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+                <a href="#" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    Go to Login
+                </a>
+                <a href="#" class="inline-block bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

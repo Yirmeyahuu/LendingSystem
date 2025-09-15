@@ -187,11 +187,14 @@ def registerBorrower(request):
                     is_active=True
                 )
                 
-                # Success message and redirect
-                messages.success(request, f"Registration successful! Welcome {borrower.full_name}. You can now log in to your account.")
+                messages.success(
+                    request, 
+                    'Registration successful! Your application is under review. '
+                    'You will receive an email notification once your account is approved.'
+                )
                 
-                # Redirect to landing page (adjust URL name as needed)
-                return redirect('/')  # Change this to your landing page URL name
+                # Redirect to a success page or login page
+                return redirect('borrower-registration-success')
                 
         except IntegrityError as e:
             messages.error(request, "Registration failed due to a database error. Please try again.")
@@ -207,3 +210,7 @@ def registerBorrower(request):
     
     # GET request - display the registration form
     return render(request, 'BorrowerRegistration/registerBorrower.html')
+
+def borrowerRegistrationSuccess(request):
+    """Success page after borrower registration"""
+    return render(request, 'RegistrationSuccess/borrowerSuccess.html')

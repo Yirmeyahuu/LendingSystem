@@ -38,77 +38,191 @@
             background: #555;
         }
         
-        /* Custom form styles */
-        .form-input:focus {
-            border-color: #3B82F6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        /* Sidebar transition */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
         }
         
-        /* Progress bar animation */
-        .progress-bar {
-            transition: width 0.3s ease-in-out;
+        /* Active nav item */
+        .nav-item-active {
+            background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+            color: white;
+        }
+        
+        .nav-item-active i {
+            color: white;
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gray-50 min-h-screen">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <a href="/" class="flex items-center space-x-2">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 lg:static lg:inset-0 sidebar-transition" id="sidebar">
+            <!-- Logo -->
+            <div class="flex items-center justify-center h-16 bg-gradient-to-r from-blue-600 to-blue-700">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 flex items-center justify-center">
+                        <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain filter brightness-0 invert">
+                    </div>
+                    <span class="text-xl font-bold text-white">Avendro</span>
+                </div>
+            </div>
+            
+            <!-- Borrower Info -->
+            <div class="p-4 border-b border-gray-200">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-blue-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">
+                            {% if request.user.borrower_profile %}
+                                {{ request.user.borrower_profile.full_name }}
+                            {% elif request.user.first_name %}
+                                {{ request.user.first_name }} {{ request.user.last_name }}
+                            {% else %}
+                                Borrower Name
+                            {% endif %}
+                        </p>
+                        <p class="text-xs text-gray-500">Borrower Account</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="mt-4 px-4 space-y-2">
+                <a href="{% url 'borrower-dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group {% if request.resolver_match.url_name == 'borrower-dashboard' %}nav-item-active{% endif %}">
+                    <i class="fas fa-chart-pie mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Dashboard
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-file-alt mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Apply for Loan
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-list-alt mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    My Applications
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-handshake mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Active Loans
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-credit-card mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Payments
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-chart-line mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Credit Score
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-file-invoice-dollar mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Transaction History
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-user-edit mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Profile
+                </a>
+                
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
+                    <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                    Settings
+                </a>
+            </nav>
+            
+            <!-- Bottom Menu -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+                    <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-red-600"></i>
+                    Logout
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
+            <!-- Top Navigation Bar -->
+            <header class="bg-white shadow-sm border-b border-gray-200 lg:hidden">
+                <div class="flex items-center justify-between h-16 px-4">
+                    <button id="sidebar-toggle" class="text-gray-600 hover:text-blue-600">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    
+                    <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 flex items-center justify-center">
                             <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
                         </div>
                         <span class="text-xl font-bold text-gray-900">Avendro</span>
-                    </a>
-                </div>
-                
-                <!-- Navigation Links -->
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="/" class="text-gray-600 hover:text-blue-600 transition-colors">Home</a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">How It Works</a>
-                    <a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Support</a>
-                    <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">Sign In</a>
-                </div>
-                
-                <!-- Mobile menu button -->
-                <div class="md:hidden">
-                    <button class="text-gray-600 hover:text-blue-600">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main>
-        {% block content %}{% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-gray-900 text-white py-8 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="flex items-center space-x-2 mb-4 md:mb-0">
-                    <div class="w-8 h-8 flex items-center justify-center">
-                        <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
                     </div>
-                    <span class="text-xl font-bold">Avendro</span>
+                    
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-blue-600"></i>
+                    </div>
                 </div>
-                <div class="text-sm text-gray-400">
-                    © 2024 Avendro. All rights reserved.
-                </div>
-            </div>
-        </div>
-    </footer>
+            </header>
 
-    {% block extra_js %}{% endblock %}
+            <!-- Page Content -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+                <!-- Breadcrumb -->
+                <div class="mb-6">
+                    <nav class="flex" aria-label="Breadcrumb">
+                        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                            <li class="inline-flex items-center">
+                                <a href="{% url 'borrower-dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                                    <i class="fas fa-home mr-2"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            {% block breadcrumb %}{% endblock %}
+                        </ol>
+                    </nav>
+                </div>
+
+                <!-- Page Content -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay for Mobile -->
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+    {% block extra_js %}
+    <script>
+        // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+        
+        // Toggle sidebar on button click
+        document.getElementById('sidebar-toggle')?.addEventListener('click', toggleSidebar);
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            
+            if (window.innerWidth < 1024 && 
+                !sidebar.contains(event.target) && 
+                !sidebarToggle?.contains(event.target)) {
+                sidebar.classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+        });
+    </script>
+    {% endblock %}
 </body>
 </html>

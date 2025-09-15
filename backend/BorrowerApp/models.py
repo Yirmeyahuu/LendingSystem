@@ -153,3 +153,4 @@ class Borrower(models.Model):
             return False
         
         return True
+    
