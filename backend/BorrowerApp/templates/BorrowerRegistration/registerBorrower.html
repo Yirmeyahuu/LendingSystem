@@ -17,10 +17,10 @@
         <div class="mb-8">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm font-medium text-blue-600">Progress</span>
-                <span class="text-sm font-medium text-blue-600" id="progress-text">Step 1 of 4</span>
+                <span class="text-sm font-medium text-blue-600" id="progress-text">Step 1 of 3</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="progress-bar bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full" style="width: 25%" id="progress-bar"></div>
+                <div class="progress-bar bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full" style="width: 33.33%" id="progress-bar"></div>
             </div>
         </div>
 
@@ -234,73 +234,8 @@
                 </div>
             </div>
 
-            <!-- Step 3: Identity Verification -->
+            <!-- Step 3: Sign In Credentials -->
             <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-3">
-                <div class="flex items-center mb-6">
-                    <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center mr-3">
-                        <i class="fas fa-id-card text-white text-sm"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Identity Verification</h2>
-                </div>
-
-                <div class="space-y-6">
-                    <!-- ID Type -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ID Type *</label>
-                        <select name="id_type" required
-                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Select ID Type</option>
-                            <option value="drivers_license">Driver's License</option>
-                            <option value="passport">Passport</option>
-                            <option value="national_id">National ID Card</option>
-                            <option value="state_id">State ID Card</option>
-                        </select>
-                    </div>
-
-                    <!-- ID Number -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">ID Number *</label>
-                        <input type="text" name="id_number" placeholder="Enter your ID number" required
-                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-
-                    <!-- ID Document Upload -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload ID Document *</label>
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                            <input type="file" name="id_document" accept="image/*,.pdf" required class="hidden" id="id-upload">
-                            <label for="id-upload" class="cursor-pointer">
-                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
-                                <p class="text-lg font-medium text-gray-700">Click to upload ID document</p>
-                                <p class="text-sm text-gray-500 mt-2">PNG, JPG, PDF up to 10MB</p>
-                            </label>
-                            <div id="file-name" class="mt-2 text-sm text-green-600 hidden"></div>
-                        </div>
-                    </div>
-
-                    <!-- Social Security Number (Optional) -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Social Security Number (Optional)</label>
-                        <input type="text" name="ssn" placeholder="XXX-XX-XXXX" pattern="[0-9]{3}-[0-9]{2}-[0-9]{4}"
-                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <p class="text-xs text-gray-500 mt-1">Providing SSN may help with faster loan approvals</p>
-                    </div>
-                </div>
-
-                <div class="flex justify-between mt-8">
-                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Previous
-                    </button>
-                    <button type="button" class="next-step bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                        Next Step
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 4: Sign In Credentials -->
-            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-4">
                 <div class="flex items-center mb-6">
                     <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center mr-3">
                         <i class="fas fa-key text-white text-sm"></i>
@@ -398,7 +333,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 1;
-    const totalSteps = 4;
+    const totalSteps = 3; // Changed from 4 to 3
     
     // Step navigation
     const nextButtons = document.querySelectorAll('.next-step');
@@ -498,15 +433,6 @@ document.addEventListener('DOMContentLoaded', function() {
             jobTitleField.style.display = 'block';
             companyInput.setAttribute('required', 'required');
             jobTitleInput.setAttribute('required', 'required');
-        }
-    });
-    
-    // File upload
-    document.getElementById('id-upload').addEventListener('change', function() {
-        const fileName = document.getElementById('file-name');
-        if (this.files.length > 0) {
-            fileName.textContent = `Selected: ${this.files[0].name}`;
-            fileName.classList.remove('hidden');
         }
     });
     

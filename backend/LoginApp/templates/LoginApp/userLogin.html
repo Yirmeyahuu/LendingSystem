@@ -1,0 +1,223 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Avendro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+    <!-- Back Button -->
+    <div class="absolute top-6 left-6 z-10">
+        <a href="{% url 'landing-page' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Main Container -->
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-lg w-full space-y-8">
+
+            <!-- Login Form -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+
+                <!-- Header -->
+                <div class="text-center">
+                    <div class="flex justify-center mb-6">
+                        <div class="w-16 h-16 sm:w-16 sm:h-16 flex items-center justify-center">
+                            <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
+                        </div>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
+                    <p class="text-gray-600">Sign in to your Avendro account</p>
+                </div>
+
+                <form class="space-y-6" method="POST">
+                    {% csrf_token %}
+                    
+                    <!-- Email/Username Field -->
+                    <div>
+                        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email or Username
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-user text-gray-400"></i>
+                            </div>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username" 
+                                required 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                                placeholder="Enter your email or username"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-lock text-gray-400"></i>
+                            </div>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                required 
+                                class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
+                                placeholder="Enter your password"
+                            >
+                            <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center" onclick="togglePassword()">
+                                <i class="fas fa-eye text-gray-400 hover:text-gray-600" id="togglePasswordIcon"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input 
+                                id="remember-me" 
+                                name="remember-me" 
+                                type="checkbox" 
+                                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            >
+                            <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                                Remember me
+                            </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-blue-600 hover:text-blue-500">
+                                Forgot your password?
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Sign In Button -->
+                    <div>
+                        <button 
+                            type="submit" 
+                            class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-lg"
+                        >
+                            <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                                <i class="fas fa-sign-in-alt group-hover:text-blue-300"></i>
+                            </span>
+                            Sign In
+                        </button>
+                    </div>
+
+                    <!-- User Type Selection -->
+                    <div class="mt-6">
+                        <div class="text-center text-sm text-gray-600 mb-4">
+                            Choose your account type:
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="flex items-center justify-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors">
+                                <input type="radio" name="user_type" value="borrower" class="sr-only" checked>
+                                <div class="text-center">
+                                    <i class="fas fa-user text-blue-600 text-lg mb-1"></i>
+                                    <div class="text-sm font-medium text-gray-700">Borrower</div>
+                                </div>
+                            </label>
+                            <label class="flex items-center justify-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-green-50 hover:border-green-300 transition-colors">
+                                <input type="radio" name="user_type" value="lender" class="sr-only">
+                                <div class="text-center">
+                                    <i class="fas fa-building text-green-600 text-lg mb-1"></i>
+                                    <div class="text-sm font-medium text-gray-700">Lender</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </form>
+
+            <!-- Footer -->
+            <div class="text-center mt-4">
+                <p class="text-xs text-gray-500">
+                    By signing in, you agree to our 
+                    <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and 
+                    <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Messages -->
+    {% if messages %}
+        <div class="fixed top-4 right-4 z-50">
+            {% for message in messages %}
+                <div class="mb-2 max-w-sm bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-lg" role="alert">
+                    <div class="flex">
+                        <div class="py-1">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                        </div>
+                        <div>
+                            <span class="block sm:inline">{{ message }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <script>
+        // Password visibility toggle
+        function togglePassword() {
+            const passwordField = document.getElementById('password');
+            const toggleIcon = document.getElementById('togglePasswordIcon');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash text-gray-400 hover:text-gray-600';
+            } else {
+                passwordField.type = 'password';
+                toggleIcon.className = 'fas fa-eye text-gray-400 hover:text-gray-600';
+            }
+        }
+
+        // User type selection styling
+        document.addEventListener('DOMContentLoaded', function() {
+            const radioButtons = document.querySelectorAll('input[name="user_type"]');
+            const labels = document.querySelectorAll('label');
+            
+            radioButtons.forEach((radio, index) => {
+                radio.addEventListener('change', function() {
+                    // Reset all labels
+                    labels.forEach(label => {
+                        if (label.querySelector('input[name="user_type"]')) {
+                            label.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50');
+                            label.classList.add('border-gray-200');
+                        }
+                    });
+                    
+                    // Highlight selected label
+                    const parentLabel = this.closest('label');
+                    if (this.value === 'borrower') {
+                        parentLabel.classList.remove('border-gray-200');
+                        parentLabel.classList.add('border-blue-500', 'bg-blue-50');
+                    } else if (this.value === 'lender') {
+                        parentLabel.classList.remove('border-gray-200');
+                        parentLabel.classList.add('border-green-500', 'bg-green-50');
+                    }
+                });
+            });
+
+            // Initialize with borrower selected
+            const borrowerRadio = document.querySelector('input[value="borrower"]');
+            if (borrowerRadio && borrowerRadio.checked) {
+                const parentLabel = borrowerRadio.closest('label');
+                parentLabel.classList.remove('border-gray-200');
+                parentLabel.classList.add('border-blue-500', 'bg-blue-50');
+            }
+        });
+    </script>
+</body>
+</html>

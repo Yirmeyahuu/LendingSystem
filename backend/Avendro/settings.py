@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     'CompanyApp',
     'BorrowerApp',
     'Landingpage',
+    'LoginApp',
 
     #tailwind setup
     'tailwind',
@@ -56,7 +57,7 @@ ROOT_URLCONF = 'Avendro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'theme/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'theme/templates'), os.path.join(BASE_DIR, 'Landingpage/templates'), os.path.join(BASE_DIR, 'CompanyApp/templates'), os.path.join(BASE_DIR, 'BorrowerApp/templates'), os.path.join(BASE_DIR, 'LoginApp/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,8 +78,12 @@ WSGI_APPLICATION = 'Avendro.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'avendro_db',
+        'USER': 'postgres',
+        'PASSWORD': '!Poypoy.mignon!01',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
