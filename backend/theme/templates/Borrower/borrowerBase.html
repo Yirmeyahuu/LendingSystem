@@ -57,6 +57,9 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gray-50 min-h-screen">
+
+
+
     <div class="flex h-screen">
         <!-- Sidebar -->
         <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 lg:static lg:inset-0 sidebar-transition" id="sidebar">
@@ -141,7 +144,7 @@
             
             <!-- Bottom Menu -->
             <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
+                <a href="{% url 'borrower-logout' %}" onclick="return confirmLogout(event)" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
                     <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-red-600"></i>
                     Logout
                 </a>
@@ -196,8 +199,21 @@
     <!-- Sidebar Overlay for Mobile -->
     <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
+
     {% block extra_js %}
     <script>
+        // Confirmation dialog for logout
+        function confirmLogout(event) {
+            event.preventDefault();
+            
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = event.target.closest('a').href;
+            }
+            
+            return false;
+        }
+
+        
         // Sidebar toggle functionality
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');

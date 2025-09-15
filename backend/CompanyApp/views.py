@@ -1,6 +1,7 @@
+from decorators.auth_decorators import company_required
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from django.contrib.auth import login
+from django.contrib.auth import login, logout
 from django.contrib import messages
 from django.db import transaction
 from django.core.exceptions import ValidationError
@@ -11,8 +12,23 @@ from .models import Company
 
 
 # Create your views here.
+@company_required
 def companyDashboard(request):
     return render(request, 'CompanyPages/companyDashboard.html')
+
+def companyLogout(request):
+    """Logout view for company users"""
+    if request.user.is_authenticated:
+        # Check if user is a company before logging out
+        if hasattr(request.user, 'company_profile'):
+            company_name = request.user.company_profile.company_name
+            logout(request)
+            messages.success(request, f"Goodbye {company_name}! You have been logged out successfully.")
+        else:
+            logout(request)
+            messages.success(request, "You have been logged out successfully.")
+    
+    return redirect('landing-page')  # Redirect to login page
 
 
 def companyRegistration(request):

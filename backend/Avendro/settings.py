@@ -50,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_browser_reload.middleware.BrowserReloadMiddleware',
+    'middleware.auth_middleware.RoleBasedAccessMiddleware',
 ]
 
 ROOT_URLCONF = 'Avendro.urls'
@@ -71,6 +72,11 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Avendro.wsgi.application'
+
+# Login/Logout URLs
+LOGIN_URL = '/Auth/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/Auth/login/'
 
 
 # Database

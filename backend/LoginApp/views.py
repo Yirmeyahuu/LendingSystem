@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from CompanyApp.models import Company
@@ -72,3 +72,9 @@ def userLogin(request):
     
     # GET request - show login form
     return render(request, 'LoginApp/userLogin.html')
+
+def userLogout(request):
+    if request.user.is_authenticated:
+        logout(request)
+        messages.success(request, "You have been logged out successfully.")
+    return redirect('user-login')

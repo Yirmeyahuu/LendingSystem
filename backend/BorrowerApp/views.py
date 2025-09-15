@@ -1,5 +1,7 @@
+from decorators.auth_decorators import borrower_required 
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.db import transaction, IntegrityError
@@ -10,9 +12,23 @@ from decimal import Decimal, InvalidOperation
 from datetime import datetime
 import re
 
-
+@borrower_required
 def borrowerDashboard(request):
     return render(request, 'BorrowerPages/borrowerDashboard.html')
+
+def borrower_logout(request):
+    """Logout view for borrowers"""
+    if request.user.is_authenticated:
+        # Check if user is a borrower before logging out
+        if hasattr(request.user, 'borrower_profile'):
+            user_name = request.user.borrower_profile.first_name
+            logout(request)
+            messages.success(request, f"Goodbye {user_name}! You have been logged out successfully.")
+        else:
+            logout(request)
+            messages.success(request, "You have been logged out successfully.")
+    
+    return redirect('landing-page')  # Redirect to login page
 
 def registerBorrower(request):
     if request.method == 'POST':
