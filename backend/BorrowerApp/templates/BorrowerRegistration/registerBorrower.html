@@ -1,0 +1,583 @@
+{% extends "Borrower/borrowerBase.html" %}
+
+{% block title %}Register as Borrower - Avendro{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-white py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Borrower Registration</h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Join Avendro as a borrower and get access to multiple loan offers from our trusted lending partners.
+            </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-blue-600">Progress</span>
+                <span class="text-sm font-medium text-blue-600" id="progress-text">Step 1 of 4</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="progress-bar bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full" style="width: 25%" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registration-form" class="space-y-8" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Step 1: Personal Information -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8" id="step-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Personal Information</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Full Name -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Full Legal Name *</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <input type="text" name="first_name" placeholder="First Name" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <input type="text" name="middle_name" placeholder="Middle Name (Optional)"
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <input type="text" name="last_name" placeholder="Last Name" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date of Birth -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date of Birth *</label>
+                        <input type="date" name="date_of_birth" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Gender -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Gender *</label>
+                        <select name="gender" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Gender</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="other">Other</option>
+                            <option value="prefer_not_to_say">Prefer not to say</option>
+                        </select>
+                    </div>
+
+                    <!-- Marital Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Marital Status *</label>
+                        <select name="marital_status" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Status</option>
+                            <option value="single">Single</option>
+                            <option value="married">Married</option>
+                            <option value="divorced">Divorced</option>
+                            <option value="widowed">Widowed</option>
+                            <option value="separated">Separated</option>
+                        </select>
+                    </div>
+
+                    <!-- Mobile Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number *</label>
+                        <input type="tel" name="mobile_number" placeholder="+1 (555) 123-4567" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Current Address -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Address *</label>
+                        <div class="space-y-4">
+                            <input type="text" name="current_street_address" placeholder="Street Address" required
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <input type="text" name="current_city" placeholder="City" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="current_state" placeholder="State/Province" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="current_postal_code" placeholder="Postal Code" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Permanent Address Same as Current -->
+                    <div class="md:col-span-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="same-address" class="mr-2 rounded">
+                            <span class="text-sm text-gray-700">Permanent address is same as current address</span>
+                        </label>
+                    </div>
+
+                    <!-- Permanent Address -->
+                    <div class="md:col-span-2" id="permanent-address-section">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Permanent Address *</label>
+                        <div class="space-y-4">
+                            <input type="text" name="permanent_street_address" placeholder="Street Address" required
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <input type="text" name="permanent_city" placeholder="City" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="permanent_state" placeholder="State/Province" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="permanent_postal_code" placeholder="Postal Code" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-8">
+                    <button type="button" class="next-step bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                        Next Step
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Employment and Financial Information -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-2">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-briefcase text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Employment & Financial Information</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Employment Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Employment Status *</label>
+                        <select name="employment_status" required id="employment-status"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Status</option>
+                            <option value="employed">Employed</option>
+                            <option value="self_employed">Self-Employed</option>
+                            <option value="unemployed">Unemployed</option>
+                            <option value="student">Student</option>
+                            <option value="retired">Retired</option>
+                        </select>
+                    </div>
+
+                    <!-- Company Name -->
+                    <div id="company-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Name *</label>
+                        <input type="text" name="company_name" placeholder="Enter company name"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Job Title -->
+                    <div id="job-title-field">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Job Title/Position *</label>
+                        <input type="text" name="job_title" placeholder="Enter your job title"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Monthly Income -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Income *</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">$</span>
+                            <input type="number" name="monthly_income" placeholder="5000" min="0" step="0.01" required
+                                class="form-input w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <!-- Source of Income -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Source of Income *</label>
+                        <textarea name="income_source" rows="3" placeholder="Describe your primary source of income (e.g., salary, business revenue, freelance work, investments)" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+
+                    <!-- Bank Details -->
+                    <div class="md:col-span-2">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Bank Account Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Bank Name *</label>
+                                <input type="text" name="bank_name" placeholder="Bank of America" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Account Number *</label>
+                                <input type="text" name="account_number" placeholder="Account Number" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    <button type="button" class="next-step bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                        Next Step
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Identity Verification -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-3">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-id-card text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Identity Verification</h2>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- ID Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ID Type *</label>
+                        <select name="id_type" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select ID Type</option>
+                            <option value="drivers_license">Driver's License</option>
+                            <option value="passport">Passport</option>
+                            <option value="national_id">National ID Card</option>
+                            <option value="state_id">State ID Card</option>
+                        </select>
+                    </div>
+
+                    <!-- ID Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">ID Number *</label>
+                        <input type="text" name="id_number" placeholder="Enter your ID number" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- ID Document Upload -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Upload ID Document *</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                            <input type="file" name="id_document" accept="image/*,.pdf" required class="hidden" id="id-upload">
+                            <label for="id-upload" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-lg font-medium text-gray-700">Click to upload ID document</p>
+                                <p class="text-sm text-gray-500 mt-2">PNG, JPG, PDF up to 10MB</p>
+                            </label>
+                            <div id="file-name" class="mt-2 text-sm text-green-600 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Social Security Number (Optional) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Social Security Number (Optional)</label>
+                        <input type="text" name="ssn" placeholder="XXX-XX-XXXX" pattern="[0-9]{3}-[0-9]{2}-[0-9]{4}"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Providing SSN may help with faster loan approvals</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    <button type="button" class="next-step bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                        Next Step
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Sign In Credentials -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-4">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-key text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Sign In Credentials</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Username -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                        <input type="text" name="username" placeholder="Choose a username" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Username must be 3-20 characters long</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                        <input type="email" name="email" placeholder="your.email@example.com" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                        <div class="relative">
+                            <input type="password" name="password" placeholder="Create a strong password" required id="password"
+                                class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button type="button" class="absolute right-3 top-3 text-gray-500 hover:text-gray-700" id="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <div class="text-xs text-gray-500">Password strength:</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                <div class="bg-red-500 h-1 rounded-full transition-all duration-300" style="width: 0%" id="password-strength"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
+                        <div class="relative">
+                            <input type="password" name="confirm_password" placeholder="Confirm your password" required id="confirm-password"
+                                class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button type="button" class="absolute right-3 top-3 text-gray-500 hover:text-gray-700" id="toggle-confirm-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="password-match" class="mt-1 text-xs hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="mt-8">
+                    <label class="flex items-start">
+                        <input type="checkbox" name="terms_accepted" required class="mr-3 mt-1 rounded">
+                        <span class="text-sm text-gray-700">
+                            I agree to the <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and 
+                            <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>. I understand that by registering, 
+                            I authorize Avendro to share my information with potential lenders for loan matching purposes.
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Marketing Consent -->
+                <div class="mt-4">
+                    <label class="flex items-start">
+                        <input type="checkbox" name="marketing_consent" class="mr-3 mt-1 rounded">
+                        <span class="text-sm text-gray-700">
+                            I would like to receive marketing communications about loan offers and financial products.
+                        </span>
+                    </label>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-300 font-semibold shadow-lg">
+                        <i class="fas fa-check mr-2"></i>
+                        Complete Registration
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    
+    // Step navigation
+    const nextButtons = document.querySelectorAll('.next-step');
+    const prevButtons = document.querySelectorAll('.prev-step');
+    
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (validateCurrentStep()) {
+                nextStep();
+            }
+        });
+    });
+    
+    prevButtons.forEach(button => {
+        button.addEventListener('click', prevStep);
+    });
+    
+    function nextStep() {
+        if (currentStep < totalSteps) {
+            document.getElementById(`step-${currentStep}`).classList.add('hidden');
+            currentStep++;
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            updateProgress();
+        }
+    }
+    
+    function prevStep() {
+        if (currentStep > 1) {
+            document.getElementById(`step-${currentStep}`).classList.add('hidden');
+            currentStep--;
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            updateProgress();
+        }
+    }
+    
+    function updateProgress() {
+        const progress = (currentStep / totalSteps) * 100;
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent = `Step ${currentStep} of ${totalSteps}`;
+    }
+    
+    function validateCurrentStep() {
+        const currentStepElement = document.getElementById(`step-${currentStep}`);
+        const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('border-red-500');
+                isValid = false;
+            } else {
+                field.classList.remove('border-red-500');
+            }
+        });
+        
+        if (!isValid) {
+            alert('Please fill in all required fields before proceeding.');
+        }
+        
+        return isValid;
+    }
+    
+    // Address checkbox functionality
+    document.getElementById('same-address').addEventListener('change', function() {
+        const permanentSection = document.getElementById('permanent-address-section');
+        const permanentFields = permanentSection.querySelectorAll('input');
+        
+        if (this.checked) {
+            permanentSection.style.display = 'none';
+            permanentFields.forEach(field => field.removeAttribute('required'));
+            
+            // Copy current address to permanent address
+            document.querySelector('[name="permanent_street_address"]').value = document.querySelector('[name="current_street_address"]').value;
+            document.querySelector('[name="permanent_city"]').value = document.querySelector('[name="current_city"]').value;
+            document.querySelector('[name="permanent_state"]').value = document.querySelector('[name="current_state"]').value;
+            document.querySelector('[name="permanent_postal_code"]').value = document.querySelector('[name="current_postal_code"]').value;
+        } else {
+            permanentSection.style.display = 'block';
+            permanentFields.forEach(field => field.setAttribute('required', 'required'));
+        }
+    });
+    
+    // Employment status change
+    document.getElementById('employment-status').addEventListener('change', function() {
+        const companyField = document.getElementById('company-field');
+        const jobTitleField = document.getElementById('job-title-field');
+        const companyInput = document.querySelector('[name="company_name"]');
+        const jobTitleInput = document.querySelector('[name="job_title"]');
+        
+        if (this.value === 'unemployed' || this.value === 'student' || this.value === 'retired') {
+            companyField.style.display = 'none';
+            jobTitleField.style.display = 'none';
+            companyInput.removeAttribute('required');
+            jobTitleInput.removeAttribute('required');
+        } else {
+            companyField.style.display = 'block';
+            jobTitleField.style.display = 'block';
+            companyInput.setAttribute('required', 'required');
+            jobTitleInput.setAttribute('required', 'required');
+        }
+    });
+    
+    // File upload
+    document.getElementById('id-upload').addEventListener('change', function() {
+        const fileName = document.getElementById('file-name');
+        if (this.files.length > 0) {
+            fileName.textContent = `Selected: ${this.files[0].name}`;
+            fileName.classList.remove('hidden');
+        }
+    });
+    
+    // Password visibility toggle
+    document.getElementById('toggle-password').addEventListener('click', function() {
+        const passwordField = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            passwordField.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    });
+    
+    document.getElementById('toggle-confirm-password').addEventListener('click', function() {
+        const passwordField = document.getElementById('confirm-password');
+        const icon = this.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            passwordField.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    });
+    
+    // Password strength meter
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('password-strength');
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 25;
+        if (/[A-Z]/.test(password)) strength += 25;
+        if (/[a-z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 25;
+        
+        strengthBar.style.width = strength + '%';
+        
+        if (strength < 50) {
+            strengthBar.className = 'bg-red-500 h-1 rounded-full transition-all duration-300';
+        } else if (strength < 75) {
+            strengthBar.className = 'bg-yellow-500 h-1 rounded-full transition-all duration-300';
+        } else {
+            strengthBar.className = 'bg-green-500 h-1 rounded-full transition-all duration-300';
+        }
+    });
+    
+    // Password match validation
+    document.getElementById('confirm-password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const matchIndicator = document.getElementById('password-match');
+        
+        if (confirmPassword) {
+            matchIndicator.classList.remove('hidden');
+            if (password === confirmPassword) {
+                matchIndicator.textContent = 'Passwords match';
+                matchIndicator.className = 'mt-1 text-xs text-green-600';
+            } else {
+                matchIndicator.textContent = 'Passwords do not match';
+                matchIndicator.className = 'mt-1 text-xs text-red-600';
+            }
+        } else {
+            matchIndicator.classList.add('hidden');
+        }
+    });
+});
+</script>
+{% endblock %}

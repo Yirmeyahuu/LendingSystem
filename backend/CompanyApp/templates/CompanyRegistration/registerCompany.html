@@ -1,0 +1,691 @@
+{% extends "Company/companyBase.html" %}
+
+{% block title %}Register as Lending Company - Avendro{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-white py-8">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Lending Company Registration</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                Join Avendro as a lending partner and connect with qualified borrowers. Expand your lending portfolio with our marketplace platform.
+            </p>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-medium text-green-600">Progress</span>
+                <span class="text-sm font-medium text-green-600" id="progress-text">Step 1 of 4</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="progress-bar bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full" style="width: 25%" id="progress-bar"></div>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <form id="registration-form" class="space-y-8" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Step 1: Company Information -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8" id="step-1">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-building text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Company Information</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Company Name -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Legal Name *</label>
+                        <input type="text" name="company_name" placeholder="ABC Financial Services Inc." required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Enter the full legal name as registered with authorities</p>
+                    </div>
+
+                    <!-- Business Registration Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Business Registration Number *</label>
+                        <input type="text" name="registration_number" placeholder="BR123456789" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Tax ID Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Tax ID/EIN Number *</label>
+                        <input type="text" name="tax_id" placeholder="12-3456789" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Business Address -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Business Address *</label>
+                        <div class="space-y-4">
+                            <input type="text" name="street_address" placeholder="Street Address" required
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <input type="text" name="city" placeholder="City" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <input type="text" name="state" placeholder="State/Province" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <input type="text" name="postal_code" placeholder="Postal Code" required
+                                    class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Person -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Primary Contact Person *</label>
+                        <input type="text" name="contact_person" placeholder="John Smith" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Contact Title -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person Title *</label>
+                        <input type="text" name="contact_title" placeholder="CEO, Manager, etc." required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Company Phone -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Phone Number *</label>
+                        <input type="tel" name="company_phone" placeholder="+1 (555) 123-4567" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Contact Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Business Email Address *</label>
+                        <input type="email" name="business_email" placeholder="info@company.com" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Company Website -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Company Website (Optional)</label>
+                        <input type="url" name="website" placeholder="https://www.company.com"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="flex justify-end mt-8">
+                    <button type="button" class="next-step bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        Next Step
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Loan Products & Operations -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-2">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-handshake text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Loan Products & Operations</h2>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Loan Products Offered -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Types of Loans Offered *</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="loan_products" value="personal_loans" class="custom-checkbox mr-3">
+                                <span class="text-sm font-medium">Personal Loans</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="loan_products" value="business_loans" class="custom-checkbox mr-3">
+                                <span class="text-sm font-medium">Business Loans</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="loan_products" value="salary_loans" class="custom-checkbox mr-3">
+                                <span class="text-sm font-medium">Salary Loans</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="loan_products" value="auto_loans" class="custom-checkbox mr-3">
+                                <span class="text-sm font-medium">Auto Loans</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="loan_products" value="home_loans" class="custom-checkbox mr-3">
+                                <span class="text-sm font-medium">Home Loans</span>
+                            </label>
+                            <label class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="loan_products" value="payday_loans" class="custom-checkbox mr-3">
+                                <span class="text-sm font-medium">Payday Loans</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Loan Amount Range -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Loan Amount *</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" name="min_loan_amount" placeholder="1000" min="0" step="100" required
+                                    class="form-input w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Loan Amount *</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" name="max_loan_amount" placeholder="100000" min="0" step="100" required
+                                    class="form-input w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Interest Rates -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Interest Rate (% per annum) *</label>
+                            <div class="relative">
+                                <input type="number" name="min_interest_rate" placeholder="5.5" min="0" max="100" step="0.1" required
+                                    class="form-input w-full px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <span class="absolute right-3 top-3 text-gray-500">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Interest Rate (% per annum) *</label>
+                            <div class="relative">
+                                <input type="number" name="max_interest_rate" placeholder="24.9" min="0" max="100" step="0.1" required
+                                    class="form-input w-full px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <span class="absolute right-3 top-3 text-gray-500">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Fees -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Processing Fee (% of loan amount)</label>
+                            <div class="relative">
+                                <input type="number" name="processing_fee" placeholder="2.5" min="0" max="10" step="0.1"
+                                    class="form-input w-full px-4 py-3 pr-8 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                                <span class="absolute right-3 top-3 text-gray-500">%</span>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Late Payment Fee</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-3 text-gray-500">$</span>
+                                <input type="number" name="late_payment_fee" placeholder="25" min="0" step="5"
+                                    class="form-input w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Loan Terms -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Minimum Loan Term (months) *</label>
+                            <input type="number" name="min_loan_term" placeholder="6" min="1" max="600" required
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Maximum Loan Term (months) *</label>
+                            <input type="number" name="max_loan_term" placeholder="60" min="1" max="600" required
+                                class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <!-- Lending Policies -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Loan Approval Criteria & Policies *</label>
+                        <textarea name="lending_policies" rows="4" placeholder="Describe your loan approval process, credit score requirements, income verification process, and any other criteria borrowers must meet..." required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    <button type="button" class="next-step bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        Next Step
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Banking Information -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-3">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-yellow-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-university text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Banking Information</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Bank Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bank Name *</label>
+                        <input type="text" name="bank_name" placeholder="Chase Bank" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Account Holder Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Account Holder Name *</label>
+                        <input type="text" name="account_holder_name" placeholder="ABC Financial Services Inc." required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Account Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Account Number *</label>
+                        <input type="text" name="account_number" placeholder="1234567890" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Routing Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Routing Number *</label>
+                        <input type="text" name="routing_number" placeholder="021000021" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Account Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Account Type *</label>
+                        <select name="account_type" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <option value="">Select Account Type</option>
+                            <option value="checking">Checking Account</option>
+                            <option value="savings">Savings Account</option>
+                            <option value="business">Business Account</option>
+                        </select>
+                    </div>
+
+                    <!-- SWIFT Code (for international) -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">SWIFT Code (International only)</label>
+                        <input type="text" name="swift_code" placeholder="CHASUS33"
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Bank Verification Documents -->
+                    <div class="lg:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Bank Verification Document *</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
+                            <input type="file" name="bank_document" accept="image/*,.pdf" required class="hidden" id="bank-upload">
+                            <label for="bank-upload" class="cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-lg font-medium text-gray-700">Upload Bank Statement or Void Check</p>
+                                <p class="text-sm text-gray-500 mt-2">PNG, JPG, PDF up to 10MB</p>
+                            </label>
+                            <div id="bank-file-name" class="mt-2 text-sm text-green-600 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Processing Volume -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Expected Monthly Loan Volume *</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-500">$</span>
+                            <input type="number" name="monthly_volume" placeholder="50000" min="0" step="1000" required
+                                class="form-input w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Estimated total loan amount you plan to disburse monthly</p>
+                    </div>
+
+                    <!-- Years in Business -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Years in Lending Business *</label>
+                        <input type="number" name="years_in_business" placeholder="5" min="0" max="100" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                    </div>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    <button type="button" class="next-step bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        Next Step
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Login Credentials -->
+            <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8 hidden" id="step-4">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-key text-white text-sm"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Login Credentials</h2>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Username -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Username *</label>
+                        <input type="text" name="username" placeholder="company_username" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Username must be 3-20 characters long</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Login Email Address *</label>
+                        <input type="email" name="email" placeholder="admin@company.com" required
+                            class="form-input w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">This will be used for account login and notifications</p>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Password *</label>
+                        <div class="relative">
+                            <input type="password" name="password" placeholder="Create a strong password" required id="password"
+                                class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <button type="button" class="absolute right-3 top-3 text-gray-500 hover:text-gray-700" id="toggle-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <div class="text-xs text-gray-500">Password strength:</div>
+                            <div class="w-full bg-gray-200 rounded-full h-1 mt-1">
+                                <div class="bg-red-500 h-1 rounded-full transition-all duration-300" style="width: 0%" id="password-strength"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password *</label>
+                        <div class="relative">
+                            <input type="password" name="confirm_password" placeholder="Confirm your password" required id="confirm-password"
+                                class="form-input w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent">
+                            <button type="button" class="absolute right-3 top-3 text-gray-500 hover:text-gray-700" id="toggle-confirm-password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <div id="password-match" class="mt-1 text-xs hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Business License Upload -->
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Business License/Registration Document *</label>
+                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-green-400 transition-colors">
+                        <input type="file" name="business_license" accept="image/*,.pdf" required class="hidden" id="license-upload">
+                        <label for="license-upload" class="cursor-pointer">
+                            <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                            <p class="text-lg font-medium text-gray-700">Upload Business License or Registration</p>
+                            <p class="text-sm text-gray-500 mt-2">PNG, JPG, PDF up to 10MB</p>
+                        </label>
+                        <div id="license-file-name" class="mt-2 text-sm text-green-600 hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="mt-8">
+                    <label class="flex items-start">
+                        <input type="checkbox" name="terms_accepted" required class="custom-checkbox mr-3 mt-1">
+                        <span class="text-sm text-gray-700">
+                            I agree to the <a href="#" class="text-green-600 hover:underline">Terms of Service</a>, 
+                            <a href="#" class="text-green-600 hover:underline">Privacy Policy</a>, and 
+                            <a href="#" class="text-green-600 hover:underline">Lender Agreement</a>. I understand that by registering, 
+                            I authorize Avendro to facilitate loan applications and payments through our platform.
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Compliance Acknowledgment -->
+                <div class="mt-4">
+                    <label class="flex items-start">
+                        <input type="checkbox" name="compliance_accepted" required class="custom-checkbox mr-3 mt-1">
+                        <span class="text-sm text-gray-700">
+                            I confirm that our company complies with all applicable lending laws and regulations, 
+                            including fair lending practices and consumer protection requirements.
+                        </span>
+                    </label>
+                </div>
+
+                <!-- Marketing Consent -->
+                <div class="mt-4">
+                    <label class="flex items-start">
+                        <input type="checkbox" name="marketing_consent" class="custom-checkbox mr-3 mt-1">
+                        <span class="text-sm text-gray-700">
+                            I would like to receive marketing communications about platform updates and business opportunities.
+                        </span>
+                    </label>
+                </div>
+
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Previous
+                    </button>
+                    <button type="submit" class="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-3 rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-300 font-semibold shadow-lg">
+                        <i class="fas fa-check mr-2"></i>
+                        Complete Registration
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    
+    // Step navigation
+    const nextButtons = document.querySelectorAll('.next-step');
+    const prevButtons = document.querySelectorAll('.prev-step');
+    
+    nextButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (validateCurrentStep()) {
+                nextStep();
+            }
+        });
+    });
+    
+    prevButtons.forEach(button => {
+        button.addEventListener('click', prevStep);
+    });
+    
+    function nextStep() {
+        if (currentStep < totalSteps) {
+            document.getElementById(`step-${currentStep}`).classList.add('hidden');
+            currentStep++;
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            updateProgress();
+        }
+    }
+    
+    function prevStep() {
+        if (currentStep > 1) {
+            document.getElementById(`step-${currentStep}`).classList.add('hidden');
+            currentStep--;
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+            updateProgress();
+        }
+    }
+    
+    function updateProgress() {
+        const progress = (currentStep / totalSteps) * 100;
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent = `Step ${currentStep} of ${totalSteps}`;
+    }
+    
+    function validateCurrentStep() {
+        const currentStepElement = document.getElementById(`step-${currentStep}`);
+        const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let isValid = true;
+        
+        // Special validation for loan products checkboxes
+        if (currentStep === 2) {
+            const loanProducts = currentStepElement.querySelectorAll('input[name="loan_products"]:checked');
+            if (loanProducts.length === 0) {
+                alert('Please select at least one type of loan product.');
+                return false;
+            }
+        }
+        
+        requiredFields.forEach(field => {
+            if (field.type === 'checkbox') {
+                if (!field.checked && field.name !== 'loan_products') {
+                    field.closest('label').classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    field.closest('label').classList.remove('border-red-500');
+                }
+            } else {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    field.classList.remove('border-red-500');
+                }
+            }
+        });
+        
+        if (!isValid) {
+            alert('Please fill in all required fields before proceeding.');
+        }
+        
+        return isValid;
+    }
+    
+    // File upload handlers
+    document.getElementById('bank-upload').addEventListener('change', function() {
+        const fileName = document.getElementById('bank-file-name');
+        if (this.files.length > 0) {
+            fileName.textContent = `Selected: ${this.files[0].name}`;
+            fileName.classList.remove('hidden');
+        }
+    });
+    
+    document.getElementById('license-upload').addEventListener('change', function() {
+        const fileName = document.getElementById('license-file-name');
+        if (this.files.length > 0) {
+            fileName.textContent = `Selected: ${this.files[0].name}`;
+            fileName.classList.remove('hidden');
+        }
+    });
+    
+    // Password visibility toggles
+    document.getElementById('toggle-password').addEventListener('click', function() {
+        const passwordField = document.getElementById('password');
+        const icon = this.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            passwordField.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    });
+    
+    document.getElementById('toggle-confirm-password').addEventListener('click', function() {
+        const passwordField = document.getElementById('confirm-password');
+        const icon = this.querySelector('i');
+        
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            passwordField.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    });
+    
+    // Password strength meter
+    document.getElementById('password').addEventListener('input', function() {
+        const password = this.value;
+        const strengthBar = document.getElementById('password-strength');
+        let strength = 0;
+        
+        if (password.length >= 8) strength += 25;
+        if (/[A-Z]/.test(password)) strength += 25;
+        if (/[a-z]/.test(password)) strength += 25;
+        if (/[0-9]/.test(password)) strength += 25;
+        
+        strengthBar.style.width = strength + '%';
+        
+        if (strength < 50) {
+            strengthBar.className = 'bg-red-500 h-1 rounded-full transition-all duration-300';
+        } else if (strength < 75) {
+            strengthBar.className = 'bg-yellow-500 h-1 rounded-full transition-all duration-300';
+        } else {
+            strengthBar.className = 'bg-green-500 h-1 rounded-full transition-all duration-300';
+        }
+    });
+    
+    // Password match validation
+    document.getElementById('confirm-password').addEventListener('input', function() {
+        const password = document.getElementById('password').value;
+        const confirmPassword = this.value;
+        const matchIndicator = document.getElementById('password-match');
+        
+        if (confirmPassword) {
+            matchIndicator.classList.remove('hidden');
+            if (password === confirmPassword) {
+                matchIndicator.textContent = 'Passwords match';
+                matchIndicator.className = 'mt-1 text-xs text-green-600';
+            } else {
+                matchIndicator.textContent = 'Passwords do not match';
+                matchIndicator.className = 'mt-1 text-xs text-red-600';
+            }
+        } else {
+            matchIndicator.classList.add('hidden');
+        }
+    });
+    
+    // Validation for loan amount ranges
+    document.querySelector('[name="max_loan_amount"]').addEventListener('input', function() {
+        const minAmount = parseFloat(document.querySelector('[name="min_loan_amount"]').value);
+        const maxAmount = parseFloat(this.value);
+        
+        if (minAmount && maxAmount && maxAmount <= minAmount) {
+            this.setCustomValidity('Maximum loan amount must be greater than minimum loan amount');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Validation for interest rate ranges
+    document.querySelector('[name="max_interest_rate"]').addEventListener('input', function() {
+        const minRate = parseFloat(document.querySelector('[name="min_interest_rate"]').value);
+        const maxRate = parseFloat(this.value);
+        
+        if (minRate && maxRate && maxRate <= minRate) {
+            this.setCustomValidity('Maximum interest rate must be greater than minimum interest rate');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    // Validation for loan term ranges
+    document.querySelector('[name="max_loan_term"]').addEventListener('input', function() {
+        const minTerm = parseFloat(document.querySelector('[name="min_loan_term"]').value);
+        const maxTerm = parseFloat(this.value);
+        
+        if (minTerm && maxTerm && maxTerm <= minTerm) {
+            this.setCustomValidity('Maximum loan term must be greater than minimum loan term');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+});
+</script>
+{% endblock %}

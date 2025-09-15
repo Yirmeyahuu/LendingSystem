@@ -4,8 +4,8 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('Landingpage.urls')),
-    path('company/', include('CompanyApp.urls')),
-    path('borrower/', include('BorrowerApp.urls')),
+    path('Company/', include('CompanyApp.urls')),
+    path('Borrower/', include('BorrowerApp.urls')),
 
 
     path('__reload__/', include('django_browser_reload.urls')),
