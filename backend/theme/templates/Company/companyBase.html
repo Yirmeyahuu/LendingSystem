@@ -52,14 +52,65 @@
         .nav-item-active i {
             color: white;
         }
+        
+        /* Mobile dropdown menu */
+        .mobile-dropdown {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        .mobile-dropdown.open {
+            max-height: 500px;
+        }
+        
+        /* Mobile menu item styles */
+        .mobile-menu-item {
+            background: white;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .mobile-menu-item:hover {
+            background: #f0fdf4;
+            border-left-color: #059669;
+            transform: translateX(4px);
+        }
+        
+        .mobile-menu-item.active {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            border-left-color: #047857;
+        }
+        
+        .mobile-menu-item.active i {
+            color: white;
+        }
+        
+        /* Burger animation */
+        .burger-line {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .burger-open .line1 {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+        
+        .burger-open .line2 {
+            opacity: 0;
+        }
+        
+        .burger-open .line3 {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
 <body class="bg-gray-50 min-h-screen">
     <div class="flex h-screen">
-        <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 lg:static lg:inset-0 sidebar-transition" id="sidebar">
+        <!-- Desktop Sidebar -->
+        <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:shadow-lg lg:z-50">
             <!-- Logo -->
             <div class="flex items-center justify-center h-16 bg-gradient-to-r from-green-600 to-green-700">
                 <div class="flex items-center space-x-2">
@@ -89,41 +140,41 @@
                 </div>
             </div>
             
-            <!-- Navigation Menu -->
-            <nav class="mt-4 px-4 space-y-2">
+            <!-- Desktop Navigation Menu -->
+            <nav class="flex-1 mt-4 px-4 space-y-2 overflow-y-auto">
                 <a href="{% url 'company-dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-dashboard' %}nav-item-active{% endif %}">
                     <i class="fas fa-chart-pie mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Dashboard
                 </a>
                 
-                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group">
+                <a href="{% url 'company-loan-applications'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-loan-applications' %}nav-item-active{% endif %}">
                     <i class="fas fa-hand-holding-usd mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Loan Applications
                 </a>
                 
-                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group">
+                <a href="{% url 'company-borrower-lists'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-borrower-lists' %}nav-item-active{% endif %}">
                     <i class="fas fa-users mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Borrowers
                 </a>
                 
-                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group">
+                <a href="{% url 'company-active-loans'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-active-loans' %}nav-item-active{% endif %}">
                     <i class="fas fa-file-contract mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Active Loans
                 </a>
                 
-                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group">
+                <a href="{% url 'company-reports'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-reports' %}nav-item-active{% endif %}">
                     <i class="fas fa-chart-line mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Reports
                 </a>
                 
-                <a href="#" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group">
+                <a href="{% url 'company-settings'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-settings' %}nav-item-active{% endif %}">
                     <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Settings
                 </a>
             </nav>
             
-            <!-- Bottom Menu -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+            <!-- Desktop Bottom Menu -->
+            <div class="p-4 border-t border-gray-200">
                 <a href="{% url 'company-logout' %}" onclick="return confirmLogout(event)" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
                     <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-red-600"></i>
                     Logout
@@ -132,14 +183,18 @@
         </aside>
 
         <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden lg:ml-0">
-            <!-- Top Navigation Bar -->
+        <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
+            <!-- Mobile Top Navigation Bar -->
             <header class="bg-white shadow-sm border-b border-gray-200 lg:hidden">
                 <div class="flex items-center justify-between h-16 px-4">
-                    <button id="sidebar-toggle" class="text-gray-600 hover:text-green-600">
-                        <i class="fas fa-bars text-xl"></i>
+                    <!-- Burger Menu Button -->
+                    <button id="mobile-menu-toggle" class="flex flex-col justify-center items-center w-8 h-8 text-gray-600 hover:text-green-600 focus:outline-none">
+                        <span class="burger-line line1 block w-6 h-0.5 bg-current mb-1"></span>
+                        <span class="burger-line line2 block w-6 h-0.5 bg-current mb-1"></span>
+                        <span class="burger-line line3 block w-6 h-0.5 bg-current"></span>
                     </button>
                     
+                    <!-- Mobile Logo -->
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 flex items-center justify-center">
                             <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
@@ -147,8 +202,72 @@
                         <span class="text-xl font-bold text-gray-900">Avendro</span>
                     </div>
                     
+                    <!-- Company Icon -->
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                         <i class="fas fa-building text-green-600"></i>
+                    </div>
+                </div>
+
+                <!-- Mobile Dropdown Menu -->
+                <div id="mobile-dropdown" class="mobile-dropdown bg-white border-t border-gray-200">
+                    <div class="py-2">
+                        <!-- Company Info Mobile -->
+                        <div class="px-4 py-3 border-b border-gray-100">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-building text-green-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                        {% if request.user.company_profile %}
+                                            {{ request.user.company_profile.company_name }}
+                                        {% else %}
+                                            Company Name
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-xs text-gray-500">Lender Account</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Navigation Items -->
+                        <a href="{% url 'company-dashboard' %}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-dashboard' %}active{% endif %}">
+                            <i class="fas fa-chart-pie mr-3 text-gray-400"></i>
+                            Dashboard
+                        </a>
+                        
+                        <a href="{% url 'company-loan-applications'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-loan-applications' %}active{% endif %}">
+                            <i class="fas fa-hand-holding-usd mr-3 text-gray-400"></i>
+                            Loan Applications
+                        </a>
+                        
+                        <a href="{% url 'company-borrower-lists'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-borrower-lists' %}active{% endif %}">
+                            <i class="fas fa-users mr-3 text-gray-400"></i>
+                            Borrowers
+                        </a>
+                        
+                        <a href="{% url 'company-active-loans'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-active-loans' %}active{% endif %}">
+                            <i class="fas fa-file-contract mr-3 text-gray-400"></i>
+                            Active Loans
+                        </a>
+                        
+                        <a href="{% url 'company-reports'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-reports' %}active{% endif %}">
+                            <i class="fas fa-chart-line mr-3 text-gray-400"></i>
+                            Reports
+                        </a>
+                        
+                        <a href="{% url 'company-settings'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-settings' %}active{% endif %}">
+                            <i class="fas fa-cog mr-3 text-gray-400"></i>
+                            Settings
+                        </a>
+                        
+                        <!-- Mobile Logout -->
+                        <div class="border-t border-gray-100 mt-2 pt-2">
+                            <a href="{% url 'company-logout' %}" onclick="return confirmLogout(event)" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-red-600 transition-all">
+                                <i class="fas fa-sign-out-alt mr-3 text-gray-400"></i>
+                                Logout
+                            </a>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -176,10 +295,7 @@
         </div>
     </div>
 
-    <!-- Sidebar Overlay for Mobile -->
-    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden hidden" onclick="toggleSidebar()"></div>
 
-    {% block extra_js %}
     <script>
         // Confirmation dialog for logout
         function confirmLogout(event) {
@@ -192,31 +308,40 @@
             return false;
         }
 
-        // Sidebar toggle functionality
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const overlay = document.getElementById('sidebar-overlay');
+        // Mobile menu toggle functionality
+        function toggleMobileMenu() {
+            const dropdown = document.getElementById('mobile-dropdown');
+            const burgerButton = document.getElementById('mobile-menu-toggle');
             
-            sidebar.classList.toggle('-translate-x-full');
-            overlay.classList.toggle('hidden');
+            dropdown.classList.toggle('open');
+            burgerButton.classList.toggle('burger-open');
         }
         
-        // Toggle sidebar on button click
-        document.getElementById('sidebar-toggle')?.addEventListener('click', toggleSidebar);
+        // Toggle mobile menu on button click
+        document.getElementById('mobile-menu-toggle')?.addEventListener('click', toggleMobileMenu);
         
-        // Close sidebar when clicking outside on mobile
+        // Close mobile menu when clicking outside
         document.addEventListener('click', function(event) {
-            const sidebar = document.getElementById('sidebar');
-            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const dropdown = document.getElementById('mobile-dropdown');
+            const burgerButton = document.getElementById('mobile-menu-toggle');
             
             if (window.innerWidth < 1024 && 
-                !sidebar.contains(event.target) && 
-                !sidebarToggle?.contains(event.target)) {
-                sidebar.classList.add('-translate-x-full');
-                document.getElementById('sidebar-overlay').classList.add('hidden');
+                !dropdown?.contains(event.target) && 
+                !burgerButton?.contains(event.target)) {
+                dropdown?.classList.remove('open');
+                burgerButton?.classList.remove('burger-open');
+            }
+        });
+
+        // Close mobile menu when window is resized to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024) {
+                const dropdown = document.getElementById('mobile-dropdown');
+                const burgerButton = document.getElementById('mobile-menu-toggle');
+                dropdown?.classList.remove('open');
+                burgerButton?.classList.remove('burger-open');
             }
         });
     </script>
-    {% endblock %}
 </body>
 </html>

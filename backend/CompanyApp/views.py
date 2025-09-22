@@ -17,7 +17,6 @@ def companyDashboard(request):
     return render(request, 'CompanyPages/companyDashboard.html')
 
 def companyLogout(request):
-    """Logout view for company users"""
     if request.user.is_authenticated:
         # Check if user is a company before logging out
         if hasattr(request.user, 'company_profile'):
@@ -29,7 +28,6 @@ def companyLogout(request):
             messages.success(request, "You have been logged out successfully.")
     
     return redirect('landing-page')  # Redirect to login page
-
 
 def companyRegistration(request):
     if request.method == 'POST':
@@ -153,7 +151,19 @@ def companyRegistration(request):
     return render(request, 'CompanyRegistration/registerCompany.html')
 
 def companyRegistrationSuccess(request):
-    """Success page after company registration"""
     return render(request, 'RegistrationSuccess/registrationSuccess.html')
 
+def loanApplication(request):
+    return render(request, 'CompanyPages/companyLoanApplications.html')
 
+def borrowerLists(request):
+    return render(request, 'CompanyPages/companyBorrowerLists.html')
+
+def activeLoans(request):
+    return render(request, 'CompanyPages/companyActiveLoans.html')
+
+def reports(request):
+    return render(request, 'CompanyPages/companyReports.html')
+
+def settings(request):
+    return render(request, 'CompanyPages/companySettings.html')

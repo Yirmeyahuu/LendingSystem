@@ -1,0 +1,753 @@
+{% extends 'Company/companyBase.html' %}
+
+{% block title %}Borrowers - Avendro{% endblock %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+        <span class="ml-1 text-sm font-medium text-gray-500">Borrowers</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Borrowers</h1>
+            <p class="mt-1 text-sm text-gray-600">Manage and monitor all your borrowers</p>
+        </div>
+        <div class="mt-4 sm:mt-0 flex space-x-3">
+            <button id="exportBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-download mr-2"></i>
+                Export
+            </button>
+            <button id="addBorrowerBtn" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-plus mr-2"></i>
+                Add Borrower
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Borrowers -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Borrowers</p>
+                <p class="text-3xl font-bold text-gray-900">1,247</p>
+                <p class="text-sm text-blue-600 flex items-center mt-2">
+                    <i class="fas fa-arrow-up mr-1"></i>
+                    +23 this month
+                </p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Loans -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Active Borrowers</p>
+                <p class="text-3xl font-bold text-gray-900">892</p>
+                <p class="text-sm text-green-600 flex items-center mt-2">
+                    <i class="fas fa-check-circle mr-1"></i>
+                    71% active rate
+                </p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-check text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- High Risk -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">High Risk</p>
+                <p class="text-3xl font-bold text-gray-900">47</p>
+                <p class="text-sm text-red-600 flex items-center mt-2">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Needs attention
+                </p>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-times text-red-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Portfolio -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Portfolio Value</p>
+                <p class="text-3xl font-bold text-gray-900">$12.5M</p>
+                <p class="text-sm text-purple-600 flex items-center mt-2">
+                    <i class="fas fa-chart-line mr-1"></i>
+                    Outstanding loans
+                </p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Search -->
+        <div class="md:col-span-2">
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Borrowers</label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" id="search" name="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by name, email, or phone...">
+            </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select id="status" name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="delinquent">Delinquent</option>
+                <option value="defaulted">Defaulted</option>
+            </select>
+        </div>
+
+        <!-- Risk Level -->
+        <div>
+            <label for="risk" class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
+            <select id="risk" name="risk" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="">All Risk Levels</option>
+                <option value="low">Low Risk</option>
+                <option value="medium">Medium Risk</option>
+                <option value="high">High Risk</option>
+            </select>
+        </div>
+
+        <!-- Credit Score Range -->
+        <div>
+            <label for="credit" class="block text-sm font-medium text-gray-700 mb-2">Credit Score</label>
+            <select id="credit" name="credit" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                <option value="">All Scores</option>
+                <option value="300-579">Poor (300-579)</option>
+                <option value="580-669">Fair (580-669)</option>
+                <option value="670-739">Good (670-739)</option>
+                <option value="740-799">Very Good (740-799)</option>
+                <option value="800-850">Excellent (800-850)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <div class="flex items-center space-x-4">
+            <span class="text-sm text-gray-500">Showing 1-20 of 1,247 borrowers</span>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Clear Filters
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Borrowers Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-900">All Borrowers</h3>
+            <div class="flex items-center space-x-2">
+                <button class="text-sm text-gray-600 hover:text-gray-900" title="Grid View">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="text-sm text-green-600" title="List View">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Borrower
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Contact
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Active Loans
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Outstanding
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Credit Score
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Last Payment
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <!-- Borrower Row 1 -->
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-600 font-medium">JD</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">John Doe</div>
+                                <div class="text-sm text-gray-500">ID: BOR-2024-001</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">john.doe@email.com</div>
+                        <div class="text-sm text-gray-500">+1 (555) 123-4567</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">2 loans</div>
+                        <div class="text-sm text-gray-500">Personal, Auto</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">$45,230</div>
+                        <div class="text-sm text-gray-500">$1,675/month</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-green-600">742</div>
+                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: 74%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Very Good</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
+                            Active
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">Dec 15, 2024</div>
+                        <div class="text-sm text-green-600">On time</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-green-600 hover:text-green-900" title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-blue-600 hover:text-blue-900" title="View Loans">
+                                <i class="fas fa-file-contract"></i>
+                            </button>
+                            <button class="text-purple-600 hover:text-purple-900" title="Send Message">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Borrower Row 2 -->
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                <span class="text-purple-600 font-medium">MS</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">Maria Santos</div>
+                                <div class="text-sm text-gray-500">ID: BOR-2024-002</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">maria.santos@email.com</div>
+                        <div class="text-sm text-gray-500">+1 (555) 987-6543</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">1 loan</div>
+                        <div class="text-sm text-gray-500">Business</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">$125,000</div>
+                        <div class="text-sm text-gray-500">$2,980/month</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-yellow-600">680</div>
+                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-600 h-2 rounded-full" style="width: 68%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Good</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
+                            Active
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">Dec 12, 2024</div>
+                        <div class="text-sm text-green-600">On time</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-green-600 hover:text-green-900" title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-blue-600 hover:text-blue-900" title="View Loans">
+                                <i class="fas fa-file-contract"></i>
+                            </button>
+                            <button class="text-purple-600 hover:text-purple-900" title="Send Message">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Borrower Row 3 - Delinquent -->
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                                <span class="text-red-600 font-medium">AR</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">Alex Rodriguez</div>
+                                <div class="text-sm text-gray-500">ID: BOR-2024-003</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">alex.rodriguez@email.com</div>
+                        <div class="text-sm text-gray-500">+1 (555) 456-7890</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">1 loan</div>
+                        <div class="text-sm text-gray-500">Personal</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">$18,500</div>
+                        <div class="text-sm text-gray-500">$825/month</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-red-600">595</div>
+                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-600 h-2 rounded-full" style="width: 59%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Fair</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            Delinquent
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">Nov 15, 2024</div>
+                        <div class="text-sm text-red-600">30 days late</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-green-600 hover:text-green-900" title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-red-600 hover:text-red-900" title="Collection Actions">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </button>
+                            <button class="text-purple-600 hover:text-purple-900" title="Send Message">
+                                <i class="fas fa-envelope"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Borrower Row 4 -->
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <span class="text-indigo-600 font-medium">LW</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">Lisa Wang</div>
+                                <div class="text-sm text-gray-500">ID: BOR-2024-004</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">lisa.wang@email.com</div>
+                        <div class="text-sm text-gray-500">+1 (555) 234-5678</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">3 loans</div>
+                        <div class="text-sm text-gray-500">Personal, Auto, Home</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">$285,750</div>
+                        <div class="text-sm text-gray-500">$3,420/month</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-green-600">798</div>
+                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-600 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Excellent</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
+                            Active
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">Dec 14, 2024</div>
+                        <div class="text-sm text-green-600">On time</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-green-600 hover:text-green-900" title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-blue-600 hover:text-blue-900" title="View Loans">
+                                <i class="fas fa-file-contract"></i>
+                            </button>
+                            <button class="text-orange-600 hover:text-orange-900" title="Offer New Loan">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Borrower Row 5 - Inactive -->
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                                <span class="text-gray-600 font-medium">TB</span>
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">Tom Brown</div>
+                                <div class="text-sm text-gray-500">ID: BOR-2024-005</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">tom.brown@email.com</div>
+                        <div class="text-sm text-gray-500">+1 (555) 345-6789</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">0 loans</div>
+                        <div class="text-sm text-gray-500">Paid off</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">$0</div>
+                        <div class="text-sm text-gray-500">No outstanding</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="text-sm font-medium text-blue-600">725</div>
+                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: 72%"></div>
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1">Very Good</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                            <i class="fas fa-circle mr-1" style="font-size: 6px;"></i>
+                            Inactive
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">Oct 30, 2024</div>
+                        <div class="text-sm text-gray-500">Final payment</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex items-center space-x-2">
+                            <button class="text-green-600 hover:text-green-900" title="View Profile">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="text-blue-600 hover:text-blue-900" title="View History">
+                                <i class="fas fa-history"></i>
+                            </button>
+                            <button class="text-orange-600 hover:text-orange-900" title="Offer New Loan">
+                                <i class="fas fa-plus-circle"></i>
+                            </button>
+                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Previous
+            </a>
+            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Next
+            </a>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">1</span> to <span class="font-medium">20</span> of <span class="font-medium">1,247</span> results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a href="#" aria-current="page" class="z-10 bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        1
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        2
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        3
+                    </a>
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                    </span>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        62
+                    </a>
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('search');
+        const statusFilter = document.getElementById('status');
+        const riskFilter = document.getElementById('risk');
+        const creditFilter = document.getElementById('credit');
+        
+        // Add event listeners for real-time filtering
+        searchInput.addEventListener('input', filterBorrowers);
+        statusFilter.addEventListener('change', filterBorrowers);
+        riskFilter.addEventListener('change', filterBorrowers);
+        creditFilter.addEventListener('change', filterBorrowers);
+        
+        // Bulk selection functionality
+        const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
+        const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+        
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActionsVisibility();
+        });
+        
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                updateSelectAllState();
+                updateBulkActionsVisibility();
+            });
+        });
+        
+        // Export functionality
+        document.getElementById('exportBtn').addEventListener('click', function() {
+            console.log('Exporting borrowers...');
+            // Add export logic here
+        });
+        
+        // Add borrower functionality
+        document.getElementById('addBorrowerBtn').addEventListener('click', function() {
+            console.log('Adding new borrower...');
+            // Add modal or redirect logic here
+        });
+    });
+    
+    function filterBorrowers() {
+        const searchTerm = document.getElementById('search').value.toLowerCase();
+        const statusFilter = document.getElementById('status').value;
+        const riskFilter = document.getElementById('risk').value;
+        const creditFilter = document.getElementById('credit').value;
+        
+        const rows = document.querySelectorAll('tbody tr');
+        
+        rows.forEach(row => {
+            const borrowerName = row.querySelector('td:nth-child(2) .text-gray-900').textContent.toLowerCase();
+            const borrowerEmail = row.querySelector('td:nth-child(3) .text-gray-900').textContent.toLowerCase();
+            const borrowerPhone = row.querySelector('td:nth-child(3) .text-gray-500').textContent.toLowerCase();
+            const status = row.querySelector('td:nth-child(7) span').textContent.toLowerCase();
+            const creditScore = parseInt(row.querySelector('td:nth-child(6) .text-sm').textContent);
+            
+            let showRow = true;
+            
+            // Search filter
+            if (searchTerm && !borrowerName.includes(searchTerm) && 
+                !borrowerEmail.includes(searchTerm) && !borrowerPhone.includes(searchTerm)) {
+                showRow = false;
+            }
+            
+            // Status filter
+            if (statusFilter && !status.includes(statusFilter)) {
+                showRow = false;
+            }
+            
+            // Credit score filter
+            if (creditFilter) {
+                switch(creditFilter) {
+                    case '300-579':
+                        if (creditScore < 300 || creditScore > 579) showRow = false;
+                        break;
+                    case '580-669':
+                        if (creditScore < 580 || creditScore > 669) showRow = false;
+                        break;
+                    case '670-739':
+                        if (creditScore < 670 || creditScore > 739) showRow = false;
+                        break;
+                    case '740-799':
+                        if (creditScore < 740 || creditScore > 799) showRow = false;
+                        break;
+                    case '800-850':
+                        if (creditScore < 800 || creditScore > 850) showRow = false;
+                        break;
+                }
+            }
+            
+            row.style.display = showRow ? '' : 'none';
+        });
+    }
+    
+    function updateSelectAllState() {
+        const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
+        const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+        const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+        
+        if (checkedBoxes.length === 0) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = false;
+        } else if (checkedBoxes.length === rowCheckboxes.length) {
+            selectAllCheckbox.indeterminate = false;
+            selectAllCheckbox.checked = true;
+        } else {
+            selectAllCheckbox.indeterminate = true;
+        }
+    }
+    
+    function updateBulkActionsVisibility() {
+        const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+        console.log(`${checkedBoxes.length} borrowers selected`);
+        // You can add bulk actions toolbar here if needed
+    }
+    
+    // Action button handlers
+    document.querySelectorAll('button[title="View Profile"]').forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Viewing borrower profile...');
+            // Add view profile logic
+        });
+    });
+    
+    document.querySelectorAll('button[title="View Loans"]').forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Viewing borrower loans...');
+            // Add view loans logic
+        });
+    });
+    
+    document.querySelectorAll('button[title="Send Message"]').forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Sending message to borrower...');
+            // Add messaging logic
+        });
+    });
+    
+    document.querySelectorAll('button[title="Collection Actions"]').forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Opening collection actions...');
+            // Add collection actions logic
+        });
+    });
+    
+    document.querySelectorAll('button[title="Offer New Loan"]').forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Offering new loan...');
+            // Add new loan offer logic
+        });
+    });
+</script>
+{% endblock %}

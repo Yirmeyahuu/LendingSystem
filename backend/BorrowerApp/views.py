@@ -17,7 +17,6 @@ def borrowerDashboard(request):
     return render(request, 'BorrowerPages/borrowerDashboard.html')
 
 def borrower_logout(request):
-    """Logout view for borrowers"""
     if request.user.is_authenticated:
         # Check if user is a borrower before logging out
         if hasattr(request.user, 'borrower_profile'):
@@ -228,5 +227,4 @@ def registerBorrower(request):
     return render(request, 'BorrowerRegistration/registerBorrower.html')
 
 def borrowerRegistrationSuccess(request):
-    """Success page after borrower registration"""
     return render(request, 'RegistrationSuccess/borrowerSuccess.html')

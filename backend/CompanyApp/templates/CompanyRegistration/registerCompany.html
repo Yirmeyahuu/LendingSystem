@@ -1,9 +1,19 @@
-{% extends "Company/companyBase.html" %}
+{% extends "Base.html" %}
 
 {% block title %}Register as Lending Company - Avendro{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gradient-to-br from-green-50 to-white py-8">
+
+<!-- Back Button -->
+<div class="absolute top-6 left-6 z-100">
+    <a href="{% url 'landing-page' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600bg-white rounded-lg border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Home
+    </a>
+</div>
+
+
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-white py-24">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="text-center mb-8">
