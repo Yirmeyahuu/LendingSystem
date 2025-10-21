@@ -14,7 +14,11 @@ SECRET_KEY = 'django-insecure-ytt)9tonlx1^k+vt@rn5r3_ul9c2+k92zp1_z%a+99z8=p&o6q
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "127.0.0.1",    # localhost
+    "localhost",    # localhost
+    "192.168.1.4", # Home
+]
 
 
 # Application definition
@@ -26,6 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'Avendro',
 
     #Apps
     'CompanyApp',
@@ -59,7 +64,12 @@ ROOT_URLCONF = 'Avendro.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'), os.path.join(BASE_DIR, 'theme/templates'), os.path.join(BASE_DIR, 'Landingpage/templates'), os.path.join(BASE_DIR, 'CompanyApp/templates'), os.path.join(BASE_DIR, 'BorrowerApp/templates'), os.path.join(BASE_DIR, 'LoginApp/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'),
+                 os.path.join(BASE_DIR, 'theme/templates'),
+                 os.path.join(BASE_DIR, 'Landingpage/templates'),
+                 os.path.join(BASE_DIR, 'CompanyApp/templates'),
+                 os.path.join(BASE_DIR, 'BorrowerApp/templates'),
+                 os.path.join(BASE_DIR, 'LoginApp/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -130,8 +140,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'   # note the starting slash (important for production)
 
+# Where collectstatic will put all static files
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Extra static files during development
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
     os.path.join(BASE_DIR, 'theme/static'),

@@ -78,3 +78,16 @@ def userLogout(request):
         logout(request)
         messages.success(request, "You have been logged out successfully.")
     return redirect('user-login')
+
+def companyLogout(request):
+    if request.user.is_authenticated:
+        # Check if user is a company before logging out
+        if hasattr(request.user, 'company_profile'):
+            company_name = request.user.company_profile.company_name
+            logout(request)
+            messages.success(request, f"Goodbye {company_name}! You have been logged out successfully.")
+        else:
+            logout(request)
+            messages.success(request, "You have been logged out successfully.")
+    
+    return redirect('landing-page')  # Redirect to login page

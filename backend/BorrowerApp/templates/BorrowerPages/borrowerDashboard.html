@@ -1,474 +1,191 @@
 {% extends 'Borrower/borrowerBase.html' %}
 
-{% block title %}Borrower Dashboard - Avendro{% endblock %}
+{% block title %}Dashboard - Avendro{% endblock %}
 
 {% block breadcrumb %}
 <li>
     <div class="flex items-center">
         <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
-        <span class="ml-1 text-sm font-medium text-gray-500">Overview</span>
+        <span class="ml-1 text-sm font-medium text-gray-500">Dashboard</span>
     </div>
 </li>
 {% endblock %}
 
 {% block content %}
-<!-- Welcome Section -->
-<div class="mb-8">
-    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+<!-- Header / Welcome Section -->
+<div class="mb-6">
+    <div class="bg-white rounded-2xl p-6 shadow-sm">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-2xl font-bold mb-2">
-                    Welcome back, 
+                <h1 class="text-2xl font-bold text-gray-900 mb-1">
+                    Hi, 
                     {% if request.user.borrower_profile %}
                         {{ request.user.borrower_profile.first_name }}
                     {% elif request.user.first_name %}
                         {{ request.user.first_name }}
                     {% else %}
-                        User
-                    {% endif %}!
+                        Friend
+                    {% endif %} 👋
                 </h1>
-                <p class="text-blue-100">Here's your loan portfolio and application status.</p>
+                <p class="text-gray-600 text-sm">Here's your financial snapshot today.</p>
             </div>
-            <div class="hidden md:block">
-                <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user text-3xl"></i>
-                </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-user text-blue-600 text-lg"></i>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loan Overview Card -->
+<div class="mb-6">
+    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold">Current Loan</h2>
+            <div class="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-wallet text-sm"></i>
+            </div>
+        </div>
+        
+        <!-- Loan Balance -->
+        <div class="mb-4">
+            <p class="text-blue-100 text-sm mb-1">Outstanding Balance</p>
+            <p class="text-3xl font-bold">₱18,500</p>
+        </div>
+        
+        <!-- Loan Details Grid -->
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                <p class="text-blue-100 text-xs mb-1">Next Payment</p>
+                <p class="font-semibold">₱850</p>
+            </div>
+            <div>
+                <p class="text-blue-100 text-xs mb-1">Due Date</p>
+                <p class="font-semibold">Oct 25, 2025</p>
+            </div>
+        </div>
+        
+        <!-- Status Badge -->
+        <div class="flex items-center justify-between">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-500 text-white">
+                <i class="fas fa-check-circle mr-1"></i>
+                Active
+            </span>
+            <button class="text-white text-sm font-medium hover:text-blue-100 transition-colors">
+                View Details →
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Quick Actions -->
-<div class="mb-8">
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-200 transition-colors group">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-blue-200">
-                    <i class="fas fa-plus text-blue-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-medium text-gray-900">Apply for Loan</p>
-                    <p class="text-sm text-gray-500">Start new application</p>
-                </div>
-            </a>
-
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-green-50 hover:border-green-200 transition-colors group">
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-green-200">
-                    <i class="fas fa-credit-card text-green-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-medium text-gray-900">Make Payment</p>
-                    <p class="text-sm text-gray-500">Pay loan installment</p>
-                </div>
-            </a>
-
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-purple-50 hover:border-purple-200 transition-colors group">
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-purple-200">
-                    <i class="fas fa-chart-line text-purple-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-medium text-gray-900">Credit Score</p>
-                    <p class="text-sm text-gray-500">Check your score</p>
-                </div>
-            </a>
-
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-orange-50 hover:border-orange-200 transition-colors group">
-                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4 group-hover:bg-orange-200">
-                    <i class="fas fa-headset text-orange-600 text-xl"></i>
-                </div>
-                <div>
-                    <p class="font-medium text-gray-900">Support</p>
-                    <p class="text-sm text-gray-500">Get help</p>
-                </div>
-            </a>
+<div class="mb-6">
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <!-- Make Payment -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-3">
+                <i class="fas fa-credit-card text-green-600 text-lg"></i>
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-1">Make Payment</h4>
+            <p class="text-xs text-gray-500">Pay your loan installment</p>
+        </div>
+        
+        <!-- Apply New Loan -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                <i class="fas fa-plus text-blue-600 text-lg"></i>
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-1">New Loan</h4>
+            <p class="text-xs text-gray-500">Apply for another loan</p>
+        </div>
+        
+        <!-- Payment History -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                <i class="fas fa-history text-purple-600 text-lg"></i>
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-1">History</h4>
+            <p class="text-xs text-gray-500">View payment history</p>
+        </div>
+        
+        <!-- Support -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+            <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mb-3">
+                <i class="fas fa-headset text-orange-600 text-lg"></i>
+            </div>
+            <h4 class="font-semibold text-gray-900 mb-1">Support</h4>
+            <p class="text-xs text-gray-500">Get help</p>
         </div>
     </div>
 </div>
 
-<!-- Key Metrics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <!-- Total Applications -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-600">Total Applications</p>
-                <p class="text-3xl font-bold text-gray-900">3</p>
-                <p class="text-sm text-blue-600 flex items-center mt-2">
-                    <i class="fas fa-file-alt mr-1"></i>
-                    1 pending review
-                </p>
+<!-- Payment Reminder (if due soon) -->
+<div class="mb-6">
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-4">
+        <div class="flex items-start space-x-3">
+            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
             </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-list-alt text-blue-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Active Loans -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-600">Active Loans</p>
-                <p class="text-3xl font-bold text-gray-900">2</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <i class="fas fa-check-circle mr-1"></i>
-                    All payments up to date
-                </p>
-            </div>
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-handshake text-green-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Borrowed -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-600">Total Borrowed</p>
-                <p class="text-3xl font-bold text-gray-900">$45,000</p>
-                <p class="text-sm text-purple-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    Across 2 loans
-                </p>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Credit Score -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-600">Credit Score</p>
-                <p class="text-3xl font-bold text-gray-900">742</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    +15 this month
-                </p>
-            </div>
-            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-chart-pie text-orange-600 text-xl"></i>
+            <div class="flex-1">
+                <h4 class="font-semibold text-red-900 mb-1">Payment Due Soon</h4>
+                <p class="text-sm text-red-700 mb-3">Your next payment of ₱850 is due in 3 days (Oct 25, 2025)</p>
+                <button class="bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition-colors">
+                    Pay Now
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Main Content Row -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <!-- Application Status -->
-    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Application Status</h3>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</a>
-        </div>
-        
-        <div class="space-y-4">
-            <!-- Application Item -->
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <h4 class="font-medium text-gray-900">Personal Loan Application</h4>
-                        <p class="text-sm text-gray-500">Applied on December 10, 2024</p>
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        Under Review
-                    </span>
-                </div>
-                <div class="mb-3">
-                    <div class="flex justify-between text-sm text-gray-600 mb-1">
-                        <span>Application Progress</span>
-                        <span>75%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-blue-600 h-2 rounded-full" style="width: 75%"></div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-gray-900">Amount: $25,000</span>
-                    <a href="#" class="text-sm text-blue-600 hover:underline">View Details</a>
-                </div>
-            </div>
-
-            <!-- Application Item -->
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <h4 class="font-medium text-gray-900">Business Loan Application</h4>
-                        <p class="text-sm text-gray-500">Applied on November 28, 2024</p>
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Approved
-                    </span>
-                </div>
-                <div class="mb-3">
-                    <div class="flex justify-between text-sm text-gray-600 mb-1">
-                        <span>Disbursement Progress</span>
-                        <span>100%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-600 h-2 rounded-full" style="width: 100%"></div>
-                    </div>
-                </div>
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-gray-900">Amount: $20,000</span>
-                    <a href="#" class="text-sm text-blue-600 hover:underline">View Loan Details</a>
-                </div>
-            </div>
-        </div>
+<!-- Recent Activity -->
+<div class="mb-6">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
+        <button class="text-sm text-blue-600 font-medium">View All</button>
     </div>
-
-    <!-- Upcoming Payments -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Upcoming Payments</h3>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</a>
+    
+    <div class="bg-white rounded-2xl shadow-sm divide-y divide-gray-100">
+        <!-- Activity Item -->
+        <div class="p-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-check text-green-600 text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <p class="font-medium text-gray-900 text-sm">Payment Successful</p>
+                <p class="text-xs text-gray-500">₱850 • Nov 27, 2024</p>
+            </div>
+            <p class="text-sm font-semibold text-gray-900">₱850</p>
         </div>
         
-        <div class="space-y-4">
-            <!-- Payment Item -->
-            <div class="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-red-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-red-900">Personal Loan</p>
-                        <p class="text-sm text-red-700">Due in 3 days</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-bold text-red-900">$850</p>
-                    <button class="text-xs text-red-600 hover:underline">Pay Now</button>
-                </div>
+        <!-- Activity Item -->
+        <div class="p-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-file-alt text-blue-600 text-sm"></i>
             </div>
-
-            <!-- Payment Item -->
-            <div class="flex items-center justify-between p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-clock text-yellow-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-yellow-900">Business Loan</p>
-                        <p class="text-sm text-yellow-700">Due in 12 days</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-bold text-yellow-900">$1,200</p>
-                    <button class="text-xs text-yellow-600 hover:underline">Schedule</button>
-                </div>
+            <div class="flex-1">
+                <p class="font-medium text-gray-900 text-sm">Loan Approved</p>
+                <p class="text-xs text-gray-500">Personal Loan • Nov 15, 2024</p>
             </div>
-
-            <!-- Payment Item -->
-            <div class="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-green-900">Auto Loan</p>
-                        <p class="text-sm text-green-700">Paid on time</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="font-bold text-green-900">$675</p>
-                    <span class="text-xs text-green-600">✓ Paid</span>
-                </div>
+            <p class="text-sm font-semibold text-gray-900">₱25,000</p>
+        </div>
+        
+        <!-- Activity Item -->
+        <div class="p-4 flex items-center space-x-3">
+            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-chart-line text-purple-600 text-sm"></i>
+            </div>
+            <div class="flex-1">
+                <p class="font-medium text-gray-900 text-sm">Credit Score Updated</p>
+                <p class="text-xs text-gray-500">Score: 742 (+15) • Nov 20, 2024</p>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-semibold text-purple-600">742</p>
+                <p class="text-xs text-green-600">+15</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Loan Portfolio and Recent Activity -->
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <!-- Active Loans Portfolio -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Active Loans</h3>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Manage All</a>
-        </div>
-        
-        <div class="space-y-4">
-            <!-- Loan Item -->
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <h4 class="font-medium text-gray-900">Personal Loan - BDO Bank</h4>
-                        <p class="text-sm text-gray-500">Loan ID: PL-2024-001</p>
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                    </span>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-500">Principal Amount</p>
-                        <p class="font-medium">$25,000</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500">Remaining</p>
-                        <p class="font-medium">$18,500</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500">Monthly Payment</p>
-                        <p class="font-medium">$850</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500">Next Due</p>
-                        <p class="font-medium text-red-600">Dec 18, 2024</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loan Item -->
-            <div class="border border-gray-200 rounded-lg p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <h4 class="font-medium text-gray-900">Business Loan - Metrobank</h4>
-                        <p class="text-sm text-gray-500">Loan ID: BL-2024-002</p>
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Active
-                    </span>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                        <p class="text-gray-500">Principal Amount</p>
-                        <p class="font-medium">$20,000</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500">Remaining</p>
-                        <p class="font-medium">$15,200</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500">Monthly Payment</p>
-                        <p class="font-medium">$1,200</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500">Next Due</p>
-                        <p class="font-medium text-yellow-600">Dec 27, 2024</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-900">Recent Activity</h3>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View History</a>
-        </div>
-        
-        <div class="space-y-4">
-            <!-- Activity Item -->
-            <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-check text-green-600 text-sm"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">Payment Successful</p>
-                    <p class="text-sm text-gray-600">Business loan payment of $1,200 processed</p>
-                    <p class="text-xs text-gray-500">November 27, 2024 at 2:30 PM</p>
-                </div>
-            </div>
-
-            <!-- Activity Item -->
-            <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-file-alt text-blue-600 text-sm"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">Application Submitted</p>
-                    <p class="text-sm text-gray-600">New personal loan application for $25,000</p>
-                    <p class="text-xs text-gray-500">November 25, 2024 at 10:15 AM</p>
-                </div>
-            </div>
-
-            <!-- Activity Item -->
-            <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-chart-line text-purple-600 text-sm"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">Credit Score Updated</p>
-                    <p class="text-sm text-gray-600">Your credit score increased to 742 (+15)</p>
-                    <p class="text-xs text-gray-500">November 20, 2024 at 8:00 AM</p>
-                </div>
-            </div>
-
-            <!-- Activity Item -->
-            <div class="flex items-start space-x-3">
-                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-handshake text-green-600 text-sm"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="text-sm font-medium text-gray-900">Loan Approved</p>
-                    <p class="text-sm text-gray-600">Business loan of $20,000 approved and disbursed</p>
-                    <p class="text-xs text-gray-500">November 15, 2024 at 3:45 PM</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Tips and Recommendations -->
-<div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-    <div class="flex items-start space-x-4">
-        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <i class="fas fa-lightbulb text-blue-600 text-xl"></i>
-        </div>
-        <div>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Tips to Improve Your Credit Score</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900 mb-2">Make Timely Payments</h4>
-                    <p class="text-sm text-gray-600">Pay all your loans on time to maintain a good credit history.</p>
-                </div>
-                <div class="bg-white rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900 mb-2">Keep Credit Utilization Low</h4>
-                    <p class="text-sm text-gray-600">Try to use less than 30% of your available credit limit.</p>
-                </div>
-                <div class="bg-white rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900 mb-2">Monitor Your Report</h4>
-                    <p class="text-sm text-gray-600">Regularly check your credit report for errors and disputes.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Add some interactivity to the dashboard
-    document.addEventListener('DOMContentLoaded', function() {
-        // Simulate real-time updates
-        setInterval(function() {
-            // You can add real-time data updates here
-            console.log('Borrower dashboard data refreshed');
-        }, 30000); // Refresh every 30 seconds
-        
-        // Add click handlers for quick actions
-        document.querySelectorAll('a[href="#"]').forEach(function(element) {
-            element.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('Action clicked:', this.textContent.trim());
-                // Add actual functionality here
-            });
-        });
-        
-        // Animate progress bars on page load
-        setTimeout(function() {
-            const progressBars = document.querySelectorAll('.bg-blue-600, .bg-green-600');
-            progressBars.forEach(function(bar) {
-                bar.style.transition = 'width 1s ease-in-out';
-            });
-        }, 500);
-    });
-</script>
+<!-- Bottom Spacing for Mobile -->
+<div class="h-20 md:h-8"></div>
 {% endblock %}

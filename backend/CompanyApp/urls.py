@@ -14,8 +14,7 @@ urlpatterns = [
     path('Reports/', views.reports, name='company-reports'),
     path('Settings/', views.settings, name='company-settings'),
 
-    #Logout Url
-    path('logout/', views.companyLogout, name='company-logout'),
+
 
     # Admin approval URLs
     path('admin/approve/<int:company_id>/', admin_views.approve_company, name='admin:company_approve'),

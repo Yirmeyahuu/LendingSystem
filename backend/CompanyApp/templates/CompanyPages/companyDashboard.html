@@ -29,7 +29,13 @@
             </div>
             <div class="hidden md:block">
                 <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <i class="fas fa-building text-3xl"></i>
+                    <span class="text-4xl font-bold text-green-700">
+                        {% if request.user.company_profile %}
+                            {{ request.user.company_profile.company_name|slice:":1"|upper }}
+                        {% else %}
+                            C
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>
@@ -43,11 +49,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Applications</p>
-                <p class="text-3xl font-bold text-gray-900">247</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    +12% from last month
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_applicants }}</p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-file-alt text-blue-600 text-xl"></i>
@@ -60,11 +62,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Active Loans</p>
-                <p class="text-3xl font-bold text-gray-900">183</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    +8% from last month
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ active_loans }}</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-handshake text-green-600 text-xl"></i>
@@ -77,11 +75,8 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Disbursed</p>
-                <p class="text-3xl font-bold text-gray-900">$2.4M</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    +15% from last month
-                </p>
+                <p class="text-3xl font-bold text-gray-900">₱{{ total_disbursed|floatformat:2 }}</p>
+                <!-- ...trend info... -->
             </div>
             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
@@ -94,11 +89,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Default Rate</p>
-                <p class="text-3xl font-bold text-gray-900">2.3%</p>
-                <p class="text-sm text-red-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-down mr-1"></i>
-                    -0.5% from last month
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ default_rate }}%</p>
             </div>
             <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
@@ -113,20 +104,15 @@
     <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900">Loan Applications Overview</h3>
-            <div class="flex space-x-2">
-                <button class="px-3 py-1 text-sm bg-green-100 text-green-600 rounded-lg">7 Days</button>
-                <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">30 Days</button>
-                <button class="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg">90 Days</button>
+            <div class="flex space-x-2" id="chart-range-buttons">
+                <button class="chart-range-btn px-3 py-1 text-sm bg-green-100 text-green-600 rounded-lg" data-range="7">7 Days</button>
+                <button class="chart-range-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-range="30">30 Days</button>
+                <button class="chart-range-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-range="90">90 Days</button>
             </div>
         </div>
         
-        <!-- Simple Chart Placeholder -->
-        <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <div class="text-center">
-                <i class="fas fa-chart-line text-4xl text-gray-400 mb-4"></i>
-                <p class="text-gray-500">Chart will be displayed here</p>
-                <p class="text-sm text-gray-400">Integration with Chart.js or similar library</p>
-            </div>
+        <div class="w-full min-h-64 h-[18rem] md:h-[22rem] lg:h-[28rem] bg-gray-50 rounded-lg flex items-center justify-center">
+            <canvas id="loanApplicationsChart" class="w-full h-full"></canvas>
         </div>
     </div>
 
@@ -134,23 +120,13 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
         <div class="space-y-4">
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <a href="#" id="open-loan-modal" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
                     <i class="fas fa-plus text-blue-600"></i>
                 </div>
                 <div>
                     <p class="font-medium text-gray-900">New Loan Product</p>
                     <p class="text-sm text-gray-500">Create a new loan offering</p>
-                </div>
-            </a>
-            
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-file-download text-green-600"></i>
-                </div>
-                <div>
-                    <p class="font-medium text-gray-900">Export Report</p>
-                    <p class="text-sm text-gray-500">Download monthly report</p>
                 </div>
             </a>
             
@@ -177,62 +153,32 @@
         </div>
         
         <div class="space-y-4">
-            <!-- Application Item -->
+            {% for app in recent_applications %}
             <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-medium text-blue-600">JD</span>
+                        <span class="text-sm font-medium text-blue-600">
+                            {{ app.borrower.first_name|slice:":1" }}{{ app.borrower.last_name|slice:":1" }}
+                        </span>
                     </div>
                     <div>
-                        <p class="font-medium text-gray-900">John Doe</p>
-                        <p class="text-sm text-gray-500">Personal Loan • $15,000</p>
+                        <p class="font-medium text-gray-900">{{ app.borrower.full_name }}</p>
+                        <p class="text-sm text-gray-500">{{ app.product_type|title }} • ${{ app.amount|floatformat:2 }}</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                        Pending
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if app.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif app.status == 'approved' %}bg-green-100 text-green-800
+                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {{ app.status|title }}
                     </span>
-                    <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ app.created_at|timesince }} ago</p>
                 </div>
             </div>
-
-            <!-- Application Item -->
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-medium text-green-600">SM</span>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-900">Sarah Miller</p>
-                        <p class="text-sm text-gray-500">Business Loan • $50,000</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                        Approved
-                    </span>
-                    <p class="text-xs text-gray-500 mt-1">1 day ago</p>
-                </div>
-            </div>
-
-            <!-- Application Item -->
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-medium text-purple-600">RJ</span>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-900">Robert Johnson</p>
-                        <p class="text-sm text-gray-500">Auto Loan • $25,000</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        Under Review
-                    </span>
-                    <p class="text-xs text-gray-500 mt-1">3 days ago</p>
-                </div>
-            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">No recent applications.</p>
+            {% endfor %}
         </div>
     </div>
 
@@ -244,41 +190,53 @@
         </div>
         
         <div class="space-y-4">
-            <!-- Alert Item -->
-            <div class="flex items-start space-x-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+            {% for notif in notifications %}
+            <div class="flex items-start space-x-3 p-4 
+                {% if notif.type == 'overdue' %}bg-red-50 border border-red-200
+                {% elif notif.type == 'new_application' %}bg-blue-50 border border-blue-200
+                {% elif notif.type == 'payment_received' %}bg-green-50 border border-green-200
+                {% else %}bg-gray-50 border border-gray-200{% endif %}
+                rounded-lg">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
+                    {% if notif.type == 'overdue' %}bg-red-100
+                    {% elif notif.type == 'new_application' %}bg-blue-100
+                    {% elif notif.type == 'payment_received' %}bg-green-100
+                    {% else %}bg-gray-100{% endif %}">
+                    {% if notif.type == 'overdue' %}
+                        <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
+                    {% elif notif.type == 'new_application' %}
+                        <i class="fas fa-info-circle text-blue-600 text-sm"></i>
+                    {% elif notif.type == 'payment_received' %}
+                        <i class="fas fa-check-circle text-green-600 text-sm"></i>
+                    {% else %}
+                        <i class="fas fa-bell text-gray-600 text-sm"></i>
+                    {% endif %}
                 </div>
                 <div>
-                    <p class="text-sm font-medium text-red-900">Payment Overdue</p>
-                    <p class="text-sm text-red-700">John Smith's payment is 15 days overdue</p>
-                    <p class="text-xs text-red-600 mt-1">2 hours ago</p>
+                    <p class="text-sm font-medium 
+                        {% if notif.type == 'overdue' %}text-red-900
+                        {% elif notif.type == 'new_application' %}text-blue-900
+                        {% elif notif.type == 'payment_received' %}text-green-900
+                        {% else %}text-gray-900{% endif %}">
+                        {{ notif.message }}
+                    </p>
+                    {% if notif.related_application %}
+                        <p class="text-sm text-gray-500">
+                            Related to: {{ notif.related_application.borrower.full_name }} • {{ notif.related_application.product_type|title }}
+                        </p>
+                    {% endif %}
+                    <p class="text-xs mt-1 
+                        {% if notif.type == 'overdue' %}text-red-600
+                        {% elif notif.type == 'new_application' %}text-blue-600
+                        {% elif notif.type == 'payment_received' %}text-green-600
+                        {% else %}text-gray-600{% endif %}">
+                        {{ notif.created_at|timesince }} ago
+                    </p>
                 </div>
             </div>
-
-            <!-- Alert Item -->
-            <div class="flex items-start space-x-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-info-circle text-blue-600 text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-blue-900">New Application</p>
-                    <p class="text-sm text-blue-700">New loan application requires review</p>
-                    <p class="text-xs text-blue-600 mt-1">4 hours ago</p>
-                </div>
-            </div>
-
-            <!-- Alert Item -->
-            <div class="flex items-start space-x-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <i class="fas fa-check-circle text-green-600 text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-green-900">Payment Received</p>
-                    <p class="text-sm text-green-700">$2,500 payment received from Lisa Chen</p>
-                    <p class="text-xs text-green-600 mt-1">1 day ago</p>
-                </div>
-            </div>
+            {% empty %}
+            <p class="text-gray-500 text-sm">No notifications.</p>
+            {% endfor %}
         </div>
     </div>
 </div>
@@ -291,7 +249,7 @@
         <!-- Approval Rate -->
         <div class="text-center">
             <div class="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <span class="text-2xl font-bold text-green-600">85%</span>
+                <span class="text-2xl font-bold text-green-600">{{ approval_rate }}%</span>
             </div>
             <h4 class="font-medium text-gray-900">Approval Rate</h4>
             <p class="text-sm text-gray-500">Applications approved this month</p>
@@ -300,7 +258,7 @@
         <!-- Average Processing Time -->
         <div class="text-center">
             <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <span class="text-2xl font-bold text-blue-600">2.5</span>
+                <span class="text-2xl font-bold text-blue-600">{{ avg_days }}</span>
             </div>
             <h4 class="font-medium text-gray-900">Avg. Processing</h4>
             <p class="text-sm text-gray-500">Days to process applications</p>
@@ -309,7 +267,7 @@
         <!-- Customer Satisfaction -->
         <div class="text-center">
             <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                <span class="text-2xl font-bold text-purple-600">4.8</span>
+                <span class="text-2xl font-bold text-purple-600">{{ satisfaction_score }}</span>
             </div>
             <h4 class="font-medium text-gray-900">Satisfaction Score</h4>
             <p class="text-sm text-gray-500">Average customer rating</p>

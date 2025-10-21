@@ -1,20 +1,40 @@
-{% load static %}
+{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Avendro - Lender Portal{% endblock %}</title>
+    <link rel="icon" href="{% static 'assets/img/Avendro.svg' %}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+
+
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    {% tailwind_css %}
     
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
+    <script>
+        window.loanApplicationsChartData = {{ chart_data|safe }};
+    </script>
+
+    <!-- External Scripts -->
+    <script src="{% static 'js/company/logoutModal.js' %}"></script>
+    <script src="{% static 'js/company/chart.js' %}"></script>
+    <script src="{% static 'js/company/dashboard.js' %}"></script>
+    <script src="{% static 'js/company/newLoanProduct.js' %}"></script>
+    <script src="{% static 'js/company/bulkModal.js' %}"></script>
+
+
+
     <style>
         * {
             font-family: 'Poppins', sans-serif;
@@ -91,22 +111,130 @@
         .burger-line {
             transition: all 0.3s ease-in-out;
         }
-        
         .burger-open .line1 {
-            transform: rotate(-45deg) translate(-5px, 6px);
+            transform: rotate(45deg) translate(4px, 4px);
         }
-        
         .burger-open .line2 {
             opacity: 0;
         }
-        
         .burger-open .line3 {
-            transform: rotate(45deg) translate(-5px, -6px);
+            transform: rotate(-45deg) translate(4px, -4px);
+        }
+
+        .modal-open {
+            overflow: hidden;
+            height: 100vh;
+            touch-action: none;
         }
     </style>
     
     {% block extra_css %}{% endblock %}
 </head>
+
+<!-- Global Notification-->
+{% if messages %}
+  {% for message in messages %}
+    <div id="django-message-{{ forloop.counter }}" class="p-4 mb-4 text-sm font-medium text-green-800 backdrop-blur-lg rounded-lg bg-green-200/80 border-2 border-green-300/60  fixed top-5 right-5 shadow-lg z-[9999]">
+      <span class="font-medium">{{ message.tags|title }}!</span> {{ message }}
+    </div>
+    <script>
+      setTimeout(function() {
+        var msg = document.getElementById("django-message-{{ forloop.counter }}");
+        if (msg) msg.style.display = "none";
+      }, 5000);
+    </script>
+  {% endfor %}
+{% endif %}
+
+
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal" class="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-xs bg-gray-900/80 bg-opacity-40 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-80">
+        <h2 class="text-lg font-semibold mb-2 text-gray-900">Confirm Logout</h2>
+        <p class="text-sm text-gray-600 mb-4">Are you sure you want to logout?</p>
+        <div class="flex justify-end space-x-2">
+            <button id="cancel-logout" class="px-4 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-100 hover:border-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Cancel</button>
+            <a id="confirm-logout" href="{% url 'company-logout' %}" class="px-4 py-2 rounded-lg bg-white border-2 font-medium border-rose-200 text-rose-700 hover:border-rose-500 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">Logout</a>
+        </div>
+    </div>
+</div>
+
+<!-- New Loan Product Modal -->
+<div id="new-loan-modal" class="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-xs bg-gray-900/80 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md mx-4">
+        <h2 class="text-xl font-bold mb-4 text-gray-900">Create New Loan Product</h2>
+        <form id="new-loan-form">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                <input type="text" name="product_name" class="w-full text-gray-700 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Minimum Amount</label>
+                <input type="number" name="min_amount" class="w-full text-gray-700 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Maximum Amount</label>
+                <input type="number" name="max_amount" class="w-full px-3 text-gray-700 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                <input type="number" step="0.01" name="interest_rate" class="w-full text-gray-700 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none" required>
+            </div>
+            <div class="flex justify-end space-x-2 mt-6">
+                <button type="button" id="cancel-loan-modal" class="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Cancel</button>
+                <button type="submit" class="px-4 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<!-- Bulk Actions Modal (Hidden by default) -->
+<div id="bulk-actions-modal" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 transition-opacity "></div>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div class="sm:flex sm:items-start">
+                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                    <i class="fas fa-tasks text-blue-600"></i>
+                </div>
+                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        Bulk Actions
+                    </h3>
+                    <div class="mt-2">
+                        <p class="text-sm text-gray-500">
+                            Select an action to apply to the selected applications.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-4">
+                <div class="space-y-3">
+                    <button class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm">
+                        <i class="fas fa-check mr-2"></i>
+                        Approve Selected
+                    </button>
+                    <button class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm">
+                        <i class="fas fa-times mr-2"></i>
+                        Reject Selected
+                    </button>
+                    <button class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                        <i class="fas fa-download mr-2"></i>
+                        Export Selected
+                    </button>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button type="button" onclick="hideBulkActionsModal()" class="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <body class="bg-gray-50 min-h-screen">
     <div class="flex h-screen">
         <!-- Desktop Sidebar -->
@@ -115,12 +243,12 @@
             <div class="flex items-center justify-center h-16 bg-gradient-to-r from-green-600 to-green-700">
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 flex items-center justify-center">
-                        <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain filter brightness-0 invert">
+                        <img src="{% static 'assets/img/Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
                     </div>
                     <span class="text-xl font-bold text-white">Avendro</span>
                 </div>
             </div>
-            
+           
             <!-- Company Info -->
             <div class="p-4 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
@@ -142,7 +270,7 @@
             
             <!-- Desktop Navigation Menu -->
             <nav class="flex-1 mt-4 px-4 space-y-2 overflow-y-auto">
-                <a href="{% url 'company-dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-dashboard' %}nav-item-active{% endif %}">
+                <a href="{% url 'company-dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-dashboard' %}nav-item-active{% endif %}">
                     <i class="fas fa-chart-pie mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Dashboard
                 </a>
@@ -152,22 +280,22 @@
                     Loan Applications
                 </a>
                 
-                <a href="{% url 'company-borrower-lists'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-borrower-lists' %}nav-item-active{% endif %}">
+                <a href="{% url 'company-borrower-lists'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-borrower-lists' %}nav-item-active{% endif %}">
                     <i class="fas fa-users mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Borrowers
                 </a>
                 
-                <a href="{% url 'company-active-loans'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-active-loans' %}nav-item-active{% endif %}">
+                <a href="{% url 'company-active-loans'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-active-loans' %}nav-item-active{% endif %}">
                     <i class="fas fa-file-contract mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Active Loans
                 </a>
                 
-                <a href="{% url 'company-reports'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-reports' %}nav-item-active{% endif %}">
+                <a href="{% url 'company-reports'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-reports' %}nav-item-active{% endif %}">
                     <i class="fas fa-chart-line mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Reports
                 </a>
                 
-                <a href="{% url 'company-settings'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-settings' %}nav-item-active{% endif %}">
+                <a href="{% url 'company-settings'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-settings' %}nav-item-active{% endif %}">
                     <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-green-600"></i>
                     Settings
                 </a>
@@ -175,8 +303,8 @@
             
             <!-- Desktop Bottom Menu -->
             <div class="p-4 border-t border-gray-200">
-                <a href="{% url 'company-logout' %}" onclick="return confirmLogout(event)" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-                    <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-red-600"></i>
+                <a href="#" onclick="showLogoutModal(event)" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-red-600 transition-all">
+                    <i class="fas fa-sign-out-alt mr-3 text-gray-400"></i>
                     Logout
                 </a>
             </div>
@@ -197,7 +325,7 @@
                     <!-- Mobile Logo -->
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 flex items-center justify-center">
-                            <img src="{% static 'Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
+                            <img src="{% static 'assets/img/Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
                         </div>
                         <span class="text-xl font-bold text-gray-900">Avendro</span>
                     </div>
@@ -263,7 +391,7 @@
                         
                         <!-- Mobile Logout -->
                         <div class="border-t border-gray-100 mt-2 pt-2">
-                            <a href="{% url 'company-logout' %}" onclick="return confirmLogout(event)" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-red-600 transition-all">
+                            <a href="#" onclick="showLogoutModal(event)" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-red-600 transition-all">
                                 <i class="fas fa-sign-out-alt mr-3 text-gray-400"></i>
                                 Logout
                             </a>
@@ -279,9 +407,13 @@
                     <nav class="flex" aria-label="Breadcrumb">
                         <ol class="inline-flex items-center space-x-1 md:space-x-3">
                             <li class="inline-flex items-center">
-                                <a href="{% url 'company-dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-green-600">
+                                <a href="{% url 'company-dashboard' %}" class="text-sm font-medium text-gray-900 truncate">
                                     <i class="fas fa-home mr-2"></i>
-                                    Dashboard
+                                    {% if request.user.company_profile %}
+                                        {{ request.user.company_profile.company_name }}
+                                    {% else %}
+                                        Company Name
+                                    {% endif %}
                                 </a>
                             </li>
                             {% block breadcrumb %}{% endblock %}
@@ -294,7 +426,6 @@
             </main>
         </div>
     </div>
-
 
     <script>
         // Confirmation dialog for logout
@@ -343,5 +474,7 @@
             }
         });
     </script>
+    
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

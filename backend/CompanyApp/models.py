@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
+from django.db import models
+from BorrowerApp.models import Borrower
 
 class Company(models.Model):
     ACCOUNT_TYPE_CHOICES = [
@@ -110,3 +112,33 @@ class Company(models.Model):
     def full_address(self):
         """Return formatted full address"""
         return f"{self.street_address}, {self.city}, {self.state} {self.postal_code}"
+    
+
+
+class LoanApplication(models.Model):
+    borrower = models.ForeignKey(Borrower, on_delete=models.CASCADE)
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    product_type = models.CharField(max_length=50)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    approved_date = models.DateTimeField(null=True, blank=True)
+    rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('review', 'Under Review')
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Notification(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    type = models.CharField(max_length=50)  # e.g., 'overdue', 'new_application', 'payment_received'
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    related_application = models.ForeignKey('LoanApplication', null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.type.title()} - {self.message[:30]}"

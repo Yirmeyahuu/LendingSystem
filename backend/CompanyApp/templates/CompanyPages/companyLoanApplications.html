@@ -39,11 +39,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Applications</p>
-                <p class="text-3xl font-bold text-gray-900">127</p>
-                <p class="text-sm text-blue-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    +12 this month
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_applications }}</p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-file-alt text-blue-600 text-xl"></i>
@@ -56,11 +52,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Pending Review</p>
-                <p class="text-3xl font-bold text-gray-900">23</p>
-                <p class="text-sm text-yellow-600 flex items-center mt-2">
-                    <i class="fas fa-clock mr-1"></i>
-                    Requires attention
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ pending_review }}</p>
             </div>
             <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-hourglass-half text-yellow-600 text-xl"></i>
@@ -73,11 +65,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Approved</p>
-                <p class="text-3xl font-bold text-gray-900">89</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <i class="fas fa-check-circle mr-1"></i>
-                    70% approval rate
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ approved }}</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-check-circle text-green-600 text-xl"></i>
@@ -90,11 +78,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Amount</p>
-                <p class="text-3xl font-bold text-gray-900">$2.3M</p>
-                <p class="text-sm text-purple-600 flex items-center mt-2">
-                    <i class="fas fa-dollar-sign mr-1"></i>
-                    In applications
-                </p>
+                <p class="text-3xl font-bold text-gray-900">₱{{ total_amount|floatformat:2 }}</p>
             </div>
             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-money-bill-wave text-purple-600 text-xl"></i>
@@ -113,47 +97,52 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
-                <input type="text" id="search" name="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by name, ID, or amount...">
+                <input type="text" id="search" name="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none text-gray-800 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by name, ID, or amount..." value="{{ search }}">
             </div>
         </div>
 
         <!-- Status Filter -->
         <div>
             <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select id="status" name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="status" name="status" class="text-gray-600 border-1 text-sm border-gray-300 p-2 rounded-lg">
                 <option value="">All Status</option>
-                <option value="pending">Pending Review</option>
-                <option value="under_review">Under Review</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-                <option value="disbursed">Disbursed</option>
+                <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending Review</option>
+                <option value="review" {% if status == 'review' %}selected{% endif %}>Under Review</option>
+                <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
+                <option value="disbursed" {% if status == 'disbursed' %}selected{% endif %}>Disbursed</option>
             </select>
         </div>
 
         <!-- Amount Range -->
         <div>
             <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Amount Range</label>
-            <select id="amount" name="amount" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="amount" name="amount" class="text-gray-600 border-1 text-sm border-gray-300 p-2 rounded-lg">
                 <option value="">All Amounts</option>
-                <option value="0-10000">$0 - $10,000</option>
-                <option value="10000-50000">$10,000 - $50,000</option>
-                <option value="50000-100000">$50,000 - $100,000</option>
-                <option value="100000+">$100,000+</option>
+                <option value="0-10000" {% if amount == '0-10000' %}selected{% endif %}>₱0 - ₱10,000</option>
+                <option value="10000-50000" {% if amount == '10000-50000' %}selected{% endif %}>₱10,000 - ₱50,000</option>
+                <option value="50000-100000" {% if amount == '50000-100000' %}selected{% endif %}>₱50,000 - ₱100,000</option>
+                <option value="100000+" {% if amount == '100000+' %}selected{% endif %}>₱100,000+</option>
             </select>
         </div>
     </div>
 
     <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-        <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-500">Showing 1-20 of 127 applications</span>
-        </div>
+        <span class="text-sm text-gray-500">
+            Showing <span class="font-medium">{{ page_obj.start_index }}</span>
+            to <span class="font-medium">{{ page_obj.end_index }}</span>
+            of <span class="font-medium">{{ paginator.count }}</span> applications
+        </span>
         <div class="flex items-center space-x-2">
-            <button class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                Clear Filters
-            </button>
-            <button class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
-                Apply Filters
-            </button>
+            <form method="get" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- ...filters... -->
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+                    Apply Filters
+                </button>
+                <a href="{% url 'company-loan-applications' %}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Clear Filters
+                </a>
+            </form>
         </div>
     </div>
 </div>
@@ -163,14 +152,11 @@
     <div class="px-6 py-4 border-b border-gray-200">
         <h3 class="text-lg font-semibold text-gray-900">Recent Applications</h3>
     </div>
-    
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
+
             <thead class="bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Applicant
                     </th>
@@ -187,302 +173,69 @@
                         Applied Date
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Credit Score
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                     </th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                <!-- Application Row 1 -->
+                {% for app in applications %}
                 <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <span class="text-blue-600 font-medium">JD</span>
+                                <span class="text-blue-600 font-medium">
+                                    {{ app.borrower.first_name|slice:":1" }}{{ app.borrower.last_name|slice:":1" }}
+                                </span>
                             </div>
                             <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">John Doe</div>
-                                <div class="text-sm text-gray-500">john.doe@email.com</div>
+                                <div class="text-sm font-medium text-gray-900">{{ app.borrower.full_name }}</div>
+                                <div class="text-sm text-gray-500">{{ app.borrower.user.email }}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Personal Loan</div>
-                        <div class="text-sm text-gray-500">36 months • 8.5% APR</div>
+                        <div class="text-sm text-gray-900">{{ app.product_type|title }}</div>
+                        <!-- Add more loan details if available -->
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$25,000</div>
-                        <div class="text-sm text-gray-500">Monthly: $850</div>
+                        <div class="text-sm font-medium text-gray-900">₱{{ app.amount|floatformat:2 }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-clock mr-1"></i>
-                            Pending Review
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if app.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif app.status == 'approved' %}bg-green-100 text-green-800
+                            {% elif app.status == 'review' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ app.status|title }}
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Dec 15, 2024
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="text-sm font-medium text-green-600">742</div>
-                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: 74%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="Review Application">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Approve">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900" title="Reject">
-                                <i class="fas fa-times"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Application Row 2 -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                                <span class="text-purple-600 font-medium">MS</span>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">Maria Santos</div>
-                                <div class="text-sm text-gray-500">maria.santos@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Business Loan</div>
-                        <div class="text-sm text-gray-500">60 months • 7.2% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$150,000</div>
-                        <div class="text-sm text-gray-500">Monthly: $2,980</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <i class="fas fa-search mr-1"></i>
-                            Under Review
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Dec 14, 2024
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="text-sm font-medium text-yellow-600">680</div>
-                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                                <div class="bg-yellow-600 h-2 rounded-full" style="width: 68%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="Review Application">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Approve">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900" title="Reject">
-                                <i class="fas fa-times"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Application Row 3 -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                <span class="text-green-600 font-medium">AR</span>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">Alex Rodriguez</div>
-                                <div class="text-sm text-gray-500">alex.rodriguez@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Auto Loan</div>
-                        <div class="text-sm text-gray-500">48 months • 5.9% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$35,000</div>
-                        <div class="text-sm text-gray-500">Monthly: $825</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            Approved
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Dec 13, 2024
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="text-sm font-medium text-green-600">789</div>
-                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: 78%"></div>
-                            </div>
-                        </div>
+                        {{ app.created_at|date:"M d, Y" }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
                             <button class="text-green-600 hover:text-green-900" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Disburse">
-                                <i class="fas fa-money-bill-wave"></i>
+                            {% if app.status == 'pending' or app.status == 'review' %}
+                            <button class="text-blue-600 hover:text-blue-900" title="Approve">
+                                <i class="fas fa-check"></i>
                             </button>
-                            <button class="text-purple-600 hover:text-purple-900" title="Download Documents">
-                                <i class="fas fa-download"></i>
+                            <button class="text-red-600 hover:text-red-900" title="Reject">
+                                <i class="fas fa-times"></i>
                             </button>
+                            {% endif %}
                             <button class="text-gray-600 hover:text-gray-900" title="More Actions">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
-
-                <!-- Application Row 4 -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                <span class="text-red-600 font-medium">SM</span>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">Sarah Miller</div>
-                                <div class="text-sm text-gray-500">sarah.miller@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Personal Loan</div>
-                        <div class="text-sm text-gray-500">24 months • 12.5% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$10,000</div>
-                        <div class="text-sm text-gray-500">Monthly: $475</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-times-circle mr-1"></i>
-                            Rejected
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Dec 12, 2024
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="text-sm font-medium text-red-600">580</div>
-                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                                <div class="bg-red-600 h-2 rounded-full" style="width: 58%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Details">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Send Feedback">
-                                <i class="fas fa-envelope"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="Archive">
-                                <i class="fas fa-archive"></i>
-                            </button>
-                        </div>
-                    </td>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-6 py-4 text-center text-gray-500">No applications found.</td>
                 </tr>
-
-                <!-- Application Row 5 -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
-                                <span class="text-indigo-600 font-medium">DW</span>
-                            </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">David Wilson</div>
-                                <div class="text-sm text-gray-500">david.wilson@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Home Loan</div>
-                        <div class="text-sm text-gray-500">360 months • 4.2% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$350,000</div>
-                        <div class="text-sm text-gray-500">Monthly: $1,720</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                            <i class="fas fa-money-bill-wave mr-1"></i>
-                            Disbursed
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        Dec 10, 2024
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="text-sm font-medium text-green-600">798</div>
-                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-600 h-2 rounded-full" style="width: 80%"></div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Loan">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Loan Management">
-                                <i class="fas fa-cog"></i>
-                            </button>
-                            <button class="text-purple-600 hover:text-purple-900" title="Payment Schedule">
-                                <i class="fas fa-calendar-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -490,89 +243,45 @@
     <!-- Pagination -->
     <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
         <div class="flex-1 flex justify-between sm:hidden">
-            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 Previous
             </a>
-            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
                 Next
             </a>
+            {% endif %}
         </div>
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">1</span> to <span class="font-medium">20</span> of <span class="font-medium">127</span> results
+                    Showing <span class="font-medium">{{ page_obj.start_index }}</span>
+                    to <span class="font-medium">{{ page_obj.end_index }}</span>
+                    of <span class="font-medium">{{ paginator.count }}</span> results
                 </p>
             </div>
             <div>
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                         <i class="fas fa-chevron-left"></i>
                     </a>
-                    <a href="#" aria-current="page" class="z-10 bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        1
-                    </a>
-                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        2
-                    </a>
-                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        3
-                    </a>
-                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        ...
-                    </span>
-                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        7
-                    </a>
-                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <a href="?page={{ num }}" aria-current="page" class="z-10 bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <a href="?page={{ num }}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
                         <i class="fas fa-chevron-right"></i>
                     </a>
+                    {% endif %}
                 </nav>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Bulk Actions Modal (Hidden by default) -->
-<div id="bulk-actions-modal" class="fixed inset-0 z-50 hidden overflow-y-auto">
-    <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
-        
-        <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-            <div class="sm:flex sm:items-start">
-                <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                    <i class="fas fa-tasks text-blue-600"></i>
-                </div>
-                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">
-                        Bulk Actions
-                    </h3>
-                    <div class="mt-2">
-                        <p class="text-sm text-gray-500">
-                            Select an action to apply to the selected applications.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-5 sm:mt-4">
-                <div class="space-y-3">
-                    <button class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:text-sm">
-                        <i class="fas fa-check mr-2"></i>
-                        Approve Selected
-                    </button>
-                    <button class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm">
-                        <i class="fas fa-times mr-2"></i>
-                        Reject Selected
-                    </button>
-                    <button class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
-                        <i class="fas fa-download mr-2"></i>
-                        Export Selected
-                    </button>
-                </div>
-                <div class="mt-4 flex justify-end">
-                    <button type="button" onclick="hideBulkActionsModal()" class="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:text-sm">
-                        Cancel
-                    </button>
-                </div>
             </div>
         </div>
     </div>
@@ -652,7 +361,7 @@
             
             // Amount filter (simplified)
             if (amountFilter) {
-                const numAmount = parseFloat(amount.replace(/[$,]/g, ''));
+                const numAmount = parseFloat(amount.replace(/[₱,]/g, ''));
                 switch(amountFilter) {
                     case '0-10000':
                         if (numAmount > 10000) showRow = false;
@@ -692,7 +401,7 @@
     function updateBulkActionsVisibility() {
         const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
         // You can add bulk actions toolbar here if needed
-        console.log(`${checkedBoxes.length} applications selected`);
+        console.log(`₱{checkedBoxes.length} applications selected`);
     }
     
     function showBulkActionsModal() {

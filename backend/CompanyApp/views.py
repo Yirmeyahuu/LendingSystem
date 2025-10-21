@@ -7,27 +7,66 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 import json
-from .models import Company
+from BorrowerApp.models import Borrower
+from CompanyApp.models import Company, LoanApplication, Notification
+from django.utils import timezone
+from django.db.models import Count, Avg, Q
+import datetime
+from django.db import models
+from django.core.paginator import Paginator
 
-
-
-# Create your views here.
 @company_required
 def companyDashboard(request):
-    return render(request, 'CompanyPages/companyDashboard.html')
+    company = request.user.company_profile
+    total_applicants = Borrower.objects.filter(is_active=True).count()
+    active_loans = 0
+    total_disbursed = 0
+    default_rate = 0
 
-def companyLogout(request):
-    if request.user.is_authenticated:
-        # Check if user is a company before logging out
-        if hasattr(request.user, 'company_profile'):
-            company_name = request.user.company_profile.company_name
-            logout(request)
-            messages.success(request, f"Goodbye {company_name}! You have been logged out successfully.")
-        else:
-            logout(request)
-            messages.success(request, "You have been logged out successfully.")
-    
-    return redirect('landing-page')  # Redirect to login page
+    # Fetch recent applications for this company
+    recent_applications = LoanApplication.objects.filter(company=company).order_by('-created_at')[:5]
+    notifications = Notification.objects.filter(company=company).order_by('-created_at')[:5]
+
+    # --- Monthly Performance Summary ---
+    today = timezone.now()
+    month_start = today.replace(day=1)
+    applications_this_month = LoanApplication.objects.filter(
+        company=company,
+        created_at__gte=month_start
+    )
+    total_this_month = applications_this_month.count()
+    approved_this_month = applications_this_month.filter(status='approved').count()
+    approval_rate = round((approved_this_month / total_this_month * 100), 2) if total_this_month else 0
+
+    # Average Processing Time (days)
+    approved_apps = applications_this_month.filter(status='approved', approved_date__isnull=False)
+    avg_processing = approved_apps.annotate(
+        proc_time=(
+            models.ExpressionWrapper(
+                models.F('approved_date') - models.F('created_at'),
+                output_field=models.DurationField()
+            )
+        )
+    ).aggregate(avg_days=Avg('proc_time'))
+    avg_days = avg_processing['avg_days'].days if avg_processing['avg_days'] else 0
+    avg_days = round(avg_days, 1)
+
+    # Satisfaction Score
+    satisfaction_score = applications_this_month.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
+    satisfaction_score = round(satisfaction_score, 1)
+
+    context = {
+        'total_applicants': total_applicants,
+        'active_loans': active_loans,
+        'total_disbursed': total_disbursed,
+        'default_rate': default_rate,
+        'recent_applications': recent_applications,
+        'notifications': notifications,
+        'approval_rate': approval_rate,
+        'avg_days': avg_days,
+        'satisfaction_score': satisfaction_score,
+    }
+    return render(request, 'CompanyPages/companyDashboard.html', context)
 
 def companyRegistration(request):
     if request.method == 'POST':
@@ -153,8 +192,67 @@ def companyRegistration(request):
 def companyRegistrationSuccess(request):
     return render(request, 'RegistrationSuccess/registrationSuccess.html')
 
+
+
+@company_required
 def loanApplication(request):
-    return render(request, 'CompanyPages/companyLoanApplications.html')
+    company = request.user.company_profile
+
+    # Get filter parameters
+    search = request.GET.get('search', '').strip()
+    status = request.GET.get('status', '')
+    amount = request.GET.get('amount', '')
+
+    # Base queryset
+    applications_qs = LoanApplication.objects.filter(company=company).select_related('borrower')
+
+    # Search by name, email, or amount
+    if search:
+        applications_qs = applications_qs.filter(
+            Q(borrower__full_name__icontains=search) |
+            Q(borrower__user__email__icontains=search) |
+            Q(amount__icontains=search)
+        )
+
+    # Filter by status
+    if status:
+        applications_qs = applications_qs.filter(status=status)
+
+    # Filter by amount range
+    if amount:
+        if amount == '0-10000':
+            applications_qs = applications_qs.filter(amount__gte=0, amount__lte=10000)
+        elif amount == '10000-50000':
+            applications_qs = applications_qs.filter(amount__gt=10000, amount__lte=50000)
+        elif amount == '50000-100000':
+            applications_qs = applications_qs.filter(amount__gt=50000, amount__lte=100000)
+        elif amount == '100000+':
+            applications_qs = applications_qs.filter(amount__gt=100000)
+
+    # Statistics (use filtered queryset for count if you want)
+    total_applications = LoanApplication.objects.filter(company=company).count()
+    pending_review = LoanApplication.objects.filter(company=company, status='pending').count()
+    approved = LoanApplication.objects.filter(company=company, status='approved').count()
+    total_amount = LoanApplication.objects.filter(company=company).aggregate(total=models.Sum('amount'))['total'] or 0
+
+    # Pagination
+    paginator = Paginator(applications_qs.order_by('-created_at'), 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'total_applications': total_applications,
+        'pending_review': pending_review,
+        'approved': approved,
+        'total_amount': total_amount,
+        'page_obj': page_obj,
+        'applications': page_obj.object_list,
+        'paginator': paginator,
+        'search': search,
+        'status': status,
+        'amount': amount,
+    }
+    return render(request, 'CompanyPages/companyLoanApplications.html', context)
 
 def borrowerLists(request):
     return render(request, 'CompanyPages/companyBorrowerLists.html')
