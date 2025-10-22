@@ -22,8 +22,9 @@ db.sqlite3
 
 # Node and frontend build artifacts
 node_modules/
-dist/
 build/
+# Allow CSS dist folder to be tracked
+!backend/theme/static/css/dist/
 
 # MacOS and system files
 .DS_Store
