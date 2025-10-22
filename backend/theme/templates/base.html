@@ -5,16 +5,29 @@
 <html lang="en">
 <head>
     <title>{% block title %}Avendro{% endblock title%}</title>
+    {% tailwind_css %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    
     <link rel="icon" href="{% static 'assets/img/Avendro.svg' %}">
-
-    {% tailwind_css %}
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Basic Open Graph tags -->
+    <meta property="og:title" content="Avendro Web Application" />
+    <meta property="og:description" content="A Tech-driven Lending Platform." />
+    <meta property="og:image" content="https://avendrobcd.onrender.com/static/assets/img/avendro-bg.png" />
+    <meta property="og:url" content="https://avendrobcd.onrender.com/" />
+    <meta property="og:type" content="website" />
+
+    <!-- Optional for Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Avendro Web Application" />
+    <meta name="twitter:description" content="A Tech-driven Lending Platform." />
+    <meta name="twitter:image" content="https://avendrobcd.onrender.com/static/assets/img/avendro-bg.png" />
+    
+
     
 
 </head>
