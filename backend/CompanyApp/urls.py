@@ -2,9 +2,7 @@ from django.urls import path
 from . import views, admin_views
 
 urlpatterns = [
-    #Urls of Company Registration
-    path('Registration/', views.companyRegistration, name='company-registration'),
-    path('RegistrationSuccess/', views.companyRegistrationSuccess, name='company-registration-success'),
+
 
     #Urls of Company Content
     path('Dashboard/', views.companyDashboard, name='company-dashboard'),
