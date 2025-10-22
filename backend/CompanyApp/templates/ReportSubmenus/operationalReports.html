@@ -1,0 +1,65 @@
+{% extends 'Company/companyBase.html' %}
+
+{% block title %}Operational Reports - Avendro{% endblock %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+        <span class="ml-1 text-sm font-medium text-gray-500">Operational Reports</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Key Operational Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 text-center">
+            <div class="text-xs text-gray-500 mb-1">Team Members</div>
+            <div class="text-2xl font-bold text-gray-900">{{ team_members }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 text-center">
+            <div class="text-xs text-gray-500 mb-1">Avg. Processing Time</div>
+            <div class="text-2xl font-bold text-blue-600">{{ avg_processing_days }} days</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 text-center">
+            <div class="text-xs text-gray-500 mb-1">Loans Processed</div>
+            <div class="text-2xl font-bold text-gray-900">{{ loans_processed }}</div>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 text-center">
+            <div class="text-xs text-gray-500 mb-1">Client Acquisition Cost</div>
+            <div class="text-2xl font-bold text-green-600">₱{{ client_acquisition_cost|floatformat:2 }}</div>
+        </div>
+    </div>
+
+    <!-- Team Performance Table -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Team Performance</h2>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team Member</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loans Processed</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg. Processing Time</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y text-gray-600 divide-gray-200">
+                    {% for member in team_performance %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ member.name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ member.loans_processed }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">{{ member.avg_processing_days }} days</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center text-gray-500 py-4">No data found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

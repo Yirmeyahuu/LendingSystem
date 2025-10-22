@@ -37,17 +37,14 @@
 </div>
 
 <!-- Statistics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 mb-8">
     <!-- Total Active Loans -->
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Active Loans</p>
-                <p class="text-3xl font-bold text-gray-900">847</p>
-                <p class="text-sm text-blue-600 flex items-center mt-2">
-                    <i class="fas fa-arrow-up mr-1"></i>
-                    +15 this month
-                </p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_active_loans }}</p>
+                <!-- You can add a monthly change if you calculate it -->
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-file-contract text-blue-600 text-xl"></i>
@@ -55,53 +52,19 @@
         </div>
     </div>
 
-    <!-- Total Portfolio Value -->
+    <!-- Portfolio Value -->
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Portfolio Value</p>
-                <p class="text-3xl font-bold text-gray-900">$18.2M</p>
+                <p class="text-3xl font-bold text-gray-900">₱{{ portfolio_value|floatformat:2 }}</p>
                 <p class="text-sm text-green-600 flex items-center mt-2">
                     <i class="fas fa-chart-line mr-1"></i>
                     Outstanding balance
                 </p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Monthly Collections -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-600">Monthly Collections</p>
-                <p class="text-3xl font-bold text-gray-900">$865K</p>
-                <p class="text-sm text-purple-600 flex items-center mt-2">
-                    <i class="fas fa-calendar mr-1"></i>
-                    Expected this month
-                </p>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-coins text-purple-600 text-xl"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Overdue Loans -->
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm font-medium text-gray-600">Overdue Loans</p>
-                <p class="text-3xl font-bold text-gray-900">23</p>
-                <p class="text-sm text-red-600 flex items-center mt-2">
-                    <i class="fas fa-exclamation-triangle mr-1"></i>
-                    Requires attention
-                </p>
-            </div>
-            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <i class="fas fa-clock text-red-600 text-xl"></i>
+                <i class="fas fa-coins text-green-600 text-xl"></i>
             </div>
         </div>
     </div>
@@ -113,7 +76,7 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">Loan Performance</h3>
-            <select class="text-sm border border-gray-300 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <select class="text-sm border border-gray-300 text-gray-800 rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500">
                 <option>Last 30 days</option>
                 <option>Last 90 days</option>
                 <option>Last 6 months</option>
@@ -128,35 +91,33 @@
                     <span class="text-sm text-gray-600">On-time Payments</span>
                 </div>
                 <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900 mr-2">92.5%</span>
+                    <span class="text-sm font-medium text-gray-900 mr-2">{{ on_time_pct }}%</span>
                     <div class="w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-green-500 h-2 rounded-full" style="width: 92.5%"></div>
+                        <div class="bg-green-500 h-2 rounded-full" style="width: {{ on_time_pct }}%"></div>
                     </div>
                 </div>
             </div>
-            <!-- Late Payments -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
                     <span class="text-sm text-gray-600">Late Payments</span>
                 </div>
                 <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900 mr-2">5.8%</span>
+                    <span class="text-sm font-medium text-gray-900 mr-2">{{ late_pct }}%</span>
                     <div class="w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 5.8%"></div>
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: {{ late_pct }}%"></div>
                     </div>
                 </div>
             </div>
-            <!-- Missed Payments -->
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div class="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
                     <span class="text-sm text-gray-600">Missed Payments</span>
                 </div>
                 <div class="flex items-center">
-                    <span class="text-sm font-medium text-gray-900 mr-2">1.7%</span>
+                    <span class="text-sm font-medium text-gray-900 mr-2">{{ missed_pct }}%</span>
                     <div class="w-32 bg-gray-200 rounded-full h-2">
-                        <div class="bg-red-500 h-2 rounded-full" style="width: 1.7%"></div>
+                        <div class="bg-red-500 h-2 rounded-full" style="width: {{ missed_pct }}%"></div>
                     </div>
                 </div>
             </div>
@@ -170,150 +131,127 @@
             <button class="text-sm text-green-600 hover:text-green-700">View Details</button>
         </div>
         <div class="space-y-4">
-            <!-- Personal Loans -->
+            {% for item in distribution %}
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-user text-blue-600 text-sm"></i>
+                    <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
+                        {% if item.icon == 'personal_loans' %}
+                            <i class="fas fa-user text-blue-600 text-sm"></i>
+                        {% elif item.icon == 'auto_loans' %}
+                            <i class="fas fa-car text-green-600 text-sm"></i>
+                        {% elif item.icon == 'business_loans' %}
+                            <i class="fas fa-briefcase text-purple-600 text-sm"></i>
+                        {% elif item.icon == 'home_loans' %}
+                            <i class="fas fa-home text-orange-600 text-sm"></i>
+                        {% elif item.icon == 'salary_loans' %}
+                            <i class="fas fa-money-bill-wave text-indigo-600 text-sm"></i>
+                        {% elif item.icon == 'payday_loans' %}
+                            <i class="fas fa-calendar-day text-pink-600 text-sm"></i>
+                        {% endif %}
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-gray-900">Personal Loans</p>
-                        <p class="text-xs text-gray-500">425 loans</p>
+                        <p class="text-sm font-medium text-gray-900">{{ item.label }}</p>
+                        <p class="text-xs text-gray-500">{{ item.count }} loans</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900">$8.5M</p>
-                    <p class="text-xs text-gray-500">46.7%</p>
+                    <p class="text-sm font-medium text-gray-900">₱{{ item.amount|floatformat:2 }}</p>
+                    <p class="text-xs text-gray-500">{{ item.percent }}%</p>
                 </div>
             </div>
-            <!-- Auto Loans -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-car text-green-600 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Auto Loans</p>
-                        <p class="text-xs text-gray-500">238 loans</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900">$5.2M</p>
-                    <p class="text-xs text-gray-500">28.6%</p>
-                </div>
-            </div>
-            <!-- Business Loans -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-briefcase text-purple-600 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Business Loans</p>
-                        <p class="text-xs text-gray-500">127 loans</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900">$3.8M</p>
-                    <p class="text-xs text-gray-500">20.9%</p>
-                </div>
-            </div>
-            <!-- Home Loans -->
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-home text-orange-600 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-900">Home Loans</p>
-                        <p class="text-xs text-gray-500">57 loans</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900">$700K</p>
-                    <p class="text-xs text-gray-500">3.8%</p>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 </div>
 
-<!-- Search and Filters -->
-<div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+<!-- Search and Filters Form -->
+<form method="get" class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
     <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
         <!-- Search -->
         <div class="md:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Loans</label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-search text-gray-400"></i>
-                </div>
-                <input type="text" id="search" name="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by borrower, loan ID, or amount...">
-            </div>
+            <input type="text" id="search" name="search" value="{{ search }}" class="block w-full pl-10 pr-3 py-2 border border-gray-300 text-gray-800 rounded-lg" placeholder="Search by borrower, loan ID, or amount...">
         </div>
-
         <!-- Loan Type -->
         <div>
             <label for="loanType" class="block text-sm font-medium text-gray-700 mb-2">Loan Type</label>
-            <select id="loanType" name="loanType" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="loanType" name="loanType" class="block w-full px-3 py-2 border border-gray-300 text-gray-800 rounded-lg">
                 <option value="">All Types</option>
-                <option value="personal">Personal</option>
-                <option value="auto">Auto</option>
-                <option value="business">Business</option>
-                <option value="home">Home</option>
+                {% for item in distribution %}
+                <option value="{{ key }}" {% if loan_type == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
             </select>
         </div>
-
         <!-- Payment Status -->
         <div>
             <label for="paymentStatus" class="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
-            <select id="paymentStatus" name="paymentStatus" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="paymentStatus" name="paymentStatus" class="block w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-lg">
                 <option value="">All Status</option>
-                <option value="current">Current</option>
-                <option value="late">Late</option>
-                <option value="overdue">Overdue</option>
-                <option value="grace">Grace Period</option>
+                <option value="current" {% if payment_status == 'current' %}selected{% endif %}>Current</option>
+                <option value="late" {% if payment_status == 'late' %}selected{% endif %}>Late</option>
+                <option value="overdue" {% if payment_status == 'overdue' %}selected{% endif %}>Overdue</option>
+                <option value="grace" {% if payment_status == 'grace' %}selected{% endif %}>Grace Period</option>
             </select>
         </div>
-
         <!-- Amount Range -->
         <div>
             <label for="amountRange" class="block text-sm font-medium text-gray-700 mb-2">Amount Range</label>
-            <select id="amountRange" name="amountRange" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="amountRange" name="amountRange" class="block w-full px-3 py-2 text-gray-800 border border-gray-300 rounded-lg">
                 <option value="">All Amounts</option>
-                <option value="0-25000">$0 - $25,000</option>
-                <option value="25000-100000">$25,000 - $100,000</option>
-                <option value="100000-500000">$100,000 - $500,000</option>
-                <option value="500000+">$500,000+</option>
+                <option value="0-25000" {% if amount_range == '0-25000' %}selected{% endif %}>₱0 - ₱25,000</option>
+                <option value="25000-100000" {% if amount_range == '25000-100000' %}selected{% endif %}>₱25,000 - ₱100,000</option>
+                <option value="100000-500000" {% if amount_range == '100000-500000' %}selected{% endif %}>₱100,000 - ₱500,000</option>
+                <option value="500000+" {% if amount_range == '500000+' %}selected{% endif %}>₱500,000+</option>
             </select>
         </div>
-
         <!-- Date Range -->
         <div>
             <label for="dateRange" class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
-            <select id="dateRange" name="dateRange" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="dateRange" name="dateRange" class="block w-full px-3 py-2 border text-gray-800 border-gray-300 rounded-lg">
                 <option value="">All Dates</option>
-                <option value="last-30">Last 30 days</option>
-                <option value="last-90">Last 90 days</option>
-                <option value="last-year">Last year</option>
-                <option value="custom">Custom range</option>
+                <option value="last-30" {% if date_range == 'last-30' %}selected{% endif %}>Last 30 days</option>
+                <option value="last-90" {% if date_range == 'last-90' %}selected{% endif %}>Last 90 days</option>
+                <option value="last-year" {% if date_range == 'last-year' %}selected{% endif %}>Last year</option>
+                <option value="custom" {% if date_range == 'custom' %}selected{% endif %}>Custom range</option>
             </select>
         </div>
     </div>
-
     <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
         <div class="flex items-center space-x-4">
-            <span class="text-sm text-gray-500">Showing 1-20 of 847 active loans</span>
+            <span class="text-sm text-gray-500">Showing {{ start_index }}-{{ end_index }} of {{ paginator.count }} active loans</span>
         </div>
         <div class="flex items-center space-x-2">
-            <button class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+            <a href="{% url 'company-active-loans' %}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 Clear Filters
-            </button>
-            <button class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+            </a>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
                 Apply Filters
             </button>
         </div>
     </div>
+</form>
+
+<!-- Pagination Controls -->
+<div class="flex justify-center mt-6">
+    <nav class="inline-flex -space-x-px">
+        {% if has_previous %}
+            <a href="?page={{ previous_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-l-lg">
+                Previous
+            </a>
+        {% endif %}
+        {% for num in paginator.page_range %}
+            {% if num == current_page %}
+                <span class="px-3 py-2 border border-green-500 bg-green-50 text-green-600">{{ num }}</span>
+            {% elif num >= current_page|add:'-2' and num <= current_page|add:'2' %}
+                <a href="?page={{ num }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if has_next %}
+            <a href="?page={{ next_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-r-lg">
+                Next
+            </a>
+        {% endif %}
+    </nav>
 </div>
 
 <!-- Active Loans Table -->
@@ -366,7 +304,7 @@
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                <!-- Loan Row 1 -->
+                {% for loan in loans %}
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
@@ -374,55 +312,84 @@
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-user text-blue-600"></i>
+                                {% if loan.product_type == 'personal_loans' %}
+                                    <i class="fas fa-user text-blue-600"></i>
+                                {% elif loan.product_type == 'auto_loans' %}
+                                    <i class="fas fa-car text-green-600"></i>
+                                {% elif loan.product_type == 'business_loans' %}
+                                    <i class="fas fa-briefcase text-purple-600"></i>
+                                {% elif loan.product_type == 'home_loans' %}
+                                    <i class="fas fa-home text-orange-600"></i>
+                                {% elif loan.product_type == 'salary_loans' %}
+                                    <i class="fas fa-money-bill-wave text-indigo-600"></i>
+                                {% elif loan.product_type == 'payday_loans' %}
+                                    <i class="fas fa-calendar-day text-pink-600"></i>
+                                {% endif %}
                             </div>
                             <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Personal Loan</div>
-                                <div class="text-sm text-gray-500">LN-2024-001</div>
+                                <div class="text-sm font-medium text-gray-900">{{ loan.get_product_type_display }}</div>
+                                <div class="text-sm text-gray-500">LN-{{ loan.id|stringformat:"06d" }}</div>
                             </div>
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-gray-600 text-xs font-medium">JD</span>
+                                <span class="text-gray-600 text-xs font-medium">
+                                    {{ loan.borrower.first_name|slice:":1" }}{{ loan.borrower.last_name|slice:":1" }}
+                                </span>
                             </div>
                             <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">John Doe</div>
-                                <div class="text-sm text-gray-500">john.doe@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$25,000</div>
-                        <div class="text-sm text-gray-500">36 months • 8.5% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$18,430</div>
-                        <div class="text-sm text-gray-500">$850/month</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            Current
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Jan 15, 2025</div>
-                        <div class="text-sm text-green-600">$850.00</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-500 mb-1">26% paid</div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-green-600 h-2 rounded-full" style="width: 26%"></div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ loan.borrower.first_name }} {{ loan.borrower.last_name }}
+                                </div>
+                                <div class="text-sm text-gray-500">
+                                    {{ loan.borrower.user.email }}
                                 </div>
                             </div>
-                            <div class="ml-3 text-xs text-gray-500">
-                                9/36
-                            </div>
                         </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">₱{{ loan.amount|floatformat:2 }}</div>
+                        <div class="text-sm text-gray-500">
+                            <!-- If you have term and APR fields, display them here -->
+                            {% if loan.term %}{{ loan.term }} months{% endif %}
+                            {% if loan.apr %} • {{ loan.apr }}% APR{% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">₱{{ loan.amount|floatformat:2 }}</div>
+                        <div class="text-sm text-gray-500">
+                            <!-- If you have monthly payment, display here -->
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if loan.status == 'approved' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Current
+                            </span>
+                        {% elif loan.status == 'delinquent' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                Late
+                            </span>
+                        {% elif loan.status == 'defaulted' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Overdue
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ loan.get_status_display }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <!-- If you have next payment info, display here -->
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <!-- If you have progress info, display here -->
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
@@ -441,310 +408,11 @@
                         </div>
                     </td>
                 </tr>
-
-                <!-- Loan Row 2 - Late Payment -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-car text-green-600"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Auto Loan</div>
-                                <div class="text-sm text-gray-500">LN-2024-002</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-gray-600 text-xs font-medium">MS</span>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Maria Santos</div>
-                                <div class="text-sm text-gray-500">maria.santos@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$35,000</div>
-                        <div class="text-sm text-gray-500">60 months • 6.2% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$28,750</div>
-                        <div class="text-sm text-gray-500">$675/month</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-clock mr-1"></i>
-                            Late
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Dec 15, 2024</div>
-                        <div class="text-sm text-red-600">$675.00 (15 days late)</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-500 mb-1">18% paid</div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-yellow-600 h-2 rounded-full" style="width: 18%"></div>
-                                </div>
-                            </div>
-                            <div class="ml-3 text-xs text-gray-500">
-                                11/60
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Loan">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900" title="Collection Action">
-                                <i class="fas fa-exclamation-triangle"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Contact Borrower">
-                                <i class="fas fa-phone"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </td>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-6 text-gray-500">No active loans found.</td>
                 </tr>
-
-                <!-- Loan Row 3 - Business Loan -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-briefcase text-purple-600"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Business Loan</div>
-                                <div class="text-sm text-gray-500">LN-2024-003</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-gray-600 text-xs font-medium">AR</span>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Alex Rodriguez</div>
-                                <div class="text-sm text-gray-500">alex.rodriguez@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$150,000</div>
-                        <div class="text-sm text-gray-500">84 months • 7.8% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$135,250</div>
-                        <div class="text-sm text-gray-500">$2,100/month</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            Current
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Jan 20, 2025</div>
-                        <div class="text-sm text-green-600">$2,100.00</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-500 mb-1">10% paid</div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-purple-600 h-2 rounded-full" style="width: 10%"></div>
-                                </div>
-                            </div>
-                            <div class="ml-3 text-xs text-gray-500">
-                                8/84
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Loan">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Payment History">
-                                <i class="fas fa-history"></i>
-                            </button>
-                            <button class="text-purple-600 hover:text-purple-900" title="Schedule">
-                                <i class="fas fa-calendar-alt"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Loan Row 4 - Home Loan -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-home text-orange-600"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Home Loan</div>
-                                <div class="text-sm text-gray-500">LN-2024-004</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-gray-600 text-xs font-medium">LW</span>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Lisa Wang</div>
-                                <div class="text-sm text-gray-500">lisa.wang@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$450,000</div>
-                        <div class="text-sm text-gray-500">360 months • 4.5% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$425,800</div>
-                        <div class="text-sm text-gray-500">$2,280/month</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>
-                            Current
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Jan 25, 2025</div>
-                        <div class="text-sm text-green-600">$2,280.00</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-500 mb-1">5% paid</div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-orange-600 h-2 rounded-full" style="width: 5%"></div>
-                                </div>
-                            </div>
-                            <div class="ml-3 text-xs text-gray-500">
-                                12/360
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Loan">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Payment History">
-                                <i class="fas fa-history"></i>
-                            </button>
-                            <button class="text-purple-600 hover:text-purple-900" title="Schedule">
-                                <i class="fas fa-calendar-alt"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-
-                <!-- Loan Row 5 - Overdue -->
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-user text-blue-600"></i>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Personal Loan</div>
-                                <div class="text-sm text-gray-500">LN-2024-005</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                <span class="text-gray-600 text-xs font-medium">TB</span>
-                            </div>
-                            <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">Tom Brown</div>
-                                <div class="text-sm text-gray-500">tom.brown@email.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$15,000</div>
-                        <div class="text-sm text-gray-500">48 months • 9.2% APR</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">$8,750</div>
-                        <div class="text-sm text-gray-500">$375/month</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            Overdue
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">Nov 25, 2024</div>
-                        <div class="text-sm text-red-600">$375.00 (45 days late)</div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center">
-                            <div class="flex-1">
-                                <div class="text-xs text-gray-500 mb-1">42% paid</div>
-                                <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-red-600 h-2 rounded-full" style="width: 42%"></div>
-                                </div>
-                            </div>
-                            <div class="ml-3 text-xs text-gray-500">
-                                20/48
-                            </div>
-                        </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Loan">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-red-600 hover:text-red-900" title="Urgent Collection">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Contact Borrower">
-                                <i class="fas fa-phone"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </div>
@@ -752,42 +420,52 @@
     <!-- Pagination -->
     <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
         <div class="flex-1 flex justify-between sm:hidden">
-            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Previous
-            </a>
-            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                Next
-            </a>
+            {% if has_previous %}
+                <a href="?page={{ previous_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}"
+                   class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+            {% endif %}
+            {% if has_next %}
+                <a href="?page={{ next_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}"
+                   class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            {% endif %}
         </div>
         <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm text-gray-700">
-                    Showing <span class="font-medium">1</span> to <span class="font-medium">20</span> of <span class="font-medium">847</span> results
+                    Showing <span class="font-medium">{{ start_index }}</span> to <span class="font-medium">{{ end_index }}</span> of <span class="font-medium">{{ paginator.count }}</span> results
                 </p>
             </div>
             <div>
                 <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
-                    <a href="#" aria-current="page" class="z-10 bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        1
-                    </a>
-                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        2
-                    </a>
-                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        3
-                    </a>
-                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
-                        ...
-                    </span>
-                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                        43
-                    </a>
-                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
+                    {% if has_previous %}
+                        <a href="?page={{ previous_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num == current_page %}
+                            <span aria-current="page" class="z-10 bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</span>
+                        {% elif num >= current_page|add:'-2' and num <= current_page|add:'2' %}
+                            <a href="?page={{ num }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}"
+                               class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
+                        {% elif num == 1 or num == total_pages %}
+                            <a href="?page={{ num }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}"
+                               class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
+                        {% elif num == current_page|add:'-3' or num == current_page|add:'3' %}
+                            <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">...</span>
+                        {% endif %}
+                    {% endfor %}
+                    {% if has_next %}
+                        <a href="?page={{ next_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}"
+                           class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
                 </nav>
             </div>
         </div>

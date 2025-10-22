@@ -1,0 +1,60 @@
+{% extends 'Company/companyBase.html' %}
+
+{% block title %}Archived Borrowers - Avendro{% endblock %}
+
+{% block breadcrumb %}
+<li>Archived Borrowers</li>
+{% endblock %}
+
+{% block content %}
+<!-- Statistics Card -->
+<div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div>
+            <p class="text-sm font-medium text-gray-600">Archived Borrowers</p>
+            <p class="text-3xl font-bold text-gray-900">{{ total_archived_borrowers }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Archived Borrowers Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">Clients who have fully repaid their loans or whose accounts have been closed</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrower</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for borrower in archived_borrowers %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {{ borrower.first_name }} {{ borrower.last_name }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {{ borrower.user.email }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if not borrower.is_active %}
+                            Closed
+                        {% else %}
+                            Fully Repaid
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="text-center py-6 text-gray-500">No archived borrowers found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -9,6 +9,11 @@ class Borrower(models.Model):
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
     date_of_birth = models.DateField()
+
+    security_question_1 = models.CharField(max_length=255, blank=True, null=True)
+    security_answer_1 = models.CharField(max_length=255, blank=True, null=True)
+    security_question_2 = models.CharField(max_length=255, blank=True, null=True)
+    security_answer_2 = models.CharField(max_length=255, blank=True, null=True)
     
     GENDER_CHOICES = [
         ('male', 'Male'),

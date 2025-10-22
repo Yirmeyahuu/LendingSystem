@@ -1,0 +1,111 @@
+{% extends 'Borrower/borrowerBase.html' %}
+
+{% block title %}Apply for a Loan - Avendro{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <h2 class="text-xl font-bold text-gray-900 mb-6">Apply for a New Loan</h2>
+
+        <!-- Company/Lender Selection -->
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Select a Lender</h3>
+        <select name="company_id" required class="w-full text-gray-600 px-3 py-2 border border-gray-300 rounded-lg">
+            <option value="" disabled selected>Select a lender</option>
+            {% for company in companies %}
+                <option value="{{ company.id }}">{{ company.company_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- 1. Loan Product Selection -->
+    <div class="mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-3">Choose a Loan Product</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for key, label in request.user.borrower_profile.company.LOAN_PRODUCT_CHOICES %}
+            <div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                <label class="flex items-center space-x-3">
+                    <input type="radio" name="product_type" value="{{ key }}" class="form-radio text-blue-600">
+                    <span class="font-semibold text-gray-900">{{ label }}</span>
+                </label>
+                <p class="text-xs text-gray-500 mt-2">Brief description and requirements here.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 2. Application Form -->
+    <form method="post" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        {% csrf_token %}
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Application Details</h3>
+        <div class="text-gray-500 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input type="text" value="{{ request.user.borrower_profile.full_name }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                <input type="text" value="{{ request.user.borrower_profile.mobile_number }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                <input type="email" value="{{ request.user.email }}" readonly class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Loan Amount</label>
+                <input type="number" name="amount" min="1000" step="0.01" required class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+            </div>
+        </div>
+        <div class="mt-6">
+            <button type="submit" class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition">Submit Application</button>
+        </div>
+    </form>
+
+    <!-- 3. Document Upload -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Upload Required Documents</h3>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Proof of Income</label>
+                    <input type="file" name="income_doc" accept=".pdf,.jpg,.png" class="block w-full text-sm text-gray-700">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Latest Payslip</label>
+                    <input type="file" name="payslip_doc" accept=".pdf,.jpg,.png" class="block w-full text-sm text-gray-700">
+                </div>
+            </div>
+            <div class="mt-6">
+                <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Upload Documents</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 4. Application Tracker -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Application Tracker</h3>
+        {% if request.user.borrower_profile.loanapplication_set.exists %}
+            {% for loan in request.user.borrower_profile.loanapplication_set.all|dictsortreversed:"created_at" %}
+            <div class="flex items-center justify-between py-2 border-b border-gray-100">
+                <div>
+                    <span class="font-semibold text-gray-900">Loan #{{ loan.id }}</span>
+                    <span class="ml-2 text-xs text-gray-500">{{ loan.created_at|date:"M d, Y" }}</span>
+                </div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                    {% if loan.status == 'approved' %}bg-green-100 text-green-800
+                    {% elif loan.status == 'delinquent' %}bg-red-100 text-red-800
+                    {% elif loan.status == 'pending' %}bg-yellow-100 text-yellow-800
+                    {% elif loan.status == 'review' %}bg-blue-100 text-blue-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ loan.status|title }}
+                </span>
+            </div>
+            {% empty %}
+            <div class="text-gray-500 text-sm py-4">No applications found.</div>
+            {% endfor %}
+        {% else %}
+            <div class="text-gray-500 text-sm py-4">No applications found.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

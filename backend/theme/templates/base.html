@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     
-    <link rel="icon" href="{% static 'Avendro.svg' %}">
+    <link rel="icon" href="{% static 'assets/img/Avendro.svg' %}">
 
     {% tailwind_css %}
     <link rel="stylesheet" href="{% static 'css/dist/styles.css' %}">
@@ -19,7 +19,25 @@
 
 </head>
 
+
+<!-- Global Notification-->
+{% if messages %}
+  {% for message in messages %}
+    <div id="django-message-{{ forloop.counter }}" class="p-4 mb-4 text-sm font-medium text-cyan-800 backdrop-blur-lg rounded-lg bg-cyan-200/80 border-2 border-cyan-300/60  fixed top-5 right-5 shadow-lg z-[9999]">
+      <span class="font-medium">{{ message.tags|title }}!</span> {{ message }}
+    </div>
+    <script>
+      setTimeout(function() {
+        var msg = document.getElementById("django-message-{{ forloop.counter }}");
+        if (msg) msg.style.display = "none";
+      }, 5000);
+    </script>
+  {% endfor %}
+{% endif %}
+
 <body class="bg-gray-50 text-black leading-normal tracking-normal" style="font-family: 'Poppins', sans-serif;">
+
+
 
     {% block content %}
 

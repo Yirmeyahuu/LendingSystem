@@ -125,7 +125,8 @@ class LoanApplication(models.Model):
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
         ('approved', 'Approved'),
-        ('review', 'Under Review')
+        ('review', 'Under Review'),
+        ('delinquent', 'Delinquent'),
     ])
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -142,3 +143,25 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.type.title()} - {self.message[:30]}"
+    
+
+class Payment(models.Model):
+    loan_application = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, related_name='payments')
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    method = models.CharField(max_length=50)  # e.g., 'bank', 'card', 'gateway', 'otc'
+    due_date = models.DateField()
+    paid_date = models.DateField(null=True, blank=True)
+    receipt = models.FileField(upload_to='receipts/', null=True, blank=True)
+    reference_number = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('failed', 'Failed'),
+    ], default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-due_date']
+
+    def __str__(self):
+        return f"Payment {self.id} for Loan {self.loan_application.id}"

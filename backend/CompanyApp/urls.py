@@ -13,7 +13,13 @@ urlpatterns = [
     path('Active-Loans/', views.activeLoans, name='company-active-loans'),
     path('Reports/', views.reports, name='company-reports'),
     path('Settings/', views.settings, name='company-settings'),
-
+    path('company-active-borrowers/', views.activeBorrowers, name='company-active-borrowers'),
+    path('company-potential-borrowers/', views.potentialBorrowers, name='company-potential-borrowers'),
+    path('company-archived-borrowers/', views.archivedBorrowers, name='company-archived-borrowers'),
+    path('company-add-borrowers/', views.addBorrowers, name='company-add-borrowers'),
+    path('financial-reports/', views.financialReports, name='company-financial-reports'),
+    path('portfolio-health/', views.portfolioHealth, name='company-portfolio-health'),
+    path('operational-reports/', views.operationalReports, name='company-operational-reports'),
 
 
     # Admin approval URLs

@@ -1,4 +1,5 @@
 {% load static tailwind_tags %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -237,7 +238,6 @@
 
 <body class="bg-gray-50 min-h-screen">
     <div class="flex h-screen">
-        <!-- Desktop Sidebar -->
         <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:shadow-lg lg:z-50">
             <!-- Logo -->
             <div class="flex items-center justify-center h-16 bg-gradient-to-r from-green-600 to-green-700">
@@ -253,7 +253,11 @@
             <div class="p-4 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-building text-green-600"></i>
+                        <!-- Building SVG -->
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <rect x="3" y="3" width="18" height="18" rx="2" stroke-width="2"/>
+                            <path d="M9 21V9h6v12" stroke-width="2"/>
+                        </svg>
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-medium text-gray-900 truncate">
@@ -271,32 +275,154 @@
             <!-- Desktop Navigation Menu -->
             <nav class="flex-1 mt-4 px-4 space-y-2 overflow-y-auto">
                 <a href="{% url 'company-dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-dashboard' %}nav-item-active{% endif %}">
-                    <i class="fas fa-chart-pie mr-3 text-gray-400 group-hover:text-green-600"></i>
+                    <!-- Chart Pie SVG -->
+                    <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M22 12A10 10 0 1 1 12 2v10z" fill="currentColor"/>
+                    </svg>
                     Dashboard
                 </a>
                 
                 <a href="{% url 'company-loan-applications'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-50 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-loan-applications' %}nav-item-active{% endif %}">
-                    <i class="fas fa-hand-holding-usd mr-3 text-gray-400 group-hover:text-green-600"></i>
+                    <!-- Hand Holding USD SVG -->
+                    <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 17v-6m0 0a2 2 0 1 1 4 0m-4 0a2 2 0 1 0-4 0m8 6v-6a6 6 0 1 0-12 0v6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                     Loan Applications
                 </a>
                 
-                <a href="{% url 'company-borrower-lists'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-borrower-lists' %}nav-item-active{% endif %}">
-                    <i class="fas fa-users mr-3 text-gray-400 group-hover:text-green-600"></i>
-                    Borrowers
-                </a>
+                <!-- Borrowers Dropdown Menu -->
+                <li class="relative list-none" id="borrowers-menu-li">
+                    <button id="borrowers-toggle"
+                        type="button"
+                        class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors group text-gray-700 hover:bg-green-100 hover:text-green-600">
+                        <!-- Users SVG -->
+                        <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="9" cy="7" r="4" stroke-width="2"/>
+                            <circle cx="17" cy="7" r="4" stroke-width="2"/>
+                            <path d="M2 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke-width="2"/>
+                            <path d="M15 21v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
+                        </svg>
+                        Borrowers
+                        <!-- Chevron Down SVG -->
+                        <svg class="ml-auto w-4 h-4 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <ul id="borrowers-dropdown"
+                        class="absolute left-0 w-full mt-2 bg-white rounded-lg shadow-lg z-50 hidden">
+                        <li>
+                            <a href="{% url 'company-borrower-lists' %}" class="block px-6 py-3 text-sm rounded-md transition-colors
+                                {% if request.resolver_match.url_name == 'company-borrower-lists' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                <!-- List SVG -->
+                                <svg class="w-4 h-4 mr-2 inline text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="4" y="6" width="16" height="2" rx="1" fill="currentColor"/>
+                                    <rect x="4" y="10" width="16" height="2" rx="1" fill="currentColor"/>
+                                    <rect x="4" y="14" width="16" height="2" rx="1" fill="currentColor"/>
+                                </svg>
+                                All Clients
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'company-active-borrowers' %}" class="block px-6 py-3 text-sm rounded-md transition-colors
+                                {% if request.resolver_match.url_name == 'company-active-borrowers' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                <!-- User Check SVG -->
+                                <svg class="w-4 h-4 mr-2 inline text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="4" stroke-width="2"/>
+                                    <path d="M6 20v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
+                                    <polyline points="16 11 18 13 22 9" stroke-width="2"/>
+                                </svg>
+                                Active Borrowers
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'company-potential-borrowers' %}" class="block px-6 py-3 text-sm rounded-md transition-colors
+                                {% if request.resolver_match.url_name == 'company-potential-borrowers' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                <!-- User Plus SVG -->
+                                <svg class="w-4 h-4 mr-2 inline text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="4" stroke-width="2"/>
+                                    <path d="M6 20v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
+                                    <line x1="19" y1="8" x2="19" y2="14" stroke-width="2"/>
+                                    <line x1="16" y1="11" x2="22" y2="11" stroke-width="2"/>
+                                </svg>
+                                Potential Borrowers
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'company-archived-borrowers' %}" class="block px-6 py-3 text-sm rounded-md transition-colors
+                                {% if request.resolver_match.url_name == 'company-archived-borrowers' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                <!-- Archive SVG -->
+                                <svg class="w-4 h-4 mr-2 inline text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="3" y="7" width="18" height="13" rx="2" stroke-width="2"/>
+                                    <rect x="1" y="3" width="22" height="4" rx="2" stroke-width="2"/>
+                                </svg>
+                                Archived Borrowers
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'company-add-borrowers' %}" class="block px-6 py-3 text-sm rounded-md transition-colors
+                                {% if request.resolver_match.url_name == 'company-add-borrowers' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                <!-- User Plus SVG (reuse) -->
+                                <svg class="w-4 h-4 mr-2 inline text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="8" r="4" stroke-width="2"/>
+                                    <path d="M6 20v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
+                                    <line x1="19" y1="8" x2="19" y2="14" stroke-width="2"/>
+                                    <line x1="16" y1="11" x2="22" y2="11" stroke-width="2"/>
+                                </svg>
+                                Add Borrower
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 
                 <a href="{% url 'company-active-loans'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-active-loans' %}nav-item-active{% endif %}">
-                    <i class="fas fa-file-contract mr-3 text-gray-400 group-hover:text-green-600"></i>
+                    <!-- File Contract SVG -->
+                    <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <rect x="4" y="4" width="16" height="16" rx="2" stroke-width="2"/>
+                        <path d="M8 2v4M16 2v4M4 10h16" stroke-width="2"/>
+                    </svg>
                     Active Loans
                 </a>
                 
-                <a href="{% url 'company-reports'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-reports' %}nav-item-active{% endif %}">
-                    <i class="fas fa-chart-line mr-3 text-gray-400 group-hover:text-green-600"></i>
-                    Reports
-                </a>
+                <li class="relative list-none" id="reports-menu-li">
+                    <button id="reports-toggle"
+                        type="button"
+                        class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors group text-gray-700 hover:bg-green-100 hover:text-green-600">
+                        <!-- Chart Line SVG -->
+                        <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <polyline points="4 14 8 10 12 14 16 8 20 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Reports & Analytics
+                        <svg class="ml-auto w-4 h-4 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <ul id="reports-dropdown"
+                        class="absolute left-0 w-full mt-2 bg-white rounded-lg shadow-lg z-50 hidden">
+                        <li>
+                            <a href="{% url 'company-financial-reports' %}" class="block px-6 py-3 text-sm rounded-md transition-colors {% if request.resolver_match.url_name == 'company-financial-reports' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                Financial Reports
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'company-portfolio-health' %}" class="block px-6 py-3 text-sm rounded-md transition-colors {% if request.resolver_match.url_name == 'company-portfolio-health' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                Portfolio Health
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'company-operational-reports' %}" class="block px-6 py-3 text-sm rounded-md transition-colors {% if request.resolver_match.url_name == 'company-operational-reports' %}bg-green-100 font-bold text-green-700{% else %}text-gray-700 hover:bg-green-50{% endif %}">
+                                Operational Reports
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 
                 <a href="{% url 'company-settings'%}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-green-100 hover:text-green-600 transition-colors group {% if request.resolver_match.url_name == 'company-settings' %}nav-item-active{% endif %}">
-                    <i class="fas fa-cog mr-3 text-gray-400 group-hover:text-green-600"></i>
+                    <!-- Cog SVG -->
+                    <svg class="w-5 h-5 mr-3 text-gray-400 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3" stroke-width="2"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" stroke-width="2"/>
+                    </svg>
                     Settings
                 </a>
             </nav>
@@ -304,7 +430,11 @@
             <!-- Desktop Bottom Menu -->
             <div class="p-4 border-t border-gray-200">
                 <a href="#" onclick="showLogoutModal(event)" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-red-600 transition-all">
-                    <i class="fas fa-sign-out-alt mr-3 text-gray-400"></i>
+                    <!-- Logout SVG -->
+                    <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path d="M17 16l4-4m0 0l-4-4m4 4H7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 21V3a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2"/>
+                    </svg>
                     Logout
                 </a>
             </div>
@@ -369,20 +499,62 @@
                             Loan Applications
                         </a>
                         
-                        <a href="{% url 'company-borrower-lists'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-borrower-lists' %}active{% endif %}">
-                            <i class="fas fa-users mr-3 text-gray-400"></i>
-                            Borrowers
-                        </a>
+                        <div class="mobile-menu-item px-6 py-2">
+                            <button id="mobile-borrowers-toggle"
+                                type="button"
+                                class="flex items-center w-full text-sm font-medium text-gray-700 hover:text-green-600 transition-all focus:outline-none">
+                                <i class="fas fa-users mr-3 text-gray-400"></i>
+                                Borrowers
+                                <svg class="ml-auto w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="mobile-borrowers-dropdown" class="mt-2 space-y-1 pl-8 hidden">
+                                <a href="{% url 'company-borrower-lists' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-borrower-lists' %}font-bold text-green-700{% endif %}">
+                                    All Clients
+                                </a>
+                                <a href="{% url 'company-active-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-active-borrowers' %}font-bold text-green-700{% endif %}">
+                                    Active Borrowers
+                                </a>
+                                <a href="{% url 'company-potential-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-potential-borrowers' %}font-bold text-green-700{% endif %}">
+                                    Potential Borrowers
+                                </a>
+                                <a href="{% url 'company-archived-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-archived-borrowers' %}font-bold text-green-700{% endif %}">
+                                    Archived Borrowers
+                                </a>
+                                <a href="{% url 'company-add-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-add-borrowers' %}font-bold text-green-700{% endif %}">
+                                    Add Borrower
+                                </a>
+                            </div>
+                        </div>
                         
                         <a href="{% url 'company-active-loans'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-active-loans' %}active{% endif %}">
                             <i class="fas fa-file-contract mr-3 text-gray-400"></i>
                             Active Loans
                         </a>
-                        
-                        <a href="{% url 'company-reports'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-reports' %}active{% endif %}">
-                            <i class="fas fa-chart-line mr-3 text-gray-400"></i>
-                            Reports
-                        </a>
+
+                        <div class="mobile-menu-item px-6 py-2">
+                            <button id="mobile-reports-toggle"
+                                type="button"
+                                class="flex items-center w-full text-sm font-medium text-gray-700 hover:text-green-600 transition-all focus:outline-none">
+                                <i class="fas fa-chart-line mr-3 text-gray-400"></i>
+                                Reports & Analytics
+                                <svg class="ml-auto w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="mobile-reports-dropdown" class="mt-2 space-y-1 pl-8 hidden">
+                                <a href="{% url 'company-financial-reports' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-financial-reports' %}font-bold text-green-700{% endif %}">
+                                    Financial Reports
+                                </a>
+                                <a href="{% url 'company-portfolio-health' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-portfolio-health' %}font-bold text-green-700{% endif %}">
+                                    Portfolio Health
+                                </a>
+                                <a href="{% url 'company-operational-reports' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-operational-reports' %}font-bold text-green-700{% endif %}">
+                                    Operational Reports
+                                </a>
+                            </div>
+                        </div>
                         
                         <a href="{% url 'company-settings'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-settings' %}active{% endif %}">
                             <i class="fas fa-cog mr-3 text-gray-400"></i>
@@ -474,6 +646,71 @@
             }
         });
     </script>
+
+<script>
+    // Dropdown logic for Borrowers menu
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('borrowers-toggle');
+        const dropdown = document.getElementById('borrowers-dropdown');
+        document.addEventListener('click', function(e) {
+            if (toggle.contains(e.target)) {
+                dropdown.classList.toggle('hidden');
+            } else if (!dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<script>
+    // Mobile Borrowers Dropdown logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileToggle = document.getElementById('mobile-borrowers-toggle');
+        const mobileDropdown = document.getElementById('mobile-borrowers-dropdown');
+        mobileToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileDropdown.classList.toggle('hidden');
+        });
+        // Optional: close when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!mobileToggle.contains(e.target) && !mobileDropdown.contains(e.target)) {
+                mobileDropdown.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<script>
+    // Mobile Reports Dropdown logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileReportsToggle = document.getElementById('mobile-reports-toggle');
+        const mobileReportsDropdown = document.getElementById('mobile-reports-dropdown');
+        mobileReportsToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            mobileReportsDropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', function(e) {
+            if (!mobileReportsToggle.contains(e.target) && !mobileReportsDropdown.contains(e.target)) {
+                mobileReportsDropdown.classList.add('hidden');
+            }
+        });
+    });
+</script>
+
+<script>
+    // Dropdown logic for Reports menu
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggle = document.getElementById('reports-toggle');
+        const dropdown = document.getElementById('reports-dropdown');
+        document.addEventListener('click', function(e) {
+            if (toggle.contains(e.target)) {
+                dropdown.classList.toggle('hidden');
+            } else if (!dropdown.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    });
+</script>
     
     {% block extra_js %}{% endblock %}
 </body>
