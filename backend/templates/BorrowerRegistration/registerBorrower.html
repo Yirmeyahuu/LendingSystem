@@ -1,17 +1,40 @@
-{% extends "Base.html" %}
-
-{% block title %}Register as Borrower - Avendro{% endblock %}
 {% load static %}
-{% block content %}
-<!-- Back Button -->
-<div class="absolute top-6 left-6 z-10">
-    <a href="{% url 'landing-page' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600bg-white rounded-lg border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">
-        <i class="fas fa-arrow-left mr-2"></i>
-        Back to Home
-    </a>
-</div>
+{% load tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register as Borrower - Avendro</title>
+    <link rel="icon" href="{% static 'assets/img/Avendro.svg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CSS CDN -->
+    {% tailwind_css %}
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-white py-24">
+    <!-- Basic Open Graph tags -->
+    <meta property="og:title" content="Avendro Web Application" />
+    <meta property="og:description" content="A Tech-driven Lending Platform." />
+    <meta property="og:image" content="https://avendrobcd.onrender.com/static/assets/img/avendro-bg.png" />
+    <meta property="og:url" content="https://avendrobcd.onrender.com/" />
+    <meta property="og:type" content="website" />
+
+    <!-- Optional for Twitter Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Avendro Web Application" />
+    <meta name="twitter:description" content="A Tech-driven Lending Platform." />
+    <meta name="twitter:image" content="https://avendrobcd.onrender.com/static/assets/img/avendro-bg.png" />
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-white min-h-screen py-24">
+
+    <!-- Back Button -->
+    <div class="absolute top-6 left-6 z-10">
+        <a href="/" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Home
+        </a>
+    </div>
+
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="text-center mb-8">
@@ -34,8 +57,9 @@
 
         <!-- Registration Form -->
         <form id="registration-form" class="space-y-8" method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            
+            <!-- CSRF token placeholder for Django -->
+            <!-- <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}"> -->
+
             <!-- Step 1: Personal Information -->
             <div class="form-step bg-white rounded-2xl shadow-xl p-6 sm:p-8" id="step-1">
                 <div class="flex items-center mb-6">
@@ -334,184 +358,182 @@
             </div>
         </form>
     </div>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentStep = 1;
-    const totalSteps = 3; // Changed from 4 to 3
-    
-    // Step navigation
-    const nextButtons = document.querySelectorAll('.next-step');
-    const prevButtons = document.querySelectorAll('.prev-step');
-    
-    nextButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            if (validateCurrentStep()) {
-                nextStep();
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let currentStep = 1;
+        const totalSteps = 3;
+
+        // Step navigation
+        const nextButtons = document.querySelectorAll('.next-step');
+        const prevButtons = document.querySelectorAll('.prev-step');
+
+        nextButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                if (validateCurrentStep()) {
+                    nextStep();
+                }
+            });
+        });
+
+        prevButtons.forEach(button => {
+            button.addEventListener('click', prevStep);
+        });
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                document.getElementById(`step-${currentStep}`).classList.add('hidden');
+                currentStep++;
+                document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+                updateProgress();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                document.getElementById(`step-${currentStep}`).classList.add('hidden');
+                currentStep--;
+                document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+                updateProgress();
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progress-bar').style.width = progress + '%';
+            document.getElementById('progress-text').textContent = `Step ${currentStep} of ${totalSteps}`;
+        }
+
+        function validateCurrentStep() {
+            const currentStepElement = document.getElementById(`step-${currentStep}`);
+            const requiredFields = currentStepElement.querySelectorAll('[required]');
+            let isValid = true;
+
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-red-500');
+                    isValid = false;
+                } else {
+                    field.classList.remove('border-red-500');
+                }
+            });
+
+            if (!isValid) {
+                alert('Please fill in all required fields before proceeding.');
+            }
+
+            return isValid;
+        }
+
+        // Address checkbox functionality
+        document.getElementById('same-address').addEventListener('change', function() {
+            const permanentSection = document.getElementById('permanent-address-section');
+            const permanentFields = permanentSection.querySelectorAll('input');
+
+            if (this.checked) {
+                permanentSection.style.display = 'none';
+                permanentFields.forEach(field => field.removeAttribute('required'));
+
+                // Copy current address to permanent address
+                document.querySelector('[name="permanent_street_address"]').value = document.querySelector('[name="current_street_address"]').value;
+                document.querySelector('[name="permanent_city"]').value = document.querySelector('[name="current_city"]').value;
+                document.querySelector('[name="permanent_state"]').value = document.querySelector('[name="current_state"]').value;
+                document.querySelector('[name="permanent_postal_code"]').value = document.querySelector('[name="current_postal_code"]').value;
+            } else {
+                permanentSection.style.display = 'block';
+                permanentFields.forEach(field => field.setAttribute('required', 'required'));
+            }
+        });
+
+        // Employment status change
+        document.getElementById('employment-status').addEventListener('change', function() {
+            const companyField = document.getElementById('company-field');
+            const jobTitleField = document.getElementById('job-title-field');
+            const companyInput = document.querySelector('[name="company_name"]');
+            const jobTitleInput = document.querySelector('[name="job_title"]');
+
+            if (this.value === 'unemployed' || this.value === 'student' || this.value === 'retired') {
+                companyField.style.display = 'none';
+                jobTitleField.style.display = 'none';
+                companyInput.removeAttribute('required');
+                jobTitleInput.removeAttribute('required');
+            } else {
+                companyField.style.display = 'block';
+                jobTitleField.style.display = 'block';
+                companyInput.setAttribute('required', 'required');
+                jobTitleInput.setAttribute('required', 'required');
+            }
+        });
+
+        // Password visibility toggle
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordField = document.getElementById('password');
+            const icon = this.querySelector('i');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        });
+
+        document.getElementById('toggle-confirm-password').addEventListener('click', function() {
+            const passwordField = document.getElementById('confirm-password');
+            const icon = this.querySelector('i');
+
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordField.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        });
+
+        // Password strength meter
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const strengthBar = document.getElementById('password-strength');
+            let strength = 0;
+
+            if (password.length >= 8) strength += 25;
+            if (/[A-Z]/.test(password)) strength += 25;
+            if (/[a-z]/.test(password)) strength += 25;
+            if (/[0-9]/.test(password)) strength += 25;
+
+            strengthBar.style.width = strength + '%';
+
+            if (strength < 50) {
+                strengthBar.className = 'bg-red-500 h-1 rounded-full transition-all duration-300';
+            } else if (strength < 75) {
+                strengthBar.className = 'bg-yellow-500 h-1 rounded-full transition-all duration-300';
+            } else {
+                strengthBar.className = 'bg-green-500 h-1 rounded-full transition-all duration-300';
+            }
+        });
+
+        // Password match validation
+        document.getElementById('confirm-password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            const matchIndicator = document.getElementById('password-match');
+
+            if (confirmPassword) {
+                matchIndicator.classList.remove('hidden');
+                if (password === confirmPassword) {
+                    matchIndicator.textContent = 'Passwords match';
+                    matchIndicator.className = 'mt-1 text-xs text-green-600';
+                } else {
+                    matchIndicator.textContent = 'Passwords do not match';
+                    matchIndicator.className = 'mt-1 text-xs text-red-600';
+                }
+            } else {
+                matchIndicator.classList.add('hidden');
             }
         });
     });
-    
-    prevButtons.forEach(button => {
-        button.addEventListener('click', prevStep);
-    });
-    
-    function nextStep() {
-        if (currentStep < totalSteps) {
-            document.getElementById(`step-${currentStep}`).classList.add('hidden');
-            currentStep++;
-            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
-            updateProgress();
-        }
-    }
-    
-    function prevStep() {
-        if (currentStep > 1) {
-            document.getElementById(`step-${currentStep}`).classList.add('hidden');
-            currentStep--;
-            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
-            updateProgress();
-        }
-    }
-    
-    function updateProgress() {
-        const progress = (currentStep / totalSteps) * 100;
-        document.getElementById('progress-bar').style.width = progress + '%';
-        document.getElementById('progress-text').textContent = `Step ${currentStep} of ${totalSteps}`;
-    }
-    
-    function validateCurrentStep() {
-        const currentStepElement = document.getElementById(`step-${currentStep}`);
-        const requiredFields = currentStepElement.querySelectorAll('[required]');
-        let isValid = true;
-        
-        requiredFields.forEach(field => {
-            if (!field.value.trim()) {
-                field.classList.add('border-red-500');
-                isValid = false;
-            } else {
-                field.classList.remove('border-red-500');
-            }
-        });
-        
-        if (!isValid) {
-            alert('Please fill in all required fields before proceeding.');
-        }
-        
-        return isValid;
-    }
-    
-    // Address checkbox functionality
-    document.getElementById('same-address').addEventListener('change', function() {
-        const permanentSection = document.getElementById('permanent-address-section');
-        const permanentFields = permanentSection.querySelectorAll('input');
-        
-        if (this.checked) {
-            permanentSection.style.display = 'none';
-            permanentFields.forEach(field => field.removeAttribute('required'));
-            
-            // Copy current address to permanent address
-            document.querySelector('[name="permanent_street_address"]').value = document.querySelector('[name="current_street_address"]').value;
-            document.querySelector('[name="permanent_city"]').value = document.querySelector('[name="current_city"]').value;
-            document.querySelector('[name="permanent_state"]').value = document.querySelector('[name="current_state"]').value;
-            document.querySelector('[name="permanent_postal_code"]').value = document.querySelector('[name="current_postal_code"]').value;
-        } else {
-            permanentSection.style.display = 'block';
-            permanentFields.forEach(field => field.setAttribute('required', 'required'));
-        }
-    });
-    
-    // Employment status change
-    document.getElementById('employment-status').addEventListener('change', function() {
-        const companyField = document.getElementById('company-field');
-        const jobTitleField = document.getElementById('job-title-field');
-        const companyInput = document.querySelector('[name="company_name"]');
-        const jobTitleInput = document.querySelector('[name="job_title"]');
-        
-        if (this.value === 'unemployed' || this.value === 'student' || this.value === 'retired') {
-            companyField.style.display = 'none';
-            jobTitleField.style.display = 'none';
-            companyInput.removeAttribute('required');
-            jobTitleInput.removeAttribute('required');
-        } else {
-            companyField.style.display = 'block';
-            jobTitleField.style.display = 'block';
-            companyInput.setAttribute('required', 'required');
-            jobTitleInput.setAttribute('required', 'required');
-        }
-    });
-    
-    // Password visibility toggle
-    document.getElementById('toggle-password').addEventListener('click', function() {
-        const passwordField = document.getElementById('password');
-        const icon = this.querySelector('i');
-        
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
-            icon.className = 'fas fa-eye-slash';
-        } else {
-            passwordField.type = 'password';
-            icon.className = 'fas fa-eye';
-        }
-    });
-    
-    document.getElementById('toggle-confirm-password').addEventListener('click', function() {
-        const passwordField = document.getElementById('confirm-password');
-        const icon = this.querySelector('i');
-        
-        if (passwordField.type === 'password') {
-            passwordField.type = 'text';
-            icon.className = 'fas fa-eye-slash';
-        } else {
-            passwordField.type = 'password';
-            icon.className = 'fas fa-eye';
-        }
-    });
-    
-    // Password strength meter
-    document.getElementById('password').addEventListener('input', function() {
-        const password = this.value;
-        const strengthBar = document.getElementById('password-strength');
-        let strength = 0;
-        
-        if (password.length >= 8) strength += 25;
-        if (/[A-Z]/.test(password)) strength += 25;
-        if (/[a-z]/.test(password)) strength += 25;
-        if (/[0-9]/.test(password)) strength += 25;
-        
-        strengthBar.style.width = strength + '%';
-        
-        if (strength < 50) {
-            strengthBar.className = 'bg-red-500 h-1 rounded-full transition-all duration-300';
-        } else if (strength < 75) {
-            strengthBar.className = 'bg-yellow-500 h-1 rounded-full transition-all duration-300';
-        } else {
-            strengthBar.className = 'bg-green-500 h-1 rounded-full transition-all duration-300';
-        }
-    });
-    
-    // Password match validation
-    document.getElementById('confirm-password').addEventListener('input', function() {
-        const password = document.getElementById('password').value;
-        const confirmPassword = this.value;
-        const matchIndicator = document.getElementById('password-match');
-        
-        if (confirmPassword) {
-            matchIndicator.classList.remove('hidden');
-            if (password === confirmPassword) {
-                matchIndicator.textContent = 'Passwords match';
-                matchIndicator.className = 'mt-1 text-xs text-green-600';
-            } else {
-                matchIndicator.textContent = 'Passwords do not match';
-                matchIndicator.className = 'mt-1 text-xs text-red-600';
-            }
-        } else {
-            matchIndicator.classList.add('hidden');
-        }
-    });
-});
-</script>
-{% endblock %}
+    </script>
+</body>
+</html>
