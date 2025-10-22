@@ -249,7 +249,6 @@ def registerBorrower(request):
         except ValidationError as e:
             messages.error(request, f"Validation error: {str(e)}")
             return render(request, 'BorrowerRegistration/registerBorrower.html')
-            
         except Exception as e:
             messages.error(request, "An unexpected error occurred. Please try again.")
             return render(request, 'BorrowerRegistration/registerBorrower.html')

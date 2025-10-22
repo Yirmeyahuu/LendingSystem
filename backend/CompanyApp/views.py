@@ -68,6 +68,7 @@ def companyDashboard(request):
     }
     return render(request, 'CompanyPages/companyDashboard.html', context)
 
+
 def companyRegistration(request):
     if request.method == 'POST':
         try:
@@ -181,7 +182,6 @@ def companyRegistration(request):
         except ValidationError as e:
             messages.error(request, f'Validation error: {e.message}')
             return render(request, 'CompanyRegistration/registerCompany.html')
-        
         except Exception as e:
             messages.error(request, f'An error occurred during registration: {str(e)}')
             return render(request, 'CompanyRegistration/registerCompany.html')
