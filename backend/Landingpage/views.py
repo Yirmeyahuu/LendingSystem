@@ -1,17 +1,15 @@
-from decorators.auth_decorators import borrower_required 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
 from BorrowerApp.models import Borrower
+from CompanyApp.models import LoanApplication
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 import re
-from CompanyApp.models import LoanApplication
+
 
 # Create your views here.
 def landingPage(request):

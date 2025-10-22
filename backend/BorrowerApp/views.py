@@ -60,8 +60,6 @@ def borrower_logout(request):
     
     return redirect('landing-page')  # Redirect to login page
 
-
-
 @borrower_required
 def activeLoans(request):
     borrower = request.user.borrower_profile

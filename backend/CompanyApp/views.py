@@ -70,7 +70,6 @@ def companyDashboard(request):
 
 
 
-
 @company_required
 def loanApplication(request):
     company = request.user.company_profile
