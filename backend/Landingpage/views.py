@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import make_password
 from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from BorrowerApp.models import Borrower
-from CompanyApp.models import LoanApplication
+from CompanyApp.models import LoanApplication, Company
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 import re
