@@ -9,12 +9,15 @@ from CompanyApp.models import LoanApplication
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 import re
+from decorators.auth_decorators import anonymous_required
 
 
-# Create your views here.
+#Landing Page Content function
+@anonymous_required
 def landingPage(request):
     return render(request, 'LandingPage/landing-page.html')
 
+#Registration of Borrower function
 def registerBorrower(request):
     if request.method == 'POST':
         try:
@@ -211,10 +214,11 @@ def registerBorrower(request):
     # GET request - display the registration form
     return render(request, 'BorrowerRegistration/registerBorrower.html')
 
+#Borrower Success Registration function
 def borrowerRegistrationSuccess(request):
     return render(request, 'RegistrationSuccess/borrowerSuccess.html')
 
-
+#Registration of Company function
 def companyRegistration(request):
     if request.method == 'POST':
         try:
@@ -335,5 +339,6 @@ def companyRegistration(request):
     # GET request - display the registration form
     return render(request, 'CompanyRegistration/registerCompany.html')
 
+#Company Success Registration function
 def companyRegistrationSuccess(request):
     return render(request, 'RegistrationSuccess/registrationSuccess.html')

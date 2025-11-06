@@ -2,9 +2,14 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    #Urls of Login Process
+
+    #Url of user login
     path('login/', views.userLogin, name='user-login'),
+
+    #Url of borrower logout
     path('logout/', views.userLogout, name='user-logout'),
 
-    #Logout Url
+    #Url of company logout
     path('logout/company/', views.companyLogout, name='company-logout'),
 ]

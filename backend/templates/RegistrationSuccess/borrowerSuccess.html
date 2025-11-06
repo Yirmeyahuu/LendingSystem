@@ -1,8 +1,16 @@
-{% extends "Borrower/borrowerBase.html" %}
+{% load tailwind_tags %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration Successful - Avendro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-{% block title %}Registration Successful - Avendro{% endblock %}
-
-{% block content %}
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body>
 <div class="min-h-screen bg-gradient-to-br from-green-50 to-white py-8">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
@@ -39,14 +47,15 @@
             </div>
             
             <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
-                <a href="#" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                <a href="{% url 'user-login' %}" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-semibold">
                     Go to Login
                 </a>
-                <a href="#" class="inline-block bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
+                <a href="{% url 'landing-page' %}" class="inline-block bg-gray-300 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-400 transition-colors font-semibold">
                     Back to Home
                 </a>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+</body>
+</html>

@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             this.classList.add('bg-green-100', 'text-green-600');
             this.classList.remove('text-gray-600');
-            // Optionally update chart data here
         });
     });
 });

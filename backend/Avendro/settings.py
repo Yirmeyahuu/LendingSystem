@@ -8,15 +8,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# Security Key
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
 load_dotenv()
+
 #DEBUG = True
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
@@ -26,9 +24,7 @@ USE_TZ = True
 if os.getenv("RENDER"):  # when running on Render
     ALLOWED_HOSTS = ["avendrobcd.onrender.com"]
 else:  # local development
-    ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-
-
+    ALLOWED_HOSTS = ["localhost", "127.0.0.1", "192.168.43.187"]
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
@@ -107,19 +103,6 @@ LOGOUT_REDIRECT_URL = '/Auth/login/'
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 # Database
-# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'avendro_db',
-#         'USER': 'postgres',
-#         'PASSWORD': '!Poypoy.mignon!01',
-#         'HOST': 'localhost',
-#         'PORT': '5432',
-#     }
-# }
-
 if DATABASE_URL:
     DATABASES = {
         "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)
@@ -156,7 +139,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
@@ -168,9 +150,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = '/static/'   # note the starting slash (important for production)
 
@@ -183,7 +163,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'theme/static'),
 ]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

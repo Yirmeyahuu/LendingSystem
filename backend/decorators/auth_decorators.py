@@ -48,3 +48,22 @@ def user_type_required(user_type):
                 return redirect('landing-page')
         return wrapper
     return decorator
+
+
+def anonymous_required(view_func):
+    """Decorator that redirects authenticated users to their dashboard"""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if hasattr(request.user, 'borrower_profile'):
+                return redirect('borrower-dashboard')
+            elif hasattr(request.user, 'company_profile'):
+                return redirect('company-dashboard')
+            else:
+                # User is authenticated but has no profile - logout them
+                from django.contrib.auth import logout
+                messages.warning(request, "Your account has no profile. Please register again.")
+                logout(request)
+                return redirect('landing-page')
+        return view_func(request, *args, **kwargs)
+    return wrapper

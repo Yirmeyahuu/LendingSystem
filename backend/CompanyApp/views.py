@@ -15,6 +15,7 @@ import datetime
 from django.db import models
 from django.core.paginator import Paginator
 
+#Company Dashboard function
 @company_required
 def companyDashboard(request):
     company = request.user.company_profile
@@ -68,8 +69,7 @@ def companyDashboard(request):
     }
     return render(request, 'CompanyPages/companyDashboard.html', context)
 
-
-
+#Company Loan Application function
 @company_required
 def loanApplication(request):
     company = request.user.company_profile
@@ -130,6 +130,7 @@ def loanApplication(request):
     }
     return render(request, 'CompanyPages/companyLoanApplications.html', context)
 
+#Company Borrower List Function
 @company_required
 def borrowerLists(request):
     company = request.user.company_profile
@@ -207,7 +208,7 @@ def borrowerLists(request):
     }
     return render(request, 'CompanyPages/companyBorrowerLists.html', context)
 
-
+#Company Active Loans Function
 @company_required
 def activeLoans(request):
     company = request.user.company_profile
@@ -331,6 +332,7 @@ def activeLoans(request):
     }
     return render(request, 'CompanyPages/companyActiveLoans.html', context)
 
+#Company Reports function
 @company_required
 def reports(request):
     company = request.user.company_profile
@@ -352,6 +354,7 @@ def reports(request):
 
     return render(request, 'CompanyPages/companyReports.html', context)
 
+#Company Settings function
 @company_required
 def settings(request):
     company = request.user.company_profile
@@ -388,8 +391,7 @@ def settings(request):
     }
     return render(request, 'CompanyPages/companySettings.html', context)
 
-
-
+#Company Active function
 @company_required
 def activeBorrowers(request):
     company = request.user.company_profile
@@ -414,6 +416,7 @@ def activeBorrowers(request):
     }
     return render(request, 'BorrowerSubmenus/companyActiveBorrowers.html', context)
 
+#Company Potential Borrower function
 @company_required
 def potentialBorrowers(request):
     company = request.user.company_profile
@@ -431,6 +434,7 @@ def potentialBorrowers(request):
     }
     return render(request, 'BorrowerSubmenus/companyPotentialBorrowers.html', context)
 
+#Company Archived Borrower function
 @company_required
 def archivedBorrowers(request):
     company = request.user.company_profile
@@ -449,7 +453,7 @@ def archivedBorrowers(request):
     }
     return render(request, 'BorrowerSubmenus/companyArchivedBorrowers.html', context)
 
-
+#Company Add Borrower function
 @company_required
 def addBorrowers(request):
     company = request.user.company_profile
@@ -484,7 +488,7 @@ def addBorrowers(request):
     }
     return render(request, 'BorrowerSubmenus/companyAddBorrowers.html', context)
 
-
+#Company Financial Report function
 @company_required
 def financialReports(request):
     company = request.user.company_profile
@@ -545,6 +549,7 @@ def financialReports(request):
 
     return render(request, 'ReportSubmenus/financialReports.html', context)
 
+#Company Portfolio Health function
 @company_required
 def portfolioHealth(request):
     company = request.user.company_profile
@@ -590,6 +595,7 @@ def portfolioHealth(request):
 
     return render(request, 'ReportSubmenus/portfolioHealth.html', context)
 
+#Company Operational Reports function
 @company_required
 def operationalReports(request):
     company = request.user.company_profile

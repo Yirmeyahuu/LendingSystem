@@ -13,6 +13,7 @@ from datetime import datetime
 import re
 from CompanyApp.models import LoanApplication
 
+#borrower dashboard function
 @borrower_required
 def borrowerDashboard(request):
     borrower = request.user.borrower_profile
@@ -47,6 +48,7 @@ def borrowerDashboard(request):
     }
     return render(request, 'BorrowerPages/borrowerDashboard.html', context)
 
+#borrower logout function
 def borrower_logout(request):
     if request.user.is_authenticated:
         # Check if user is a borrower before logging out
@@ -60,6 +62,7 @@ def borrower_logout(request):
     
     return redirect('landing-page')  # Redirect to login page
 
+#borrower Active Loans function
 @borrower_required
 def activeLoans(request):
     borrower = request.user.borrower_profile
@@ -70,6 +73,7 @@ def activeLoans(request):
     }
     return render(request, 'MyLoanSubmenus/activeLoans.html', context)
 
+#borrower Loan History function
 @borrower_required
 def loanHistory(request):
     borrower = request.user.borrower_profile
@@ -80,6 +84,7 @@ def loanHistory(request):
     }
     return render(request, 'MyLoanSubmenus/loanHistory.html', context)
 
+#borrower Apply Loan function
 @borrower_required
 def applyLoan(request):
     borrower = request.user.borrower_profile
@@ -140,7 +145,7 @@ def applyLoan(request):
 
     return render(request, 'ApplyLoan/applyLoan.html', {'companies': companies})
 
-
+#borrower Payments  function
 @borrower_required
 def borrowerPayments(request):
     borrower = request.user.borrower_profile
@@ -154,7 +159,7 @@ def borrowerPayments(request):
     }
     return render(request, 'Payments/borrowerPayment.html', context)
 
-
+#borrower Profile function
 @borrower_required
 def borrowerProfile(request):
     borrower = request.user.borrower_profile
@@ -183,6 +188,7 @@ def borrowerProfile(request):
 
     return render(request, 'Profile/borrowerProfile.html', {'borrower': borrower})
 
+#borrower Update Security function
 @borrower_required
 def update_security_questions(request):
     borrower = request.user.borrower_profile
@@ -196,6 +202,7 @@ def update_security_questions(request):
         return redirect('borrower-profile')
     return redirect('borrower-profile')
 
+#borrower Change Password function
 @borrower_required
 def changePassword(request):
     if request.method == 'POST':

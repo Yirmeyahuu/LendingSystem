@@ -3,7 +3,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from CompanyApp.models import Company
+from decorators.auth_decorators import anonymous_required
 
+#User login (Borrower or Company) Login function
+@anonymous_required
 def userLogin(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -73,12 +76,14 @@ def userLogin(request):
     # GET request - show login form
     return render(request, 'LoginApp/userLogin.html')
 
+#Borrower logout function
 def userLogout(request):
     if request.user.is_authenticated:
         logout(request)
         messages.success(request, "You have been logged out successfully.")
     return redirect('user-login')
 
+#Company logout function
 def companyLogout(request):
     if request.user.is_authenticated:
         # Check if user is a company before logging out
