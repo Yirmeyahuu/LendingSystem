@@ -10,6 +10,20 @@
     {% tailwind_css %}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+<!-- Global Notification-->
+{% if messages %}
+  {% for message in messages %}
+    <div id="django-message-{{ forloop.counter }}" class="p-4 mb-4 text-sm font-medium text-green-800 backdrop-blur-lg rounded-lg bg-green-200/80 border-2 border-green-300/60  fixed top-5 right-5 shadow-lg z-[9999]">
+      <span class="font-medium">{{ message.tags|title }}!</span> {{ message }}
+    </div>
+    <script>
+      setTimeout(function() {
+        var msg = document.getElementById("django-message-{{ forloop.counter }}");
+        if (msg) msg.style.display = "none";
+      }, 5000);
+    </script>
+  {% endfor %}
+{% endif %}
 <body>
 <div class="min-h-screen bg-gradient-to-br from-green-50 to-white py-8">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
