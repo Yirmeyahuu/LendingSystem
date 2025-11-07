@@ -10,6 +10,7 @@ echo "=== Checking migration state ==="
 # Collect static files
 echo "=== Collecting static files ==="
 python manage.py collectstatic --noinput
+python manage.py create_production_superuser
 
 # Apply migrations with smart error handling
 echo "=== Running migrations with error handling ==="
