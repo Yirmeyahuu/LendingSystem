@@ -108,14 +108,14 @@
 <!-- Global Notification-->
 {% if messages %}
   {% for message in messages %}
-    <div id="django-message-{{ forloop.counter }}" class="p-4 mb-4 text-sm font-medium text-green-800 backdrop-blur-lg rounded-lg bg-green-200/80 border-2 border-green-300/60  fixed top-5 right-5 shadow-lg z-[9999]">
+    <div id="django-message-{{ forloop.counter }}" class="p-4 mb-4 text-sm font-medium text-rose-800 backdrop-blur-lg rounded-lg bg-rose-200/80 border-2 border-rose-300/60  fixed top-5 right-5 shadow-lg z-[9999]">
       <span class="font-medium">{{ message.tags|title }}!</span> {{ message }}
     </div>
     <script>
       setTimeout(function() {
         var msg = document.getElementById("django-message-{{ forloop.counter }}");
         if (msg) msg.style.display = "none";
-      }, 5000);
+      }, 2000);
     </script>
   {% endfor %}
 {% endif %}
@@ -152,33 +152,33 @@
                 </div>
                 <!-- Mobile Menu Button -->
                 <button class="md:hidden text-gray-700 hover:text-blue-600 p-2" id="mobile-menu-btn">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    <svg class="w-6 h-6 transition-transform duration-300" id="menu-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path id="menu-icon-path" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
                     </svg>
                 </button>
-            </div>
-            <!-- Mobile Menu -->
-            <div class="md:hidden hidden" id="mobile-menu">
-                <div class="py-4 space-y-4 border-t border-gray-200">
-                    <a href="#home" class="block text-gray-700 hover:text-blue-600 transition-colors py-2">Home</a>
-                    <a href="#how-it-works" class="block text-gray-700 hover:text-blue-600 transition-colors py-2">How It Works</a>
-                    <a href="#features" class="block text-gray-700 hover:text-blue-600 transition-colors py-2">Features</a>
-                    <a href="#contact" class="block text-gray-700 hover:text-blue-600 transition-colors py-2">Contact</a>
-                    <a href="{% url 'user-login' %}" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mt-4">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3v1"></path>
-                        </svg>
-                        Sign In
-                    </a>
                 </div>
-            </div>
+                <!-- Mobile Menu -->
+                <div class="md:hidden overflow-hidden transition-all duration-300 ease-in-out max-h-0" id="mobile-menu">
+                    <div class="py-4 space-y-4 border-t border-gray-200">
+                        <a href="#home" class="block text-gray-700 hover:text-blue-600 transition-colors py-2 opacity-0 translate-y-2 menu-item">Home</a>
+                        <a href="#how-it-works" class="block text-gray-700 hover:text-blue-600 transition-colors py-2 opacity-0 translate-y-2 menu-item">How It Works</a>
+                        <a href="#features" class="block text-gray-700 hover:text-blue-600 transition-colors py-2 opacity-0 translate-y-2 menu-item">Features</a>
+                        <a href="#contact" class="block text-gray-700 hover:text-blue-600 transition-colors py-2 opacity-0 translate-y-2 menu-item">Contact</a>
+                        <a href="{% url 'user-login' %}" class="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center mt-4 opacity-0 translate-y-2 mb-4 menu-item">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3v1"></path>
+                            </svg>
+                            Sign In
+                        </a>
+                    </div>
+                </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section id="home" class="pt-16 sm:pt-20 pb-12 sm:pb-16 bg-gradient-to-br from-blue-50 to-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-4rem)] sm:min-h-screen">
+    <section id="home" class="bg-gradient-to-br from-blue-50 to-white pt-28 sm:pt-32 md:pt-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-2">
+            <div class="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center min-h-[calc(100vh-5rem)] sm:min-h-screen">
                 <!-- Left Content -->
                 <div class="space-y-6 sm:space-y-8 text-center lg:text-left">
                     <div class="space-y-4">
@@ -471,13 +471,13 @@
                 Whether you need a loan or want to grow your lending business, we're here to help.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/borrower/register/" class="bg-white text-blue-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                <a href="{% url 'borrower-registration' %}" class="bg-white text-blue-600 px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                     </svg>
                     Apply for a Loan
                 </a>
-                <a href="/company/register/" class="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 flex items-center justify-center">
+                <a href="{% url 'company-registration' %}" class="border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg text-base sm:text-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 flex items-center justify-center">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                     </svg>
@@ -525,8 +525,8 @@
                 <div>
                     <h3 class="text-base sm:text-lg font-semibold mb-4 sm:mb-6">For Borrowers</h3>
                     <ul class="space-y-2 sm:space-y-3">
-                        <li><a href="/borrower/register/" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Apply for Loan</a></li>
-                        <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">How It Works</a></li>
+                        <li><a href="{% url 'borrower-registration' %}" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Apply for Loan</a></li>
+                        <li><a href="#how-it-works" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">How It Works</a></li>
                         <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Loan Calculator</a></li>
                         <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">FAQs</a></li>
                         <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Support</a></li>
@@ -536,7 +536,7 @@
                 <div>
                     <h3 class="text-base sm:text-lg font-semibold mb-4 sm:mb-6">For Lenders</h3>
                     <ul class="space-y-2 sm:space-y-3">
-                        <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Start Lending</a></li>
+                        <li><a href="{% url 'company-registration' %}" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Start Lending</a></li>
                         <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Partner Benefits</a></li>
                         <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">API Documentation</a></li>
                         <li><a href="#" class="text-sm sm:text-base text-gray-400 hover:text-white transition-colors">Risk Management</a></li>
@@ -546,7 +546,7 @@
             </div>
             <div class="border-t border-gray-800 mt-8 sm:mt-12 pt-6 sm:pt-8 flex flex-col sm:flex-row justify-between items-center">
                 <p class="text-xs sm:text-sm text-gray-400 text-center sm:text-left">
-                    © 2024 Avendro. All rights reserved.
+                    © 2025 Avendro. All rights reserved.
                 </p>
                 <div class="flex flex-wrap justify-center sm:justify-end space-x-4 sm:space-x-6 mt-4 sm:mt-0">
                     <a href="#" class="text-xs sm:text-sm text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
@@ -584,17 +584,61 @@
             });
         });
 
-        // Mobile menu toggle
+        // Mobile menu toggle with animation
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const menuIconPath = document.getElementById('menu-icon-path');
+        const menuItems = document.querySelectorAll('.menu-item');
+        
         mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+            const isOpen = mobileMenu.classList.contains('max-h-0');
+            
+            if (isOpen) {
+                // Open menu
+                mobileMenu.classList.remove('max-h-0');
+                mobileMenu.classList.add('max-h-96');
+                
+                // Change to X icon
+                menuIconPath.setAttribute('d', 'M6 18L18 6M6 6l12 12');
+                
+                // Animate menu items
+                menuItems.forEach((item, index) => {
+                    setTimeout(() => {
+                        item.style.opacity = '1';
+                        item.style.transform = 'translateY(0)';
+                        item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    }, index * 50);
+                });
+            } else {
+                // Close menu
+                mobileMenu.classList.remove('max-h-96');
+                mobileMenu.classList.add('max-h-0');
+                
+                // Change back to burger icon
+                menuIconPath.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                
+                // Reset menu items
+                menuItems.forEach(item => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(8px)';
+                });
+            }
         });
-
+        
         // Close mobile menu when clicking on a link
         document.querySelectorAll('#mobile-menu a').forEach(link => {
             link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('max-h-96');
+                mobileMenu.classList.add('max-h-0');
+                
+                // Change back to burger icon
+                menuIconPath.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                
+                menuItems.forEach(item => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(8px)';
+                });
             });
         });
 

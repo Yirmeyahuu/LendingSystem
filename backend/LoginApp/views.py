@@ -11,7 +11,7 @@ def userLogin(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        user_type = request.POST.get('user_type')  # 'borrower' or 'lender'
+        user_type = request.POST.get('user_type')
         remember_me = request.POST.get('remember-me')
         
         # Authenticate user
@@ -90,9 +90,9 @@ def companyLogout(request):
         if hasattr(request.user, 'company_profile'):
             company_name = request.user.company_profile.company_name
             logout(request)
-            messages.success(request, f"Goodbye {company_name}! You have been logged out successfully.")
+            messages.success(request, f"{company_name} have been logged out successfully.")
         else:
             logout(request)
             messages.success(request, "You have been logged out successfully.")
     
-    return redirect('landing-page')  # Redirect to login page
+    return redirect('landing-page')
