@@ -28,9 +28,6 @@ def userLogin(request):
                 # Check if user is actually a company/lender
                 try:
                     company = Company.objects.get(user=user)
-                    if not company.is_approved:
-                        messages.error(request, 'Your company account is pending approval.')
-                        return render(request, 'LoginApp/userLogin.html')
                     
                     # Login successful for company
                     login(request, user)

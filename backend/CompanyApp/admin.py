@@ -12,16 +12,12 @@ class CompanyAdmin(admin.ModelAdmin):
         'business_email', 
         'registration_status',
         'date_registered',
-        'monthly_volume',
-        'years_in_business',
         'approval_actions'
     ]
     
     list_filter = [
         'is_approved',
-        'date_registered', 
-        'account_type',
-        'years_in_business'
+        'date_registered',
     ]
     
     search_fields = [
@@ -77,18 +73,7 @@ class CompanyAdmin(admin.ModelAdmin):
                 'lending_policies'
             )
         }),
-        ('Banking Information', {
-            'fields': (
-                'bank_name',
-                'account_holder_name',
-                'account_number',
-                'routing_number',
-                'account_type',
-                'swift_code',
-                'monthly_volume',
-                'years_in_business'
-            )
-        }),
+        # ENTIRE 'Banking Information' FIELDSET REMOVED
         ('Compliance & Settings', {
             'fields': (
                 'terms_accepted',
@@ -106,6 +91,7 @@ class CompanyAdmin(admin.ModelAdmin):
     )
     
     actions = ['approve_companies', 'reject_companies']
+
     
     def registration_status(self, obj):
         if obj.is_approved:

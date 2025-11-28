@@ -243,12 +243,11 @@ def companyRegistration(request):
                     messages.error(request, 'Email address already registered.')
                     return render(request, 'CompanyRegistration/registerCompany.html')
                 
-                # Create User instance
                 user = User.objects.create_user(
                     username=username,
                     email=email,
                     password=password,
-                    is_active=False  # Will be activated after admin approval
+                    is_active=True
                 )
                 
                 # Process loan products (checkbox values)
@@ -266,10 +265,6 @@ def companyRegistration(request):
                 late_payment_fee = request.POST.get('late_payment_fee')
                 if late_payment_fee == '':
                     late_payment_fee = None
-                
-                swift_code = request.POST.get('swift_code')
-                if swift_code == '':
-                    swift_code = None
                 
                 website = request.POST.get('website')
                 if website == '':
@@ -304,17 +299,7 @@ def companyRegistration(request):
                     max_loan_term=request.POST.get('max_loan_term'),
                     lending_policies=request.POST.get('lending_policies'),
                     
-                    # Step 3: Banking Information
-                    bank_name=request.POST.get('bank_name'),
-                    account_holder_name=request.POST.get('account_holder_name'),
-                    account_number=request.POST.get('account_number'),
-                    routing_number=request.POST.get('routing_number'),
-                    account_type=request.POST.get('account_type'),
-                    swift_code=swift_code,
-                    monthly_volume=request.POST.get('monthly_volume'),
-                    years_in_business=request.POST.get('years_in_business'),
-                    
-                    # Step 4: Compliance
+                    # Step 3: Compliance (renumbered from Step 4)
                     terms_accepted=request.POST.get('terms_accepted') == 'on',
                     compliance_accepted=request.POST.get('compliance_accepted') == 'on',
                     marketing_consent=request.POST.get('marketing_consent') == 'on',
@@ -322,8 +307,7 @@ def companyRegistration(request):
                 
                 messages.success(
                     request, 
-                    'Registration successful! Your application is under review. '
-                    'You will receive an email notification once your account is approved.'
+                    'Registration successful! You are redirected to the login page. Please sign in to your account.'
                 )
                 
                 # Redirect to a success page or login page

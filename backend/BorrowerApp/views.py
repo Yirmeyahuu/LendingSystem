@@ -137,8 +137,6 @@ def applyLoan(request):
             amount=amount,
             status='pending'
         )
-        # Handle document uploads (save to loan or another model as needed)
-        # Example: loan.income_doc = income_doc; loan.payslip_doc = payslip_doc
 
         messages.success(request, "Your loan application has been submitted and is now pending review.")
         return redirect('borrower-apply-loan')

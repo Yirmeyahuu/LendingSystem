@@ -6,12 +6,6 @@ from django.db import models
 from BorrowerApp.models import Borrower
 
 class Company(models.Model):
-    ACCOUNT_TYPE_CHOICES = [
-        ('checking', 'Checking Account'),
-        ('savings', 'Savings Account'),
-        ('business', 'Business Account'),
-    ]
-    
     LOAN_PRODUCT_CHOICES = [
         ('personal_loans', 'Personal Loans'),
         ('business_loans', 'Business Loans'),
@@ -50,23 +44,14 @@ class Company(models.Model):
     max_loan_term = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(600)], verbose_name="Maximum Loan Term (months)")
     lending_policies = models.TextField(verbose_name="Loan Approval Criteria & Policies")
     
-    # Step 3: Banking Information
-    bank_name = models.CharField(max_length=255)
-    account_holder_name = models.CharField(max_length=255)
-    account_number = models.CharField(max_length=50)
-    routing_number = models.CharField(max_length=20)
-    account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPE_CHOICES)
-    swift_code = models.CharField(max_length=20, blank=True, null=True, verbose_name="SWIFT Code")
-    monthly_volume = models.DecimalField(max_digits=15, decimal_places=2, validators=[MinValueValidator(0)], verbose_name="Expected Monthly Loan Volume")
-    years_in_business = models.PositiveIntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)], verbose_name="Years in Lending Business")
     
-    # Step 4: Account Settings & Compliance
+    # Step 3: Account Settings & Compliance
     terms_accepted = models.BooleanField(default=False, verbose_name="Terms Accepted")
     compliance_accepted = models.BooleanField(default=False, verbose_name="Compliance Acknowledged")
     marketing_consent = models.BooleanField(default=False, verbose_name="Marketing Consent")
     
     # System fields
-    is_approved = models.BooleanField(default=False, verbose_name="Registration Approved")
+    is_approved = models.BooleanField(default=True, verbose_name="Registration Approved")
     date_registered = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     
