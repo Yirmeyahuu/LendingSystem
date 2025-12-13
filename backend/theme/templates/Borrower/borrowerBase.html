@@ -131,7 +131,7 @@
         <p class="text-sm text-gray-600 mb-4">Are you sure you want to logout?</p>
         <div class="flex justify-end space-x-2">
             <button id="cancel-logout" class="px-4 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-100 hover:border-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Cancel</button>
-            <a id="confirm-logout" href="{% url 'company-logout' %}" class="px-4 py-2 rounded-lg bg-white border-2 font-medium border-rose-200 text-rose-700 hover:border-rose-500 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">Logout</a>
+            <a id="confirm-logout" href="{% url 'borrower-logout' %}" class="px-4 py-2 rounded-lg bg-white border-2 font-medium border-rose-200 text-rose-700 hover:border-rose-500 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">Logout</a>
         </div>
     </div>
 </div>
@@ -382,7 +382,24 @@
     </div>
 
     <script>
-        // Confirmation dialog for logout
+        // Show logout modal (Desktop)
+        function showLogoutModal(event) {
+            event.preventDefault();
+            const modal = document.getElementById('logout-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
+        }
+
+        // Hide logout modal
+        function hideLogoutModal() {
+            const modal = document.getElementById('logout-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Confirmation dialog for logout (Mobile)
         function confirmLogout(event) {
             event.preventDefault();
             
@@ -398,40 +415,37 @@
             const dropdown = document.getElementById('mobile-dropdown');
             const burgerButton = document.getElementById('mobile-menu-toggle');
             
-            dropdown.classList.toggle('open');
-            burgerButton.classList.toggle('burger-open');
+            if (dropdown && burgerButton) {
+                dropdown.classList.toggle('open');
+                burgerButton.classList.toggle('burger-open');
+            }
         }
         
-        // Toggle mobile menu on button click
-        document.getElementById('mobile-menu-toggle')?.addEventListener('click', toggleMobileMenu);
-        
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', function(event) {
-            const dropdown = document.getElementById('mobile-dropdown');
-            const burgerButton = document.getElementById('mobile-menu-toggle');
-            
-            if (window.innerWidth < 1024 && 
-                !dropdown?.contains(event.target) && 
-                !burgerButton?.contains(event.target)) {
-                dropdown?.classList.remove('open');
-                burgerButton?.classList.remove('burger-open');
-            }
-        });
-
-        // Close mobile menu when window is resized to desktop
-        window.addEventListener('resize', function() {
-            if (window.innerWidth >= 1024) {
-                const dropdown = document.getElementById('mobile-dropdown');
-                const burgerButton = document.getElementById('mobile-menu-toggle');
-                dropdown?.classList.remove('open');
-                burgerButton?.classList.remove('burger-open');
-            }
-        });
-    </script>
-        
-    <script>
-        // Mobile dropdown for "My Loans"
+        // Initialize event listeners when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
+            // Cancel button handler for logout modal
+            const cancelButton = document.getElementById('cancel-logout');
+            if (cancelButton) {
+                cancelButton.addEventListener('click', hideLogoutModal);
+            }
+
+            // Close modal when clicking outside
+            const logoutModal = document.getElementById('logout-modal');
+            if (logoutModal) {
+                logoutModal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        hideLogoutModal();
+                    }
+                });
+            }
+
+            // Toggle mobile menu on button click
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            }
+            
+            // Mobile dropdown for "My Loans"
             const mobileMyLoansToggle = document.getElementById('mobile-myloans-toggle');
             const mobileMyLoansDropdown = document.getElementById('mobile-myloans-dropdown');
             
@@ -446,6 +460,32 @@
                         mobileMyLoansDropdown.classList.add('hidden');
                     }
                 });
+            }
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('mobile-dropdown');
+            const burgerButton = document.getElementById('mobile-menu-toggle');
+            
+            if (window.innerWidth < 1024 && 
+                dropdown && burgerButton &&
+                !dropdown.contains(event.target) && 
+                !burgerButton.contains(event.target)) {
+                dropdown.classList.remove('open');
+                burgerButton.classList.remove('burger-open');
+            }
+        });
+
+        // Close mobile menu when window is resized to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 1024) {
+                const dropdown = document.getElementById('mobile-dropdown');
+                const burgerButton = document.getElementById('mobile-menu-toggle');
+                if (dropdown && burgerButton) {
+                    dropdown.classList.remove('open');
+                    burgerButton.classList.remove('burger-open');
+                }
             }
         });
     </script>
