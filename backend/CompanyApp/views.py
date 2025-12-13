@@ -21,7 +21,7 @@ from django.http import HttpResponseForbidden
 @company_required
 def companyDashboard(request):
     company = request.user.company_profile
-    total_applicants = Borrower.objects.filter(is_active=True).count()
+    total_applications = LoanApplication.objects.filter(company=company).count()
     active_loans = 0
     total_disbursed = 0
     default_rate = 0
@@ -59,7 +59,7 @@ def companyDashboard(request):
     satisfaction_score = round(satisfaction_score, 1)
 
     context = {
-        'total_applicants': total_applicants,
+        'total_applications': total_applications,
         'active_loans': active_loans,
         'total_disbursed': total_disbursed,
         'default_rate': default_rate,
