@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         card.addEventListener('click', function(e) {
-            e.preventDefault();
+            // Removed e.preventDefault() to allow navigation
             // Add haptic feedback if available
             if (navigator.vibrate) {
                 navigator.vibrate(50);

@@ -14,6 +14,8 @@ from django.db.models import Count, Avg, Q, Sum
 import datetime
 from django.db import models
 from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponseForbidden
 
 #Company Dashboard function
 @company_required
@@ -634,3 +636,45 @@ def operationalReports(request):
     }
 
     return render(request, 'ReportSubmenus/operationalReports.html', context)
+
+@company_required
+def view_loan_application(request, application_id):
+    company = request.user.company_profile
+    application = get_object_or_404(LoanApplication, id=application_id)
+
+    # Ensure the company is authorized to view this application
+    if application.company != company:
+        return HttpResponseForbidden("You are not authorized to view this application.")
+
+    context = {
+        'application': application,
+    }
+    return render(request, 'CompanyPages/view_loan_application.html', context)
+
+@company_required
+def approve_loan_application(request, application_id):
+    if request.method == 'POST':
+        company = request.user.company_profile
+        try:
+            application = LoanApplication.objects.get(id=application_id, company=company)
+            application.status = 'approved'
+            application.approved_date = timezone.now()
+            application.save()
+            messages.success(request, f"Loan application #{application.id} has been approved.")
+        except LoanApplication.DoesNotExist:
+            messages.error(request, "Loan application not found or you don't have permission to approve it.")
+    return redirect('company-loan-applications')
+
+@company_required
+def reject_loan_application(request, application_id):
+    if request.method == 'POST':
+        company = request.user.company_profile
+        try:
+            application = LoanApplication.objects.get(id=application_id, company=company)
+            # You might want to add a 'rejected' status to your model choices
+            application.status = 'rejected' 
+            application.save()
+            messages.warning(request, f"Loan application #{application.id} has been rejected.")
+        except LoanApplication.DoesNotExist:
+            messages.error(request, "Loan application not found or you don't have permission to reject it.")
+    return redirect('company-loan-applications')

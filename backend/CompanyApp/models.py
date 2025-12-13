@@ -110,6 +110,7 @@ class LoanApplication(models.Model):
     status = models.CharField(max_length=20, choices=[
         ('pending', 'Pending'),
         ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
         ('review', 'Under Review'),
         ('delinquent', 'Delinquent'),
     ])

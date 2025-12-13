@@ -6,7 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Avendro - Borrower Portal{% endblock %}</title>
-    <link rel="icon" href="{% static 'assets/img/Avendro.svg' %}">
+    <link rel="icon" href="{% static 'assets/img/AvendroRel.svg' %}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <!-- Tailwind CSS -->
     {% tailwind_css %}
 
@@ -121,6 +123,19 @@
     
     {% block extra_css %}{% endblock %}
 </head>
+
+<!-- Logout Confirmation Modal -->
+<div id="logout-modal" class="fixed inset-0 z-[9999] flex items-center justify-center backdrop-blur-xs bg-gray-900/80 bg-opacity-40 hidden">
+    <div class="bg-white rounded-xl shadow-lg p-6 w-80">
+        <h2 class="text-lg font-semibold mb-2 text-gray-900">Confirm Logout</h2>
+        <p class="text-sm text-gray-600 mb-4">Are you sure you want to logout?</p>
+        <div class="flex justify-end space-x-2">
+            <button id="cancel-logout" class="px-4 py-2 rounded-lg bg-white border-2 border-gray-200 text-gray-700 font-medium hover:bg-gray-100 hover:border-gray-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">Cancel</button>
+            <a id="confirm-logout" href="{% url 'company-logout' %}" class="px-4 py-2 rounded-lg bg-white border-2 font-medium border-rose-200 text-rose-700 hover:border-rose-500 hover:bg-rose-200 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2">Logout</a>
+        </div>
+    </div>
+</div>
+
 <body class="bg-gray-50 min-h-screen">
 
 <!-- Global Notification-->
@@ -140,22 +155,22 @@
 
     <div class="flex h-screen">
         <!-- Desktop Sidebar -->
-        <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-white lg:shadow-lg lg:z-50">
+        <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-slate-900 lg:shadow-lg lg:z-50">
             <!-- Logo -->
-            <div class="flex items-center justify-center h-16 bg-gradient-to-r from-blue-600 to-blue-700">
+            <div class="flex items-center justify-center h-16 border-b border-slate-700">
                 <div class="flex items-center space-x-2">
                     <div class="w-8 h-8 flex items-center justify-center">
-                        <img src="{% static 'assets/img/Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
+                        <img src="{% static 'assets/img/AvendroRel.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
                     </div>
                     <span class="text-xl font-bold text-white">Avendro</span>
                 </div>
             </div>
             
             <!-- Borrower Info -->
-            <div class="p-4 border-b border-gray-200">
+            <div class="p-4 border-b border-slate-700">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span class="text-blue-600 font-bold text-lg">
+                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-lg font-bold text-white">
                             {% if request.user.borrower_profile %}
                                 {{ request.user.borrower_profile.first_name|slice:":1" }}{{ request.user.borrower_profile.last_name|slice:":1" }}
                             {% elif request.user.first_name %}
@@ -166,7 +181,7 @@
                         </span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900 truncate">
+                        <p class="text-sm font-medium text-white truncate">
                             {% if request.user.borrower_profile %}
                                 {{ request.user.borrower_profile.full_name }}
                             {% elif request.user.first_name %}
@@ -175,62 +190,51 @@
                                 Borrower Name
                             {% endif %}
                         </p>
-                        <p class="text-xs text-gray-500">Borrower Account</p>
+                        <p class="text-xs text-slate-400">Borrower Account</p>
                     </div>
                 </div>
             </div>
             
             <!-- Desktop Navigation Menu -->
             <nav class="flex-1 mt-4 px-4 space-y-2 overflow-y-auto">
-                <a href="{% url 'borrower-dashboard' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group {% if request.resolver_match.url_name == 'borrower-dashboard' %}nav-item-active{% endif %}">
-                    <i class="fas fa-chart-pie mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                <a href="{% url 'borrower-dashboard' %}" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group {% if request.resolver_match.url_name == 'borrower-dashboard' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fas fa-chart-pie w-5 h-5 mr-3 text-center {% if request.resolver_match.url_name != 'borrower-dashboard' %}text-slate-400 group-hover:text-white{% endif %}"></i>
                     Dashboard
                 </a>
-                <li class="relative list-none" id="myloans-menu-li">
-                    <button id="myloans-toggle"
-                        type="button"
-                        class="flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors group text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                        <i class="fas fa-file-alt mr-3 text-gray-400 group-hover:text-blue-600"></i>
-                        My Loans
-                        <svg class="ml-auto w-4 h-4 text-gray-400 group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                        </svg>
-                    </button>
-                    <ul id="myloans-dropdown"
-                        class="absolute left-0 w-full mt-2 bg-white rounded-lg shadow-lg z-50 hidden">
-                        <li>
-                            <a href="{% url 'borrower-active-loan' %}" class="block px-6 py-3 text-sm rounded-md transition-colors {% if request.resolver_match.url_name == 'borrower-active-loan' %}bg-blue-100 font-bold text-blue-700{% else %}text-gray-700 hover:bg-blue-50{% endif %}">
-                                Active Loan
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'borrower-loan-history' %}" class="block px-6 py-3 text-sm rounded-md transition-colors {% if request.resolver_match.url_name == 'borrower-loan-history' %}bg-blue-100 font-bold text-blue-700{% else %}text-gray-700 hover:bg-blue-50{% endif %}">
-                                Loan History
-                            </a>
-                        </li>
-                    </ul>
-                </li>
 
-                <a href="{% url 'borrower-apply-loan' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
-                    <i class="fas fa-list-alt mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                <!-- My Loans Dropdown -->
+                <div x-data="{ open: false }" class="relative">
+                    <button @click="open = !open" type="button" class="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group text-slate-300 hover:bg-slate-800 hover:text-white cursor-pointer">
+                        <i class="fas fa-file-alt w-5 h-5 mr-3 text-center text-slate-400 group-hover:text-white"></i>
+                        <span class="flex-1 text-left">My Loans</span>
+                        <i class="fas fa-chevron-down w-4 h-4 ml-auto transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+                    </button>
+                    <div x-show="open" @click.away="open = false" x-collapse class="mt-2 space-y-1 ml-4 pl-5 border-l border-slate-700">
+                        <a href="{% url 'borrower-active-loan' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'borrower-active-loan' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Active Loan</a>
+                        <a href="{% url 'borrower-loan-history' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'borrower-loan-history' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Loan History</a>
+                    </div>
+                </div>
+
+                <a href="{% url 'borrower-apply-loan' %}" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group {% if request.resolver_match.url_name == 'borrower-apply-loan' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fas fa-list-alt w-5 h-5 mr-3 text-center {% if request.resolver_match.url_name != 'borrower-apply-loan' %}text-slate-400 group-hover:text-white{% endif %}"></i>
                     Apply for Loan
                 </a>
 
-                <a href="{% url 'borrower-payments' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
-                    <i class="fas fa-handshake mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                <a href="{% url 'borrower-payments' %}" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group {% if request.resolver_match.url_name == 'borrower-payments' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fas fa-handshake w-5 h-5 mr-3 text-center {% if request.resolver_match.url_name != 'borrower-payments' %}text-slate-400 group-hover:text-white{% endif %}"></i>
                     Payments
                 </a>
                 
-                <a href="{% url 'borrower-profile' %}" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors group">
-                    <i class="fas fa-credit-card mr-3 text-gray-400 group-hover:text-blue-600"></i>
+                <a href="{% url 'borrower-profile' %}" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group {% if request.resolver_match.url_name == 'borrower-profile' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
+                    <i class="fas fa-user-cog w-5 h-5 mr-3 text-center {% if request.resolver_match.url_name != 'borrower-profile' %}text-slate-400 group-hover:text-white{% endif %}"></i>
                     Profile & Settings
                 </a>
             </nav>
             
             <!-- Desktop Bottom Menu -->
-            <div class="p-4 border-t border-gray-200">
-                <a href="{% url 'borrower-logout' %}" onclick="return confirmLogout(event)" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-red-50 hover:text-red-600 transition-colors group">
-                    <i class="fas fa-sign-out-alt mr-3 text-gray-400 group-hover:text-red-600"></i>
+            <div class="mt-auto p-4 border-t border-slate-700">
+                <a href="#" onclick="showLogoutModal(event)" class="flex items-center px-4 py-2.5 text-sm font-medium text-slate-300 rounded-lg hover:bg-red-900/40 hover:text-red-400 transition-colors group">
+                    <i class="fas fa-sign-out-alt w-5 h-5 mr-3 text-center text-slate-400 group-hover:text-red-400"></i>
                     Logout
                 </a>
             </div>
@@ -251,7 +255,7 @@
                     <!-- Mobile Logo -->
                     <div class="flex items-center space-x-2">
                         <div class="w-8 h-8 flex items-center justify-center">
-                            <img src="{% static 'assets/img/Avendro.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
+                            <img src="{% static 'assets/img/AvendroRel.svg' %}" alt="Avendro Logo" class="w-full h-full object-contain">
                         </div>
                         <span class="text-xl font-bold text-gray-900">Avendro</span>
                     </div>
@@ -319,31 +323,26 @@
                                 </svg>
                             </button>
                             <div id="mobile-myloans-dropdown" class="mt-2 space-y-1 pl-8 hidden">
-                                <a href="#" class="block py-2 text-sm text-gray-700 hover:text-blue-700 {% if request.resolver_match.url_name == 'borrower-active-loan' %}font-bold text-blue-700{% endif %}">
+                                <a href="{% url 'borrower-active-loan' %}" class="block py-2 text-sm text-gray-700 hover:text-blue-700 {% if request.resolver_match.url_name == 'borrower-active-loan' %}font-bold text-blue-700{% endif %}">
                                     Active Loan
                                 </a>
-                                <a href="#" class="block py-2 text-sm text-gray-700 hover:text-blue-700 {% if request.resolver_match.url_name == 'borrower-loan-history' %}font-bold text-blue-700{% endif %}">
+                                <a href="{% url 'borrower-loan-history' %}" class="block py-2 text-sm text-gray-700 hover:text-blue-700 {% if request.resolver_match.url_name == 'borrower-loan-history' %}font-bold text-blue-700{% endif %}">
                                     Loan History
                                 </a>
                             </div>
                         </div>
                         
-                        <a href="#" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
+                        <a href="{% url 'borrower-apply-loan' %}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
                             <i class="fas fa-list-alt mr-3 text-gray-400"></i>
                             Apply for Loan
                         </a>
                         
-                        <a href="#" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
+                        <a href="{% url 'borrower-payments' %}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
                             <i class="fas fa-handshake mr-3 text-gray-400"></i>
                             Payments
                         </a>
                         
-                        <a href="#" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
-                            <i class="fas fa-credit-card mr-3 text-gray-400"></i>
-                            Account
-                        </a>
-                        
-                        <a href="#" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
+                        <a href="{% url 'borrower-profile' %}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-blue-600 transition-all">
                             <i class="fas fa-chart-line mr-3 text-gray-400"></i>
                             Profile & Settings
                         </a>
@@ -429,37 +428,28 @@
             }
         });
     </script>
-
+        
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const toggle = document.getElementById('myloans-toggle');
-            const dropdown = document.getElementById('myloans-dropdown');
-            document.addEventListener('click', function(e) {
-                if (toggle.contains(e.target)) {
-                    dropdown.classList.toggle('hidden');
-                } else if (!dropdown.contains(e.target)) {
-                    dropdown.classList.add('hidden');
-                }
-            });
-        });
-    </script>
-
-    <script>
+        // Mobile dropdown for "My Loans"
         document.addEventListener('DOMContentLoaded', function() {
             const mobileMyLoansToggle = document.getElementById('mobile-myloans-toggle');
             const mobileMyLoansDropdown = document.getElementById('mobile-myloans-dropdown');
-            mobileMyLoansToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                mobileMyLoansDropdown.classList.toggle('hidden');
-            });
-            document.addEventListener('click', function(e) {
-                if (!mobileMyLoansToggle.contains(e.target) && !mobileMyLoansDropdown.contains(e.target)) {
-                    mobileMyLoansDropdown.classList.add('hidden');
-                }
-            });
+            
+            if (mobileMyLoansToggle && mobileMyLoansDropdown) {
+                mobileMyLoansToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    mobileMyLoansDropdown.classList.toggle('hidden');
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!mobileMyLoansToggle.contains(e.target) && !mobileMyLoansDropdown.contains(e.target)) {
+                        mobileMyLoansDropdown.classList.add('hidden');
+                    }
+                });
+            }
         });
     </script>
-    
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

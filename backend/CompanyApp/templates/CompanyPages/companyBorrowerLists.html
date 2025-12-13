@@ -20,18 +20,18 @@
             <p class="mt-1 text-sm text-gray-600">Manage and monitor all your borrowers</p>
         </div>
         <div class="mt-4 sm:mt-0 flex space-x-3">
-            <button id="exportBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <button id="exportBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <i class="fas fa-download mr-2"></i>
                 Export
             </button>
-            <button id="addBorrowerBtn" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <button id="addBorrowerBtn" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                 <i class="fas fa-plus mr-2"></i>
                 Add Borrower
             </button>
         </div>
     </div>
 </div>
-
+₱
 <!-- Statistics Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
     <!-- Total Borrowers -->
@@ -40,21 +40,11 @@
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Borrowers</p>
                 <p class="text-3xl font-bold text-gray-900">{{ total_borrowers }}</p>
-                <p class="text-sm text-blue-600 flex items-center mt-2">
-                    <!-- Up Arrow SVG -->
-                    <svg class="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M5 10l7-7 7 7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    +{{ total_borrowers|add:"-1200" }} this month
-                </p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <!-- Users SVG -->
                 <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="9" cy="7" r="4" stroke-width="2"/>
-                    <circle cx="17" cy="7" r="4" stroke-width="2"/>
-                    <path d="M2 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke-width="2"/>
-                    <path d="M15 21v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
+                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
                 </svg>
             </div>
         </div>
@@ -66,21 +56,11 @@
             <div>
                 <p class="text-sm font-medium text-gray-600">Active Borrowers</p>
                 <p class="text-3xl font-bold text-gray-900">{{ active_borrowers }}</p>
-                <p class="text-sm text-green-600 flex items-center mt-2">
-                    <!-- Check Circle SVG -->
-                    <svg class="w-4 h-4 mr-1 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                        <path d="M9 12l2 2 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    {{ active_borrowers|divisibleby:total_borrowers|floatformat:0 }}% active rate
-                </p>
             </div>
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <!-- User Check SVG -->
-                <svg class="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="8" r="4" stroke-width="2"/>
-                    <path d="M6 20v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
-                    <polyline points="16 11 18 13 22 9" stroke-width="2"/>
+                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
                 </svg>
             </div>
         </div>
@@ -92,21 +72,11 @@
             <div>
                 <p class="text-sm font-medium text-gray-600">Delinquent Borrowers</p>
                 <p class="text-3xl font-bold text-gray-900">{{ delinquent_borrowers }}</p>
-                <p class="text-sm text-red-600 flex items-center mt-2">
-                    <!-- Exclamation SVG -->
-                    <svg class="w-4 h-4 mr-1 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M12 9v2m0 4h.01" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                    </svg>
-                    Needs attention
-                </p>
             </div>
             <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
                 <!-- User Times SVG -->
                 <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="8" r="4" stroke-width="2"/>
-                    <path d="M6 20v-2a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v2" stroke-width="2"/>
-                    <line x1="18" y1="6" x2="6" y2="18" stroke-width="2"/>
+                    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
                 </svg>
             </div>
         </div>
@@ -118,18 +88,10 @@
             <div>
                 <p class="text-sm font-medium text-gray-600">Portfolio Value</p>
                 <p class="text-3xl font-bold text-gray-900">₱{{ portfolio_value|floatformat:2 }}</p>
-                <p class="text-sm text-purple-600 flex items-center mt-2">
-                    <!-- Chart Line SVG -->
-                    <svg class="w-4 h-4 mr-1 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <polyline points="4 14 8 10 12 14 16 8 20 12" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    Outstanding loans
-                </p>
             </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+            <div class="w-10 h-10 p-1.5 bg-purple-100 rounded-lg flex items-center justify-center">
                 <!-- Peso Sign SVG -->
-                <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <text x="6" y="19" font-size="16" font-family="Arial" font-weight="semibold" fill="currentColor">₱</text>
+                <svg id="Layer_1" data-name="Layer 1" class="w-full h-full fill-purple-700" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 119.43 122.88"><title>philippine-peso</title><path d="M118.45,51l1,1-.74,9.11H99A40.52,40.52,0,0,1,81.88,78.43q-11.44,6.28-27.71,7h-15l.5,37.43H21.42l.74-36.94-.24-24.87H1L0,59.84.74,51H21.92l-.25-15.26H1l-1-1,.74-9.11H21.67L21.42.25,63.29,0Q78.8,0,88.65,6.53T102,25.61h16.5l1,1.23-.74,8.87h-15v3.94A53.17,53.17,0,0,1,102.44,51ZM39.65,25.61H81.26Q74.85,14,58.61,13.3L39.89,14l-.24,11.57ZM39.4,51H83.23a39.51,39.51,0,0,0,1.23-9.6,46.17,46.17,0,0,0-.24-5.66H39.65L39.4,51ZM58.61,71.91q12.56-2.72,19.21-10.84H39.4l-.25,10.1,19.46.74Z"/>
                 </svg>
             </div>
         </div>
@@ -144,14 +106,14 @@
         <div class="md:col-span-2">
             <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Borrowers</label>
             <div class="relative">
-                <input type="text" id="search" name="search" value="{{ search }}" class="block w-full pl-3 pr-3 py-2 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by name or email...">
+                <input type="text" id="search" name="search" value="{{ search }}" class="block w-full pl-3 pr-3 py-2 text-gray-800 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Search by name or email...">
             </div>
         </div>
 
         <!-- Status Filter -->
         <div>
             <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select id="status" name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+            <select id="status" name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 <option value="">All Status</option>
                 <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
                 <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
@@ -163,7 +125,7 @@
         <!-- Risk Level -->
         <div>
             <label for="risk" class="block text-sm font-medium text-gray-700 mb-2">Risk Level</label>
-            <select id="risk" name="risk" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-800 focus:border-green-500">
+            <select id="risk" name="risk" class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 focus:border-blue-500">
                 <option value="">All Risk Levels</option>
                 <option value="low" {% if risk == 'low' %}selected{% endif %}>Low Risk</option>
                 <option value="medium" {% if risk == 'medium' %}selected{% endif %}>Medium Risk</option>
@@ -180,7 +142,7 @@
             <a href="{% url 'company-borrower-lists' %}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                 Clear Filters
             </a>
-            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700">
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
                 Apply Filters
             </button>
         </div>
@@ -197,7 +159,7 @@
                 <button class="text-sm text-gray-600 hover:text-gray-900" title="Grid View">
                     <i class="fas fa-th"></i>
                 </button>
-                <button class="text-sm text-green-600" title="List View">
+                <button class="text-sm text-blue-600" title="List View">
                     <i class="fas fa-list"></i>
                 </button>
             </div>
@@ -209,7 +171,7 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Borrower
@@ -241,7 +203,7 @@
                 {% for borrower in borrowers %}
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
@@ -286,7 +248,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="text-sm font-medium text-green-600">
+                            <div class="text-sm font-medium text-blue-600">
                                 {{ borrower.credit_score|default:"-" }}
                             </div>
                             <!-- Add progress bar if you have credit score -->
@@ -297,7 +259,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         {% if borrower.is_active %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                                 Active
                             </span>
                         {% else %}
@@ -311,7 +273,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Profile">
+                            <button class="text-blue-600 hover:text-blue-900" title="View Profile">
                                 <!-- SVG or icon -->
                             </button>
                             <button class="text-blue-600 hover:text-blue-900" title="View Loans">
@@ -356,7 +318,7 @@
     
                 {% for num in paginator.page_range %}
                     {% if num == current_page %}
-                        <span aria-current="page" class="z-10 bg-green-50 border-green-500 text-green-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</span>
+                        <span aria-current="page" class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</span>
                     {% elif num >= current_page|add:'-2' and num <= current_page|add:'2' %}
                         <a href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}{% if risk %}&risk={{ risk }}{% endif %}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
                     {% elif num == 1 or num == total_pages %}

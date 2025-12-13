@@ -9,6 +9,9 @@ urlpatterns = [
 
     #Url of Company Loan Application
     path('Loan-Applications/', views.loanApplication, name='company-loan-applications'),
+    path('loan-applications/<int:application_id>/', views.view_loan_application, name='view-loan-application'),
+    path('loan-applications/<int:application_id>/approve/', views.approve_loan_application, name='approve-loan-application'),
+    path('loan-applications/<int:application_id>/reject/', views.reject_loan_application, name='reject-loan-application'),
 
     #Url of Company Borrower List
     path('Borrower-Lists/', views.borrowerLists, name='company-borrower-lists'),

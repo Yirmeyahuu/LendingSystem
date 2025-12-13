@@ -143,7 +143,7 @@ def applyLoan(request):
 
     return render(request, 'ApplyLoan/applyLoan.html', {'companies': companies})
 
-#borrower Payments  function
+#borrower Payments function
 @borrower_required
 def borrowerPayments(request):
     borrower = request.user.borrower_profile
