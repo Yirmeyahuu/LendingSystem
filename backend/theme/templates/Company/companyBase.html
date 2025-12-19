@@ -250,6 +250,27 @@
     </div>
 </div>
 
+<!-- View Loan Application Modal -->
+<div id="viewLoanModal" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-xl bg-white">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-2xl font-bold text-gray-900">Loan Application Details</h3>
+            <button onclick="closeViewModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div id="modalContent" class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            <!-- Loading State -->
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <body class="bg-gray-50 min-h-screen">
     <div class="flex h-screen">
         <aside class="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:bg-slate-900 lg:shadow-lg lg:z-50">

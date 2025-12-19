@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout
 from django.contrib import messages
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 import json
@@ -11,11 +11,16 @@ from BorrowerApp.models import Borrower
 from CompanyApp.models import Company, LoanApplication, Notification
 from django.utils import timezone
 from django.db.models import Count, Avg, Q, Sum
-import datetime
+from datetime import datetime, timedelta, date
 from django.db import models
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponseForbidden
+from django.contrib.auth.hashers import make_password
+from decimal import Decimal, InvalidOperation
+import re
+
+
 
 #Company Dashboard function
 @company_required
@@ -71,6 +76,7 @@ def companyDashboard(request):
     }
     return render(request, 'CompanyPages/companyDashboard.html', context)
 
+
 #Company Loan Application function
 @company_required
 def loanApplication(request):
@@ -81,8 +87,11 @@ def loanApplication(request):
     status = request.GET.get('status', '')
     amount = request.GET.get('amount', '')
 
-    # Base queryset
-    applications_qs = LoanApplication.objects.filter(company=company).select_related('borrower')
+    # Base queryset - Exclude rejected by default unless specifically filtered
+    if status == 'rejected':
+        applications_qs = LoanApplication.objects.filter(company=company, status='rejected').select_related('borrower')
+    else:
+        applications_qs = LoanApplication.objects.filter(company=company).exclude(status='rejected').select_related('borrower')
 
     # Search by name, email, or amount
     if search:
@@ -92,8 +101,8 @@ def loanApplication(request):
             Q(amount__icontains=search)
         )
 
-    # Filter by status
-    if status:
+    # Filter by status (if not rejected, since we handled that above)
+    if status and status != 'rejected':
         applications_qs = applications_qs.filter(status=status)
 
     # Filter by amount range
@@ -107,11 +116,15 @@ def loanApplication(request):
         elif amount == '100000+':
             applications_qs = applications_qs.filter(amount__gt=100000)
 
-    # Statistics (use filtered queryset for count if you want)
-    total_applications = LoanApplication.objects.filter(company=company).count()
+    # Statistics (exclude rejected from counts)
+    total_applications = LoanApplication.objects.filter(company=company).exclude(status='rejected').count()
     pending_review = LoanApplication.objects.filter(company=company, status='pending').count()
     approved = LoanApplication.objects.filter(company=company, status='approved').count()
-    total_amount = LoanApplication.objects.filter(company=company).aggregate(total=models.Sum('amount'))['total'] or 0
+    rejected = LoanApplication.objects.filter(company=company, status='rejected').count()
+    total_amount = LoanApplication.objects.filter(
+        company=company, 
+        status='approved'
+    ).aggregate(total=models.Sum('amount'))['total'] or 0
 
     # Pagination
     paginator = Paginator(applications_qs.order_by('-created_at'), 20)
@@ -122,6 +135,7 @@ def loanApplication(request):
         'total_applications': total_applications,
         'pending_review': pending_review,
         'approved': approved,
+        'rejected': rejected,
         'total_amount': total_amount,
         'page_obj': page_obj,
         'applications': page_obj.object_list,
@@ -131,6 +145,82 @@ def loanApplication(request):
         'amount': amount,
     }
     return render(request, 'CompanyPages/companyLoanApplications.html', context)
+
+
+# View Loan Application Details (AJAX)
+@company_required
+def viewLoanApplication(request, application_id):
+    """
+    Return loan application details as JSON for modal display
+    """
+    try:
+        company = request.user.company_profile
+        application = get_object_or_404(
+            LoanApplication.objects.select_related('borrower__user'),
+            id=application_id,
+            company=company
+        )
+        
+        borrower = application.borrower
+        
+        # Format addresses safely
+        current_address = None
+        if borrower.current_street_address:
+            current_address = f"{borrower.current_street_address}, {borrower.current_city}, {borrower.current_state} {borrower.current_postal_code}"
+        
+        permanent_address = None
+        if borrower.permanent_street_address:
+            permanent_address = f"{borrower.permanent_street_address}, {borrower.permanent_city}, {borrower.permanent_state} {borrower.permanent_postal_code}"
+        
+        data = {
+            'success': True,
+            'application': {
+                'id': application.id,
+                'status': application.status,
+                'amount': str(application.amount),
+                'product_type': getattr(application, 'product_type', 'Personal Loan'),
+                'purpose': getattr(application, 'purpose', 'Not specified'),
+                'term': getattr(application, 'term', None),
+                'interest_rate': str(application.interest_rate) if hasattr(application, 'interest_rate') and application.interest_rate else None,
+                'created_at': application.created_at.strftime('%B %d, %Y at %I:%M %p'),
+                'borrower': {
+                    'full_name': borrower.full_name,
+                    'email': borrower.user.email,
+                    'mobile_number': borrower.mobile_number or 'Not provided',
+                    'date_of_birth': borrower.date_of_birth.strftime('%B %d, %Y') if borrower.date_of_birth else 'Not provided',
+                    'gender': borrower.gender or 'Not specified',
+                    'marital_status': borrower.marital_status or 'Not specified',
+                    'current_address': current_address or 'Not provided',
+                    'permanent_address': permanent_address or 'Not provided',
+                    'employment_status': borrower.employment_status or 'Not specified',
+                    'company_name': borrower.company_name or None,
+                    'job_title': borrower.job_title or None,
+                    'monthly_income': str(borrower.monthly_income) if borrower.monthly_income else '0',
+                    'income_source': borrower.income_source or 'Not specified',
+                    'bank_name': borrower.bank_name or None,
+                    'account_number': borrower.account_number or None,
+                }
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except LoanApplication.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Loan application not found.'
+        }, status=404)
+    except AttributeError as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Missing attribute: {str(e)}'
+        }, status=500)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
 
 #Company Borrower List Function
 @company_required
@@ -142,13 +232,18 @@ def borrowerLists(request):
     status = request.GET.get('status', '')
     risk = request.GET.get('risk', '')
 
-    # Base queryset
+    # Base queryset - Only borrowers with approved loans from this company
+    borrowers_qs = Borrower.objects.filter(
+        loanapplication__company=company,
+        loanapplication__status='approved'
+    ).distinct()
 
-    borrowers_qs = Borrower.objects.all()
-
-    # Annotate outstanding amount
+    # Annotate outstanding amount for this company only
     borrowers_qs = borrowers_qs.annotate(
-        outstanding_amount=Sum('loanapplication__amount')
+        outstanding_amount=Sum(
+            'loanapplication__amount',
+            filter=Q(loanapplication__company=company, loanapplication__status='approved')
+        )
     )
 
     # Search by name or email
@@ -185,14 +280,33 @@ def borrowerLists(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Calculate statistics for this company only
+    total_borrowers = Borrower.objects.filter(
+        loanapplication__company=company,
+        loanapplication__status='approved'
+    ).distinct().count()
+    
+    active_borrowers = Borrower.objects.filter(
+        loanapplication__company=company,
+        loanapplication__status='approved',
+        is_active=True
+    ).distinct().count()
+    
+    delinquent_borrowers = Borrower.objects.filter(
+        loanapplication__company=company,
+        loanapplication__status='delinquent'
+    ).distinct().count()
+    
+    portfolio_value = LoanApplication.objects.filter(
+        company=company,
+        status='approved'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
     context = {
-        'total_borrowers': borrowers_qs.count(),
-        'active_borrowers': borrowers_qs.filter(is_active=True).count(),
-        'delinquent_borrowers': borrowers_qs.filter(
-            loanapplication__company=company,
-            loanapplication__status='delinquent'
-        ).distinct().count(),
-        'portfolio_value': LoanApplication.objects.filter(company=company, status='approved').aggregate(total=Sum('amount'))['total'] or 0,
+        'total_borrowers': total_borrowers,
+        'active_borrowers': active_borrowers,
+        'delinquent_borrowers': delinquent_borrowers,
+        'portfolio_value': portfolio_value,
         'search': search,
         'status': status,
         'risk': risk,
@@ -418,42 +532,75 @@ def activeBorrowers(request):
     }
     return render(request, 'BorrowerSubmenus/companyActiveBorrowers.html', context)
 
-#Company Potential Borrower function
+#Company Potential Borrowers Function
 @company_required
 def potentialBorrowers(request):
     company = request.user.company_profile
 
-    # Borrowers who have registered but have not applied for a loan
-    potential_borrowers_qs = Borrower.objects.filter(
-        loanapplication__isnull=True
+    # Get borrowers who have pending applications with this company
+    potential_borrowers = Borrower.objects.filter(
+        loanapplication__company=company,
+        loanapplication__status='pending'
+    ).distinct().annotate(
+        pending_applications_count=Count(
+            'loanapplication',
+            filter=Q(loanapplication__company=company, loanapplication__status='pending')
+        )
     )
 
-    total_potential_borrowers = potential_borrowers_qs.count()
+    # Statistics
+    total_potential = potential_borrowers.count()
+    total_pending_applications = LoanApplication.objects.filter(
+        company=company,
+        status='pending'
+    ).count()
+    total_requested_amount = LoanApplication.objects.filter(
+        company=company,
+        status='pending'
+    ).aggregate(total=Sum('amount'))['total'] or 0
 
     context = {
-        'potential_borrowers': potential_borrowers_qs,
-        'total_potential_borrowers': total_potential_borrowers,
+        'potential_borrowers': potential_borrowers,
+        'total_potential': total_potential,
+        'total_pending_applications': total_pending_applications,
+        'total_requested_amount': total_requested_amount,
     }
     return render(request, 'BorrowerSubmenus/companyPotentialBorrowers.html', context)
 
-#Company Archived Borrower function
+#Company Archived Borrowers Function
 @company_required
 def archivedBorrowers(request):
     company = request.user.company_profile
 
-    # Borrowers who have fully repaid loans or whose accounts are closed
-    archived_borrowers_qs = Borrower.objects.filter(
-        Q(is_active=False) |
-        Q(loanapplication__company=company, loanapplication__status='closed')
-    ).distinct()
+    # Get borrowers who are inactive but have had loans with this company
+    archived_borrowers = Borrower.objects.filter(
+        loanapplication__company=company,
+        is_active=False
+    ).distinct().annotate(
+        total_loans=Count(
+            'loanapplication',
+            filter=Q(loanapplication__company=company)
+        ),
+        total_borrowed=Sum(
+            'loanapplication__amount',
+            filter=Q(loanapplication__company=company, loanapplication__status='approved')
+        )
+    )
 
-    total_archived_borrowers = archived_borrowers_qs.count()
+    # Statistics
+    total_archived = archived_borrowers.count()
+    total_historical_loans = LoanApplication.objects.filter(
+        company=company,
+        borrower__is_active=False
+    ).count()
 
     context = {
-        'archived_borrowers': archived_borrowers_qs,
-        'total_archived_borrowers': total_archived_borrowers,
+        'archived_borrowers': archived_borrowers,
+        'total_archived': total_archived,
+        'total_historical_loans': total_historical_loans,
     }
     return render(request, 'BorrowerSubmenus/companyArchivedBorrowers.html', context)
+
 
 #Company Add Borrower function
 @company_required
@@ -461,34 +608,162 @@ def addBorrowers(request):
     company = request.user.company_profile
 
     if request.method == 'POST':
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
-        email = request.POST.get('email', '').strip()
-        mobile_number = request.POST.get('mobile_number', '').strip()
+        try:
+            form_data = request.POST
+            
+            # Validate required fields
+            required_fields = [
+                'first_name', 'last_name', 'date_of_birth', 'gender', 'marital_status',
+                'mobile_number', 'current_street_address', 'current_city', 'current_state',
+                'current_postal_code', 'employment_status', 'monthly_income', 'income_source',
+                'bank_name', 'account_number', 'username', 'email', 'password', 'confirm_password'
+            ]
+            
+            missing_fields = [field.replace('_', ' ').title() for field in required_fields 
+                            if not form_data.get(field, '').strip()]
+            
+            if missing_fields:
+                messages.error(request, f"Please fill in all required fields: {', '.join(missing_fields)}")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Validate password match
+            password = form_data.get('password')
+            confirm_password = form_data.get('confirm_password')
+            
+            if password != confirm_password:
+                messages.error(request, "Passwords do not match.")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            if len(password) < 8:
+                messages.error(request, "Password must be at least 8 characters long.")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Validate email
+            email = form_data.get('email').strip().lower()
+            email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+            if not re.match(email_pattern, email):
+                messages.error(request, "Please enter a valid email address.")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Validate username
+            username = form_data.get('username').strip()
+            if len(username) < 3 or len(username) > 20:
+                messages.error(request, "Username must be between 3 and 20 characters.")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Validate monthly income
+            try:
+                monthly_income = Decimal(form_data.get('monthly_income'))
+                if monthly_income < 0:
+                    messages.error(request, "Monthly income cannot be negative.")
+                    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            except (InvalidOperation, ValueError):
+                messages.error(request, "Please enter a valid monthly income amount.")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Validate date of birth
+            try:
+                date_of_birth = datetime.strptime(form_data.get('date_of_birth'), '%Y-%m-%d').date()
+                today = datetime.now().date()
+                age = today.year - date_of_birth.year - ((today.month, today.day) < (date_of_birth.month, date_of_birth.day))
+                
+                if age < 18:
+                    messages.error(request, "Borrower must be at least 18 years old.")
+                    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+                
+                if age > 100:
+                    messages.error(request, "Please enter a valid date of birth.")
+                    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+                    
+            except ValueError:
+                messages.error(request, "Please enter a valid date of birth.")
+                return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Handle employment fields
+            employment_status = form_data.get('employment_status')
+            company_name = form_data.get('company_name', '').strip()
+            job_title = form_data.get('job_title', '').strip()
+            
+            if employment_status in ['employed', 'self_employed']:
+                if not company_name or not job_title:
+                    messages.error(request, "Company name and job title are required for employed/self-employed status.")
+                    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+            
+            # Handle permanent address
+            permanent_street_address = form_data.get('permanent_street_address', '').strip()
+            permanent_city = form_data.get('permanent_city', '').strip()
+            permanent_state = form_data.get('permanent_state', '').strip()
+            permanent_postal_code = form_data.get('permanent_postal_code', '').strip()
+            
+            if not permanent_street_address:
+                permanent_street_address = form_data.get('current_street_address')
+                permanent_city = form_data.get('current_city')
+                permanent_state = form_data.get('current_state')
+                permanent_postal_code = form_data.get('current_postal_code')
+            
+            # Use database transaction
+            with transaction.atomic():
+                # Check if username or email already exists
+                if User.objects.filter(username=username).exists():
+                    messages.error(request, "Username already exists. Please choose a different username.")
+                    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+                
+                if User.objects.filter(email=email).exists():
+                    messages.error(request, "Email address already registered. Please use a different email.")
+                    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
+                
+                # Create User
+                user = User.objects.create(
+                    username=username,
+                    email=email,
+                    password=make_password(password),
+                    first_name=form_data.get('first_name').strip(),
+                    last_name=form_data.get('last_name').strip(),
+                    is_active=True
+                )
+                
+                # Create Borrower
+                borrower = Borrower.objects.create(
+                    user=user,
+                    first_name=form_data.get('first_name').strip(),
+                    middle_name=form_data.get('middle_name', '').strip() or None,
+                    last_name=form_data.get('last_name').strip(),
+                    date_of_birth=date_of_birth,
+                    gender=form_data.get('gender'),
+                    marital_status=form_data.get('marital_status'),
+                    mobile_number=form_data.get('mobile_number').strip(),
+                    current_street_address=form_data.get('current_street_address').strip(),
+                    current_city=form_data.get('current_city').strip(),
+                    current_state=form_data.get('current_state').strip(),
+                    current_postal_code=form_data.get('current_postal_code').strip(),
+                    permanent_street_address=permanent_street_address,
+                    permanent_city=permanent_city,
+                    permanent_state=permanent_state,
+                    permanent_postal_code=permanent_postal_code,
+                    employment_status=employment_status,
+                    company_name=company_name or None,
+                    job_title=job_title or None,
+                    monthly_income=monthly_income,
+                    income_source=form_data.get('income_source').strip(),
+                    bank_name=form_data.get('bank_name').strip(),
+                    account_number=form_data.get('account_number').strip(),
+                    is_verified=bool(form_data.get('is_verified')),
+                    is_active=bool(form_data.get('is_active')),
+                    terms_accepted=True
+                )
+                
+                messages.success(request, f"Borrower {borrower.full_name} has been successfully added to your portfolio.")
+                return redirect('company-borrower-lists')
+                
+        except IntegrityError:
+            messages.error(request, "Registration failed due to a database error. Please try again.")
+        except ValidationError as e:
+            messages.error(request, f"Validation error: {str(e)}")
+        except Exception as e:
+            messages.error(request, f"An unexpected error occurred: {str(e)}")
+    
+    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
 
-        # Basic validation
-        if first_name and last_name and email:
-            # Create user and borrower (simplified, adjust for your user model)
-            user = User.objects.create(username=email, email=email)
-            borrower = Borrower.objects.create(
-                user=user,
-                first_name=first_name,
-                last_name=last_name,
-                mobile_number=mobile_number,
-                is_active=True
-            )
-            messages.success(request, "Borrower added successfully.")
-            return redirect('company-add-borrowers')
-        else:
-            messages.error(request, "Please fill in all required fields.")
-
-    # Show recently added borrowers (last 10)
-    recent_borrowers = Borrower.objects.order_by('-created_at')[:10]
-
-    context = {
-        'recent_borrowers': recent_borrowers,
-    }
-    return render(request, 'BorrowerSubmenus/companyAddBorrowers.html', context)
 
 #Company Financial Report function
 @company_required

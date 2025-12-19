@@ -89,62 +89,61 @@
 
 <!-- Search and Filters -->
 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <!-- Search -->
-        <div class="md:col-span-2">
-            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Applications</label>
-            <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <i class="fas fa-search text-gray-400"></i>
+    <form method="get" id="filter-form">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Search -->
+            <div class="md:col-span-2">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Applications</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                    <input type="text" id="search" name="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none text-gray-800 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by name, ID, or amount..." value="{{ search }}">
                 </div>
-                <input type="text" id="search" name="search" class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none text-gray-800 focus:ring-2 focus:ring-green-500 focus:border-green-500" placeholder="Search by name, ID, or amount..." value="{{ search }}">
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select id="status" name="status" class="w-full text-gray-600 border text-sm border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">All Status</option>
+                    <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending Review</option>
+                    <option value="review" {% if status == 'review' %}selected{% endif %}>Under Review</option>
+                    <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
+                    <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
+                    <option value="disbursed" {% if status == 'disbursed' %}selected{% endif %}>Disbursed</option>
+                </select>
+            </div>
+
+            <!-- Amount Range -->
+            <div>
+                <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Amount Range</label>
+                <select id="amount" name="amount" class="w-full text-gray-600 border text-sm border-gray-300 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="">All Amounts</option>
+                    <option value="0-10000" {% if amount == '0-10000' %}selected{% endif %}>₱0 - ₱10,000</option>
+                    <option value="10000-50000" {% if amount == '10000-50000' %}selected{% endif %}>₱10,000 - ₱50,000</option>
+                    <option value="50000-100000" {% if amount == '50000-100000' %}selected{% endif %}>₱50,000 - ₱100,000</option>
+                    <option value="100000+" {% if amount == '100000+' %}selected{% endif %}>₱100,000+</option>
+                </select>
             </div>
         </div>
 
-        <!-- Status Filter -->
-        <div>
-            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-            <select id="status" name="status" class="text-gray-600 border-1 text-sm border-gray-300 p-2 rounded-lg">
-                <option value="">All Status</option>
-                <option value="pending" {% if status == 'pending' %}selected{% endif %}>Pending Review</option>
-                <option value="review" {% if status == 'review' %}selected{% endif %}>Under Review</option>
-                <option value="approved" {% if status == 'approved' %}selected{% endif %}>Approved</option>
-                <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>Rejected</option>
-                <option value="disbursed" {% if status == 'disbursed' %}selected{% endif %}>Disbursed</option>
-            </select>
-        </div>
-
-        <!-- Amount Range -->
-        <div>
-            <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Amount Range</label>
-            <select id="amount" name="amount" class="text-gray-600 border-1 text-sm border-gray-300 p-2 rounded-lg">
-                <option value="">All Amounts</option>
-                <option value="0-10000" {% if amount == '0-10000' %}selected{% endif %}>₱0 - ₱10,000</option>
-                <option value="10000-50000" {% if amount == '10000-50000' %}selected{% endif %}>₱10,000 - ₱50,000</option>
-                <option value="50000-100000" {% if amount == '50000-100000' %}selected{% endif %}>₱50,000 - ₱100,000</option>
-                <option value="100000+" {% if amount == '100000+' %}selected{% endif %}>₱100,000+</option>
-            </select>
-        </div>
-    </div>
-
-    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-        <span class="text-sm text-gray-500">
-            Showing <span class="font-medium">{{ page_obj.start_index }}</span>
-            to <span class="font-medium">{{ page_obj.end_index }}</span>
-            of <span class="font-medium">{{ paginator.count }}</span> applications
-        </span>
-        <div class="flex items-center space-x-2">
-            <form method="get" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- ...filters... -->
-                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                    Apply Filters
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            <span class="text-sm text-gray-500">
+                Showing <span class="font-medium">{{ page_obj.start_index }}</span>
+                to <span class="font-medium">{{ page_obj.end_index }}</span>
+                of <span class="font-medium">{{ paginator.count }}</span> applications
+            </span>
+            <div class="flex items-center space-x-2">
+                <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-filter mr-2"></i>Apply Filters
                 </button>
-                <a href="{% url 'company-loan-applications' %}" class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
-                    Clear Filters
+                <a href="{% url 'company-loan-applications' %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                    <i class="fas fa-times mr-2"></i>Clear Filters
                 </a>
-            </form>
+            </div>
         </div>
-    </div>
+    </form>
 </div>
 
 <!-- Applications Table -->
@@ -214,7 +213,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-3">
-                            <a href="{% url 'view-loan-application' app.id %}" class="text-green-600 hover:text-green-900" title="View Details">
+                            <a onclick="openViewModal({{ app.id }}); return false;" class="text-green-600 hover:text-green-900" title="View Details">
                                 <i class="fas fa-eye"></i>
                             </a>
                             {% if app.status == 'pending' or app.status == 'review' %}
@@ -291,104 +290,355 @@
 </div>
 {% endblock %}
 
+
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Search functionality
+        // Get form and filter elements
         const searchInput = document.getElementById('search');
         const statusFilter = document.getElementById('status');
         const amountFilter = document.getElementById('amount');
+        const filterForm = document.getElementById('filter-form');
         
-        // Add event listeners for real-time filtering
-        searchInput.addEventListener('input', filterApplications);
-        statusFilter.addEventListener('change', filterApplications);
-        amountFilter.addEventListener('change', filterApplications);
+        // Auto-submit form when filters change
+        statusFilter.addEventListener('change', function() {
+            filterForm.submit();
+        });
+        
+        amountFilter.addEventListener('change', function() {
+            filterForm.submit();
+        });
+        
+        // Submit on search input with debounce
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                filterForm.submit();
+            }, 500); // Wait 500ms after user stops typing
+        });
         
         // Bulk selection functionality
         const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
         const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
         
-        selectAllCheckbox.addEventListener('change', function() {
-            rowCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            updateBulkActionsVisibility();
-        });
-        
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                updateSelectAllState();
+        if (selectAllCheckbox && rowCheckboxes.length > 0) {
+            selectAllCheckbox.addEventListener('change', function() {
+                rowCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
                 updateBulkActionsVisibility();
             });
-        });
+            
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectAllState();
+                    updateBulkActionsVisibility();
+                });
+            });
+        }
         
         // Export functionality
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            console.log('Exporting applications...');
-            // Add export logic here
-        });
+        const exportBtn = document.getElementById('exportBtn');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', function() {
+                console.log('Exporting applications...');
+                // Add export logic here
+                window.location.href = '{% url "company-loan-applications" %}?export=csv&search={{ search }}&status={{ status }}&amount={{ amount }}';
+            });
+        }
         
         // Filter button
-        document.getElementById('filterBtn').addEventListener('click', function() {
-            console.log('Advanced filters...');
-            // Add advanced filter modal logic here
+        const filterBtn = document.getElementById('filterBtn');
+        if (filterBtn) {
+            filterBtn.addEventListener('click', function() {
+                console.log('Advanced filters...');
+                // Add advanced filter modal logic here
+            });
+        }
+        
+        // Action button handlers with confirmation
+        document.querySelectorAll('form[action*="approve"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to approve this loan application?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        document.querySelectorAll('form[action*="reject"]').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Are you sure you want to reject this loan application? This action cannot be undone.')) {
+                    e.preventDefault();
+                }
+            });
         });
     });
+
+    // Modal Functions
+    function openViewModal(applicationId) {
+        const modal = document.getElementById('viewLoanModal');
+        const modalContent = document.getElementById('modalContent');
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Show loading state
+        modalContent.innerHTML = `
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        `;
+        
+        // Fetch loan application details
+        fetch(`/Company/Loan-Applications/${applicationId}/view/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    modalContent.innerHTML = generateModalContent(data.application);
+                } else {
+                    modalContent.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-exclamation-circle text-red-500 text-5xl mb-4"></i>
+                            <p class="text-gray-600">${data.message || 'Failed to load application details'}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modalContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-5xl mb-4"></i>
+                        <p class="text-gray-600">An error occurred while loading the application details.</p>
+                    </div>
+                `;
+            });
+    }
     
-    function filterApplications() {
-        const searchTerm = document.getElementById('search').value.toLowerCase();
-        const statusFilter = document.getElementById('status').value;
-        const amountFilter = document.getElementById('amount').value;
+    function closeViewModal() {
+        const modal = document.getElementById('viewLoanModal');
+        modal.classList.add('hidden');
+    }
+    
+    function generateModalContent(app) {
+        const statusColors = {
+            'pending': 'bg-yellow-100 text-yellow-800',
+            'review': 'bg-blue-100 text-blue-800',
+            'approved': 'bg-green-100 text-green-800',
+            'rejected': 'bg-red-100 text-red-800',
+            'disbursed': 'bg-purple-100 text-purple-800'
+        };
         
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach(row => {
-            const applicantName = row.querySelector('td:nth-child(2) .text-gray-900').textContent.toLowerCase();
-            const applicantEmail = row.querySelector('td:nth-child(2) .text-gray-500').textContent.toLowerCase();
-            const loanType = row.querySelector('td:nth-child(3) .text-gray-900').textContent.toLowerCase();
-            const amount = row.querySelector('td:nth-child(4) .text-gray-900').textContent;
-            const status = row.querySelector('td:nth-child(5) span').textContent.toLowerCase();
-            
-            let showRow = true;
-            
-            // Search filter
-            if (searchTerm && !applicantName.includes(searchTerm) && 
-                !applicantEmail.includes(searchTerm) && !loanType.includes(searchTerm)) {
-                showRow = false;
-            }
-            
-            // Status filter
-            if (statusFilter && !status.includes(statusFilter.replace('_', ' '))) {
-                showRow = false;
-            }
-            
-            // Amount filter (simplified)
-            if (amountFilter) {
-                const numAmount = parseFloat(amount.replace(/[₱,]/g, ''));
-                switch(amountFilter) {
-                    case '0-10000':
-                        if (numAmount > 10000) showRow = false;
-                        break;
-                    case '10000-50000':
-                        if (numAmount < 10000 || numAmount > 50000) showRow = false;
-                        break;
-                    case '50000-100000':
-                        if (numAmount < 50000 || numAmount > 100000) showRow = false;
-                        break;
-                    case '100000+':
-                        if (numAmount < 100000) showRow = false;
-                        break;
+        return `
+            <!-- Application Status Banner -->
+            <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900">Application #${app.id}</h4>
+                        <p class="text-sm text-gray-600">Applied on ${app.created_at}</p>
+                    </div>
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${statusColors[app.status] || 'bg-gray-100 text-gray-800'}">
+                        ${app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Borrower Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
+                    Borrower Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Full Name</p>
+                        <p class="font-medium text-gray-900">${app.borrower.full_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Email Address</p>
+                        <p class="font-medium text-gray-900">${app.borrower.email}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Mobile Number</p>
+                        <p class="font-medium text-gray-900">${app.borrower.mobile_number || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Date of Birth</p>
+                        <p class="font-medium text-gray-900">${app.borrower.date_of_birth || 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Gender</p>
+                        <p class="font-medium text-gray-900">${app.borrower.gender ? app.borrower.gender.charAt(0).toUpperCase() + app.borrower.gender.slice(1) : 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Marital Status</p>
+                        <p class="font-medium text-gray-900">${app.borrower.marital_status ? app.borrower.marital_status.charAt(0).toUpperCase() + app.borrower.marital_status.slice(1) : 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                    Address Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Current Address</p>
+                        <p class="text-sm text-gray-600">${app.borrower.current_address || 'Not provided'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Permanent Address</p>
+                        <p class="text-sm text-gray-600">${app.borrower.permanent_address || 'Not provided'}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment & Financial Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-briefcase mr-2 text-purple-600"></i>
+                    Employment & Financial Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Employment Status</p>
+                        <p class="font-medium text-gray-900">${app.borrower.employment_status ? app.borrower.employment_status.replace('_', ' ').charAt(0).toUpperCase() + app.borrower.employment_status.replace('_', ' ').slice(1) : 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Monthly Income</p>
+                        <p class="font-medium text-gray-900">₱${app.borrower.monthly_income ? parseFloat(app.borrower.monthly_income).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '0.00'}</p>
+                    </div>
+                    ${app.borrower.company_name ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Company Name</p>
+                        <p class="font-medium text-gray-900">${app.borrower.company_name}</p>
+                    </div>
+                    ` : ''}
+                    ${app.borrower.job_title ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Job Title</p>
+                        <p class="font-medium text-gray-900">${app.borrower.job_title}</p>
+                    </div>
+                    ` : ''}
+                    ${app.borrower.income_source ? `
+                    <div class="md:col-span-2">
+                        <p class="text-sm text-gray-500">Source of Income</p>
+                        <p class="font-medium text-gray-900">${app.borrower.income_source}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <!-- Bank Information -->
+            ${app.borrower.bank_name ? `
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-university mr-2 text-indigo-600"></i>
+                    Bank Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Bank Name</p>
+                        <p class="font-medium text-gray-900">${app.borrower.bank_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Account Number</p>
+                        <p class="font-medium text-gray-900">${app.borrower.account_number || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Loan Details -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-money-check-alt mr-2 text-yellow-600"></i>
+                    Loan Details
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Product Type</p>
+                        <p class="font-medium text-gray-900">${app.product_type ? app.product_type.charAt(0).toUpperCase() + app.product_type.slice(1) : 'N/A'}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Loan Amount</p>
+                        <p class="font-medium text-gray-900 text-xl text-green-600">₱${parseFloat(app.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                    </div>
+                    ${app.purpose ? `
+                    <div class="md:col-span-2">
+                        <p class="text-sm text-gray-500">Purpose</p>
+                        <p class="font-medium text-gray-900">${app.purpose}</p>
+                    </div>
+                    ` : ''}
+                    ${app.term ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Loan Term</p>
+                        <p class="font-medium text-gray-900">${app.term} months</p>
+                    </div>
+                    ` : ''}
+                    ${app.interest_rate ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Interest Rate</p>
+                        <p class="font-medium text-gray-900">${app.interest_rate}%</p>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                ${app.status === 'pending' || app.status === 'review' ? `
+                <form action="/Company/Loan-Applications/${app.id}/approve/" method="post" class="inline" onsubmit="return confirm('Are you sure you want to approve this loan application?');">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+                    <button type="submit" class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                        <i class="fas fa-check mr-2"></i>Approve
+                    </button>
+                </form>
+                <form action="/Company/Loan-Applications/${app.id}/reject/" method="post" class="inline" onsubmit="return confirm('Are you sure you want to reject this loan application?');">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+                    <button type="submit" class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold">
+                        <i class="fas fa-times mr-2"></i>Reject
+                    </button>
+                </form>
+                ` : ''}
+                <button onclick="closeViewModal()" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                    Close
+                </button>
+            </div>
+        `;
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
                 }
             }
-            
-            row.style.display = showRow ? '' : 'none';
-        });
+        }
+        return cookieValue;
     }
+    
+    // Close modal when clicking outside
+    document.getElementById('viewLoanModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeViewModal();
+        }
+    });
     
     function updateSelectAllState() {
         const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
         const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
         const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+        
+        if (!selectAllCheckbox) return;
         
         if (checkedBoxes.length === 0) {
             selectAllCheckbox.indeterminate = false;
@@ -404,41 +654,23 @@
     function updateBulkActionsVisibility() {
         const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
         // You can add bulk actions toolbar here if needed
-        console.log(`₱{checkedBoxes.length} applications selected`);
+        if (checkedBoxes.length > 0) {
+            console.log(`${checkedBoxes.length} application(s) selected`);
+        }
     }
     
     function showBulkActionsModal() {
-        document.getElementById('bulk-actions-modal').classList.remove('hidden');
+        const modal = document.getElementById('bulk-actions-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+        }
     }
     
     function hideBulkActionsModal() {
-        document.getElementById('bulk-actions-modal').classList.add('hidden');
+        const modal = document.getElementById('bulk-actions-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
     }
-    
-    // Action button handlers
-    document.querySelectorAll('button[title="Review Application"], button[title="View Details"], button[title="View Loan"]').forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Viewing application details...');
-            // Add view details logic
-        });
-    });
-    
-    document.querySelectorAll('button[title="Approve"]').forEach(button => {
-        button.addEventListener('click', function() {
-            if (confirm('Are you sure you want to approve this application?')) {
-                console.log('Approving application...');
-                // Add approval logic
-            }
-        });
-    });
-    
-    document.querySelectorAll('button[title="Reject"]').forEach(button => {
-        button.addEventListener('click', function() {
-            if (confirm('Are you sure you want to reject this application?')) {
-                console.log('Rejecting application...');
-                // Add rejection logic
-            }
-        });
-    });
 </script>
 {% endblock %}
