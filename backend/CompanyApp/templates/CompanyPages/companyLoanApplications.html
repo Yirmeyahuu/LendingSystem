@@ -444,6 +444,88 @@
                 </div>
             </div>
 
+            <!-- Loan Details with Calculation -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-money-check-alt mr-2 text-yellow-600"></i>
+                    Loan Details & Payment Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Left Column: Loan Info -->
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-sm text-gray-500">Product Type</p>
+                            <p class="font-medium text-gray-900">${app.product_type ? app.product_type.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500">Loan Amount</p>
+                            <p class="font-bold text-2xl text-green-600">₱${parseFloat(app.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                        </div>
+                        ${app.term ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Loan Term</p>
+                            <p class="font-medium text-gray-900">${app.term} months</p>
+                        </div>
+                        ` : ''}
+                        ${app.interest_rate ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Interest Rate</p>
+                            <p class="font-medium text-gray-900">${parseFloat(app.interest_rate).toFixed(2)}% per year</p>
+                        </div>
+                        ` : ''}
+                        ${app.purpose ? `
+                        <div>
+                            <p class="text-sm text-gray-500">Purpose</p>
+                            <p class="font-medium text-gray-900">${app.purpose}</p>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Right Column: Payment Calculation -->
+                    ${app.monthly_payment && app.total_payment && app.total_interest ? `
+                    <div class="bg-gradient-to-br from-blue-50 to-green-50 rounded-lg p-5 space-y-4">
+                        <div class="text-center pb-4 border-b border-blue-200">
+                            <p class="text-sm text-gray-600 mb-1">Monthly Payment</p>
+                            <p class="font-bold text-3xl text-blue-600">₱${parseFloat(app.monthly_payment).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
+                            <p class="text-xs text-gray-500 mt-1">for ${app.term} months</p>
+                        </div>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Total Payment:</span>
+                                <span class="font-semibold text-gray-900">₱${parseFloat(app.total_payment).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Principal:</span>
+                                <span class="font-medium text-gray-700">₱${parseFloat(app.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-blue-200">
+                                <span class="text-sm text-gray-600">Total Interest:</span>
+                                <span class="font-semibold text-orange-600">₱${parseFloat(app.total_interest).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-3 border-t border-blue-200">
+                            <div class="flex items-center justify-between text-xs text-gray-600">
+                                <span>Interest Rate:</span>
+                                <span class="font-medium">${parseFloat(app.interest_rate).toFixed(2)}% annually</span>
+                            </div>
+                            <div class="flex items-center justify-between text-xs text-gray-600 mt-1">
+                                <span>Monthly Rate:</span>
+                                <span class="font-medium">${(parseFloat(app.interest_rate) / 12).toFixed(4)}%</span>
+                            </div>
+                        </div>
+                    </div>
+                    ` : `
+                    <div class="bg-yellow-50 rounded-lg p-5 flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-calculator text-yellow-500 text-4xl mb-3"></i>
+                        <p class="text-sm text-gray-600">Payment calculation not available</p>
+                        <p class="text-xs text-gray-500 mt-1">Loan terms or interest rate not specified</p>
+                    </div>
+                    `}
+                </div>
+            </div>
+
             <!-- Borrower Information -->
             <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -551,42 +633,6 @@
                 </div>
             </div>
             ` : ''}
-
-            <!-- Loan Details -->
-            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-money-check-alt mr-2 text-yellow-600"></i>
-                    Loan Details
-                </h5>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p class="text-sm text-gray-500">Product Type</p>
-                        <p class="font-medium text-gray-900">${app.product_type ? app.product_type.charAt(0).toUpperCase() + app.product_type.slice(1) : 'N/A'}</p>
-                    </div>
-                    <div>
-                        <p class="text-sm text-gray-500">Loan Amount</p>
-                        <p class="font-medium text-gray-900 text-xl text-green-600">₱${parseFloat(app.amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
-                    </div>
-                    ${app.purpose ? `
-                    <div class="md:col-span-2">
-                        <p class="text-sm text-gray-500">Purpose</p>
-                        <p class="font-medium text-gray-900">${app.purpose}</p>
-                    </div>
-                    ` : ''}
-                    ${app.term ? `
-                    <div>
-                        <p class="text-sm text-gray-500">Loan Term</p>
-                        <p class="font-medium text-gray-900">${app.term} months</p>
-                    </div>
-                    ` : ''}
-                    ${app.interest_rate ? `
-                    <div>
-                        <p class="text-sm text-gray-500">Interest Rate</p>
-                        <p class="font-medium text-gray-900">${app.interest_rate}%</p>
-                    </div>
-                    ` : ''}
-                </div>
-            </div>
 
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">

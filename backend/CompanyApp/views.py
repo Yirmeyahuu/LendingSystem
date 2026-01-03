@@ -147,6 +147,8 @@ def loanApplication(request):
     return render(request, 'CompanyPages/companyLoanApplications.html', context)
 
 
+
+
 # View Loan Application Details (AJAX)
 @company_required
 def viewLoanApplication(request, application_id):
@@ -180,8 +182,11 @@ def viewLoanApplication(request, application_id):
                 'amount': str(application.amount),
                 'product_type': getattr(application, 'product_type', 'Personal Loan'),
                 'purpose': getattr(application, 'purpose', 'Not specified'),
-                'term': getattr(application, 'term', None),
-                'interest_rate': str(application.interest_rate) if hasattr(application, 'interest_rate') and application.interest_rate else None,
+                'term': application.term if application.term else None,
+                'interest_rate': str(application.interest_rate) if application.interest_rate else None,
+                'monthly_payment': str(application.monthly_payment) if application.monthly_payment else None,
+                'total_payment': str(application.total_payment) if application.total_payment else None,
+                'total_interest': str(application.total_interest) if application.total_interest else None,
                 'created_at': application.created_at.strftime('%B %d, %Y at %I:%M %p'),
                 'borrower': {
                     'full_name': borrower.full_name,
@@ -220,6 +225,8 @@ def viewLoanApplication(request, application_id):
             'success': False,
             'message': f'Error: {str(e)}'
         }, status=500)
+
+
 
 
 #Company Borrower List Function

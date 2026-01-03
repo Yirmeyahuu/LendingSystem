@@ -21,6 +21,10 @@ urlpatterns = [
     #Url of Security questions
     path('profile/security-questions/', views.update_security_questions, name='update_security_questions'),
 
+    # Loan calculation endpoints
+    path('company/<int:company_id>/details/', views.get_company_loan_details, name='get-company-details'),
+    path('calculate-loan/', views.calculate_loan_payment, name='calculate-loan-payment'),
+
     #Logout Url
     path('logout/', views.borrower_logout, name='borrower-logout'),
 ]

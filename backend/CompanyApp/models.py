@@ -105,6 +105,11 @@ class LoanApplication(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)
     product_type = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
+    term = models.PositiveIntegerField(help_text="Loan term in months", null=True, blank=True)  # NEW
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Interest rate %")  # NEW
+    monthly_payment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
+    total_payment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
+    total_interest = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
     approved_date = models.DateTimeField(null=True, blank=True)
     rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
     status = models.CharField(max_length=20, choices=[
@@ -115,6 +120,33 @@ class LoanApplication(models.Model):
         ('delinquent', 'Delinquent'),
     ])
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    def calculate_loan_payment(self):
+        """Calculate monthly payment, total payment, and total interest"""
+        if self.amount and self.interest_rate and self.term:
+            # Convert annual interest rate to monthly rate
+            monthly_rate = (self.interest_rate / 100) / 12
+            
+            if monthly_rate > 0:
+                # Calculate monthly payment using amortization formula
+                # M = P * [r(1+r)^n] / [(1+r)^n - 1]
+                numerator = monthly_rate * (1 + monthly_rate) ** self.term
+                denominator = (1 + monthly_rate) ** self.term - 1
+                self.monthly_payment = self.amount * (numerator / denominator)
+            else:
+                # If interest rate is 0, simple division
+                self.monthly_payment = self.amount / self.term
+            
+            # Calculate total payment and interest
+            self.total_payment = self.monthly_payment * self.term
+            self.total_interest = self.total_payment - self.amount
+        
+        return {
+            'monthly_payment': self.monthly_payment,
+            'total_payment': self.total_payment,
+            'total_interest': self.total_interest
+        }
+
 
 class Notification(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE)

@@ -11,7 +11,8 @@ from .models import Borrower
 from decimal import Decimal, InvalidOperation
 from datetime import datetime
 import re
-from CompanyApp.models import LoanApplication
+from CompanyApp.models import LoanApplication, Company
+from django.utils import timezone
 
 #borrower dashboard function
 @borrower_required
@@ -84,6 +85,7 @@ def loanHistory(request):
     }
     return render(request, 'MyLoanSubmenus/loanHistory.html', context)
 
+
 #borrower Apply Loan function
 @borrower_required
 def applyLoan(request):
@@ -97,9 +99,8 @@ def applyLoan(request):
         company_id = request.POST.get('company_id')
         product_type = request.POST.get('product_type')
         amount = request.POST.get('amount')
-        # Handle document uploads
-        income_doc = request.FILES.get('income_doc')
-        payslip_doc = request.FILES.get('payslip_doc')
+        term = request.POST.get('term')
+        interest_rate = request.POST.get('interest_rate')
 
         # Basic validation
         errors = []
@@ -109,6 +110,8 @@ def applyLoan(request):
             errors.append("Please select a loan product.")
         if not amount:
             errors.append("Please enter a loan amount.")
+        if not term:
+            errors.append("Please select a loan term.")
 
         try:
             amount = Decimal(amount)
@@ -116,6 +119,20 @@ def applyLoan(request):
                 errors.append("Loan amount must be greater than zero.")
         except Exception:
             errors.append("Invalid loan amount.")
+
+        try:
+            term = int(term)
+            if term <= 0:
+                errors.append("Loan term must be greater than zero.")
+        except Exception:
+            errors.append("Invalid loan term.")
+
+        try:
+            interest_rate = Decimal(interest_rate)
+            if interest_rate < 0:
+                errors.append("Interest rate cannot be negative.")
+        except Exception:
+            errors.append("Invalid interest rate.")
 
         if errors:
             for error in errors:
@@ -129,19 +146,113 @@ def applyLoan(request):
             messages.error(request, "Selected lender does not exist.")
             return render(request, 'ApplyLoan/applyLoan.html', {'companies': companies})
 
-        # Create LoanApplication
+        # Create LoanApplication with calculations
         loan = LoanApplication.objects.create(
             borrower=borrower,
             company=company,
             product_type=product_type,
             amount=amount,
+            term=term,
+            interest_rate=interest_rate,
             status='pending'
         )
+        
+        # Calculate loan payment details
+        loan.calculate_loan_payment()
+        loan.save()
 
-        messages.success(request, "Your loan application has been submitted and is now pending review.")
+        messages.success(request, f"Your loan application has been submitted! Monthly payment: ₱{loan.monthly_payment:,.2f}")
         return redirect('borrower-apply-loan')
 
     return render(request, 'ApplyLoan/applyLoan.html', {'companies': companies})
+
+
+# AJAX endpoint to get company loan details
+@borrower_required
+def get_company_loan_details(request, company_id):
+    """Return company loan details as JSON for calculator"""
+    try:
+        company = Company.objects.get(id=company_id, is_approved=True)
+        
+        data = {
+            'success': True,
+            'company': {
+                'id': company.id,
+                'name': company.company_name,
+                'min_loan_amount': str(company.min_loan_amount),
+                'max_loan_amount': str(company.max_loan_amount),
+                'min_interest_rate': str(company.min_interest_rate),
+                'max_interest_rate': str(company.max_interest_rate),
+                'min_loan_term': company.min_loan_term,
+                'max_loan_term': company.max_loan_term,
+                'processing_fee': str(company.processing_fee) if company.processing_fee else '0',
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Company.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Company not found.'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+# AJAX endpoint to calculate loan payment
+@borrower_required
+def calculate_loan_payment(request):
+    """Calculate loan payment based on amount, interest rate, and term"""
+    try:
+        amount = Decimal(request.GET.get('amount', 0))
+        interest_rate = Decimal(request.GET.get('interest_rate', 0))
+        term = int(request.GET.get('term', 0))
+        
+        if amount <= 0 or term <= 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid amount or term'
+            }, status=400)
+        
+        # Calculate monthly payment
+        monthly_rate = (interest_rate / 100) / 12
+        
+        if monthly_rate > 0:
+            numerator = monthly_rate * (1 + monthly_rate) ** term
+            denominator = (1 + monthly_rate) ** term - 1
+            monthly_payment = amount * (numerator / denominator)
+        else:
+            monthly_payment = amount / term
+        
+        total_payment = monthly_payment * term
+        total_interest = total_payment - amount
+        
+        data = {
+            'success': True,
+            'calculation': {
+                'monthly_payment': str(round(monthly_payment, 2)),
+                'total_payment': str(round(total_payment, 2)),
+                'total_interest': str(round(total_interest, 2)),
+                'principal': str(amount),
+                'interest_rate': str(interest_rate),
+                'term': term
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Calculation error: {str(e)}'
+        }, status=500)
+
+
+
 
 #borrower Payments function
 @borrower_required
@@ -149,13 +260,79 @@ def borrowerPayments(request):
     borrower = request.user.borrower_profile
     from CompanyApp.models import LoanApplication, Payment
 
-    # Get all payments for borrower's approved loans
-    payments = Payment.objects.filter(loan_application__borrower=borrower).order_by('-due_date')
+    if request.method == 'POST':
+        loan_id = request.POST.get('loan_id')
+        amount = request.POST.get('amount')
+        payment_method = request.POST.get('payment_method')
+        reference_number = request.POST.get('reference_number', '').strip()
+
+        # Validate inputs
+        errors = []
+        if not loan_id:
+            errors.append("Please select a loan.")
+        if not amount:
+            errors.append("Please enter payment amount.")
+        if not payment_method:
+            errors.append("Please select a payment method.")
+        if not reference_number:
+            errors.append("Please enter a payment reference number.")
+
+        try:
+            amount = Decimal(amount)
+            if amount <= 0:
+                errors.append("Payment amount must be greater than zero.")
+        except Exception:
+            errors.append("Invalid payment amount.")
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        else:
+            try:
+                # Get the approved loan
+                loan = LoanApplication.objects.get(
+                    id=loan_id,
+                    borrower=borrower,
+                    status='approved'
+                )
+
+                # Create payment record
+                payment = Payment.objects.create(
+                    loan_application=loan,
+                    amount=amount,
+                    method=payment_method,
+                    reference_number=reference_number,
+                    due_date=timezone.now(),
+                    paid_date=timezone.now().date(),
+                    status='paid'
+                )
+
+                messages.success(request, f"Payment of ₱{amount} has been recorded successfully! Reference: {reference_number}")
+                return redirect('borrower-payments')
+
+            except LoanApplication.DoesNotExist:
+                messages.error(request, "Loan application not found or not approved.")
+            except Exception as e:
+                messages.error(request, f"An error occurred: {str(e)}")
+
+    # Get approved loans for the select dropdown
+    approved_loans = LoanApplication.objects.filter(
+        borrower=borrower,
+        status='approved'
+    ).order_by('-created_at')
+
+    # Get all payments made by borrower
+    payments = Payment.objects.filter(
+        loan_application__borrower=borrower
+    ).order_by('-due_date')
 
     context = {
+        'approved_loans': approved_loans,
         'payments': payments,
     }
     return render(request, 'Payments/borrowerPayment.html', context)
+
+
 
 #borrower Profile function
 @borrower_required
