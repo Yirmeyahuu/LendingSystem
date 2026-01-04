@@ -251,6 +251,7 @@
 </div>
 
 
+
 <!-- View Loan Application Modal -->
 <div id="viewLoanModal" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
     <div class="relative top-20 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-xl bg-white mb-20">
@@ -271,6 +272,28 @@
         </div>
     </div>
 </div>
+
+<!-- View Borrower Details Modal -->
+<div id="viewBorrowerModal" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-xl bg-white mb-20">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-2xl font-bold text-gray-900">Borrower Details</h3>
+            <button onclick="closeBorrowerModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div id="borrowerModalContent" class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            <!-- Loading State -->
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <body class="bg-gray-50 min-h-screen">
@@ -333,7 +356,6 @@
                     <div x-show="open" @click.away="open = false" x-collapse class="mt-2 space-y-1 ml-4 pl-5 border-l border-slate-700">
                         <a href="{% url 'company-borrower-lists' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-borrower-lists' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">All Clients</a>
                         <a href="{% url 'company-active-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-active-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Active Borrowers</a>
-                        <a href="{% url 'company-potential-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-potential-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Potential Borrowers</a>
                         <a href="{% url 'company-archived-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-archived-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Archived Borrowers</a>
                         <a href="{% url 'company-add-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-add-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Add Borrower</a>
                     </div>
@@ -343,19 +365,6 @@
                     <i class="fas fa-file-contract w-5 h-5 mr-3 text-center {% if request.resolver_match.url_name != 'company-active-loans' %}text-slate-400 group-hover:text-white{% endif %}"></i>
                     Active Loans
                 </a>
-                
-                <div x-data="{ open: false }" class="relative">
-                    <button @click="open = !open" type="button" class="flex items-center w-full px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group text-slate-300 hover:bg-slate-800 hover:text-white">
-                        <i class="fas fa-chart-line w-5 h-5 mr-3 text-center text-slate-400 group-hover:text-white"></i>
-                        <span class="flex-1 text-left">Reports & Analytics</span>
-                        <i class="fas fa-chevron-down w-4 h-4 ml-auto transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
-                    </button>
-                    <div x-show="open" @click.away="open = false" x-collapse class="mt-2 space-y-1 ml-4 pl-5 border-l border-slate-700">
-                        <a href="{% url 'company-financial-reports' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-financial-reports' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Financial Reports</a>
-                        <a href="{% url 'company-portfolio-health' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-portfolio-health' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Portfolio Health</a>
-                        <a href="{% url 'company-operational-reports' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-operational-reports' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Operational Reports</a>
-                    </div>
-                </div>
                 
                 <a href="{% url 'company-settings'%}" class="flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors group {% if request.resolver_match.url_name == 'company-settings' %}bg-blue-600 text-white{% else %}text-slate-300 hover:bg-slate-800 hover:text-white{% endif %}">
                     <i class="fas fa-cog w-5 h-5 mr-3 text-center {% if request.resolver_match.url_name != 'company-settings' %}text-slate-400 group-hover:text-white{% endif %}"></i>
@@ -448,9 +457,6 @@
                                 <a href="{% url 'company-active-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-active-borrowers' %}font-bold text-green-700{% endif %}">
                                     Active Borrowers
                                 </a>
-                                <a href="{% url 'company-potential-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-potential-borrowers' %}font-bold text-green-700{% endif %}">
-                                    Potential Borrowers
-                                </a>
                                 <a href="{% url 'company-archived-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-archived-borrowers' %}font-bold text-green-700{% endif %}">
                                     Archived Borrowers
                                 </a>
@@ -464,29 +470,6 @@
                             <i class="fas fa-file-contract mr-3 text-gray-400"></i>
                             Active Loans
                         </a>
-
-                        <div class="mobile-menu-item px-6 py-2">
-                            <button id="mobile-reports-toggle"
-                                type="button"
-                                class="flex items-center w-full text-sm font-medium text-gray-700 hover:text-green-600 transition-all focus:outline-none">
-                                <i class="fas fa-chart-line mr-3 text-gray-400"></i>
-                                Reports & Analytics
-                                <svg class="ml-auto w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                                </svg>
-                            </button>
-                            <div id="mobile-reports-dropdown" class="mt-2 space-y-1 pl-8 hidden">
-                                <a href="{% url 'company-financial-reports' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-financial-reports' %}font-bold text-green-700{% endif %}">
-                                    Financial Reports
-                                </a>
-                                <a href="{% url 'company-portfolio-health' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-portfolio-health' %}font-bold text-green-700{% endif %}">
-                                    Portfolio Health
-                                </a>
-                                <a href="{% url 'company-operational-reports' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-operational-reports' %}font-bold text-green-700{% endif %}">
-                                    Operational Reports
-                                </a>
-                            </div>
-                        </div>
                         
                         <a href="{% url 'company-settings'%}" class="mobile-menu-item flex items-center px-6 py-4 text-sm font-medium text-gray-700 hover:text-green-600 transition-all {% if request.resolver_match.url_name == 'company-settings' %}active{% endif %}">
                             <i class="fas fa-cog mr-3 text-gray-400"></i>

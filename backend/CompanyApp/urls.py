@@ -19,9 +19,7 @@ urlpatterns = [
 
     #Url of Company Active Loans
     path('Active-Loans/', views.activeLoans, name='company-active-loans'),
-
-    #Url of Company Reports
-    path('Reports/', views.reports, name='company-reports'),
+    path('Active-Loans/<int:loan_id>/view-borrower/', views.viewBorrowerDetailsFromLoan, name='view-borrower-from-loan'),
 
     #Url of Company Settings
     path('Settings/', views.settings, name='company-settings'),
@@ -29,24 +27,13 @@ urlpatterns = [
     #Url of Company Active Borrowers
     path('company-active-borrowers/', views.activeBorrowers, name='company-active-borrowers'),
 
-    #Url of Company Potential Borrowers
-    path('company-potential-borrowers/', views.potentialBorrowers, 
-    name='company-potential-borrowers'),
-
     #Url of Company Archived Borrowers
     path('company-archived-borrowers/', views.archivedBorrowers, name='company-archived-borrowers'),
 
+    path('Borrower-Lists/<int:borrower_id>/archive/', views.archiveBorrower, name='archive-borrower'),
+
     #Url of Company Add Borrowers
     path('company-add-borrowers/', views.addBorrowers, name='company-add-borrowers'),
-
-    #Url of Company Financial Reports
-    path('financial-reports/', views.financialReports, name='company-financial-reports'),
-
-    #Url of Company Portfolio Health
-    path('portfolio-health/', views.portfolioHealth, name='company-portfolio-health'),
-
-    #Url of Company Operational Reports
-    path('operational-reports/', views.operationalReports, name='company-operational-reports'),
 
 
     # Admin approval URLs

@@ -19,6 +19,9 @@ from django.http import HttpResponseForbidden
 from django.contrib.auth.hashers import make_password
 from decimal import Decimal, InvalidOperation
 import re
+from django.views.decorators.http import require_http_methods
+from django.contrib.humanize.templatetags.humanize import intcomma, naturaltime
+from collections import defaultdict
 
 
 
@@ -26,22 +29,194 @@ import re
 @company_required
 def companyDashboard(request):
     company = request.user.company_profile
-    total_applications = LoanApplication.objects.filter(company=company).count()
-    active_loans = 0
-    total_disbursed = 0
-    default_rate = 0
+    
+    # Basic Statistics - Exclude archived borrowers
+    total_applications = LoanApplication.objects.filter(
+        company=company,
+        borrower__is_active=True
+    ).count()
+    
+    active_loans = LoanApplication.objects.filter(
+        company=company,
+        status='approved',
+        borrower__is_active=True
+    ).count()
+    
+    total_disbursed = LoanApplication.objects.filter(
+        company=company,
+        status='approved',
+        borrower__is_active=True
+    ).aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Calculate default rate
+    total_loans_count = LoanApplication.objects.filter(
+        company=company,
+        status__in=['approved', 'defaulted'],
+        borrower__is_active=True
+    ).count()
+    
+    defaulted_count = LoanApplication.objects.filter(
+        company=company,
+        status='defaulted',
+        borrower__is_active=True
+    ).count()
+    
+    default_rate = round((defaulted_count / total_loans_count * 100), 2) if total_loans_count else 0
 
-    # Fetch recent applications for this company
-    recent_applications = LoanApplication.objects.filter(company=company).order_by('-created_at')[:5]
-    notifications = Notification.objects.filter(company=company).order_by('-created_at')[:5]
+    # Fetch recent applications for this company (last 5)
+    recent_applications = LoanApplication.objects.filter(
+        company=company,
+        borrower__is_active=True
+    ).select_related('borrower', 'borrower__user').order_by('-created_at')[:5]
+
+    # --- Chart Data for Loan Applications Overview ---
+    today = timezone.now().date()
+    
+    # 7 Days Data
+    seven_days_data = []
+    for i in range(6, -1, -1):
+        day = today - timedelta(days=i)
+        count = LoanApplication.objects.filter(
+            company=company,
+            borrower__is_active=True,
+            created_at__date=day
+        ).count()
+        seven_days_data.append(count)
+    
+    # 30 Days Data
+    thirty_days_data = []
+    for i in range(29, -1, -1):
+        day = today - timedelta(days=i)
+        count = LoanApplication.objects.filter(
+            company=company,
+            borrower__is_active=True,
+            created_at__date=day
+        ).count()
+        thirty_days_data.append(count)
+    
+    # 90 Days Data
+    ninety_days_data = []
+    for i in range(89, -1, -1):
+        day = today - timedelta(days=i)
+        count = LoanApplication.objects.filter(
+            company=company,
+            borrower__is_active=True,
+            created_at__date=day
+        ).count()
+        ninety_days_data.append(count)
+    
+    # Chart data
+    chart_data = {
+        '7': seven_days_data,
+        '30': thirty_days_data,
+        '90': ninety_days_data,
+    }
+
+    # --- Notifications and Alerts ---
+    notifications = []
+    
+    # 1. New Applications (last 24 hours)
+    new_apps = LoanApplication.objects.filter(
+        company=company,
+        status='pending',
+        borrower__is_active=True,
+        created_at__gte=timezone.now() - timedelta(hours=24)
+    ).count()
+    
+    if new_apps > 0:
+        notifications.append({
+            'type': 'new_application',
+            'message': f'{new_apps} new loan application{"s" if new_apps > 1 else ""} pending review',
+            'created_at': timezone.now(),
+            'icon': 'fas fa-file-alt',
+            'color': 'blue'
+        })
+    
+    # 2. Recently Approved Applications (last 24 hours)
+    recent_approved = LoanApplication.objects.filter(
+        company=company,
+        status='approved',
+        borrower__is_active=True,
+        approved_date__gte=timezone.now() - timedelta(hours=24)
+    ).select_related('borrower')
+    
+    for app in recent_approved[:3]:  # Show last 3
+        notifications.append({
+            'type': 'approved',
+            'message': f'Loan approved for {app.borrower.full_name}',
+            'related_application': app,
+            'created_at': app.approved_date,
+            'icon': 'fas fa-check-circle',
+            'color': 'green'
+        })
+    
+    # 3. Overdue Loans (if you have a due_date field)
+    # Assuming loans have payment schedules
+    overdue_loans = LoanApplication.objects.filter(
+        company=company,
+        status='approved',
+        borrower__is_active=True,
+        # Add your overdue condition here
+    ).count()
+    
+    if overdue_loans > 0:
+        notifications.append({
+            'type': 'overdue',
+            'message': f'{overdue_loans} loan{"s" if overdue_loans > 1 else ""} overdue',
+            'created_at': timezone.now(),
+            'icon': 'fas fa-exclamation-triangle',
+            'color': 'red'
+        })
+    
+    # 4. High Value Applications (over 500k)
+    high_value_apps = LoanApplication.objects.filter(
+        company=company,
+        status='pending',
+        borrower__is_active=True,
+        amount__gte=500000,
+        created_at__gte=timezone.now() - timedelta(hours=48)
+    ).select_related('borrower')
+    
+    for app in high_value_apps[:2]:  # Show last 2
+        notifications.append({
+            'type': 'high_value',
+            'message': f'High value loan request from {app.borrower.full_name}',
+            'related_application': app,
+            'created_at': app.created_at,
+            'icon': 'fas fa-star',
+            'color': 'yellow'
+        })
+    
+    # 5. Applications Requiring Review
+    review_required = LoanApplication.objects.filter(
+        company=company,
+        status='review',
+        borrower__is_active=True
+    ).count()
+    
+    if review_required > 0:
+        notifications.append({
+            'type': 'review',
+            'message': f'{review_required} application{"s" if review_required > 1 else ""} require{"s" if review_required == 1 else ""} additional review',
+            'created_at': timezone.now(),
+            'icon': 'fas fa-search',
+            'color': 'orange'
+        })
+    
+    # Sort notifications by created_at (most recent first)
+    notifications.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # Limit to 5 most recent notifications
+    notifications = notifications[:5]
 
     # --- Monthly Performance Summary ---
-    today = timezone.now()
     month_start = today.replace(day=1)
     applications_this_month = LoanApplication.objects.filter(
         company=company,
+        borrower__is_active=True,
         created_at__gte=month_start
     )
+    
     total_this_month = applications_this_month.count()
     approved_this_month = applications_this_month.filter(status='approved').count()
     approval_rate = round((approved_this_month / total_this_month * 100), 2) if total_this_month else 0
@@ -59,7 +234,7 @@ def companyDashboard(request):
     avg_days = avg_processing['avg_days'].days if avg_processing['avg_days'] else 0
     avg_days = round(avg_days, 1)
 
-    # Satisfaction Score
+    # Satisfaction Score (if you have a rating field)
     satisfaction_score = applications_this_month.aggregate(avg_rating=Avg('rating'))['avg_rating'] or 0
     satisfaction_score = round(satisfaction_score, 1)
 
@@ -73,6 +248,7 @@ def companyDashboard(request):
         'approval_rate': approval_rate,
         'avg_days': avg_days,
         'satisfaction_score': satisfaction_score,
+        'chart_data': chart_data,
     }
     return render(request, 'CompanyPages/companyDashboard.html', context)
 
@@ -227,70 +403,51 @@ def viewLoanApplication(request, application_id):
         }, status=500)
 
 
-
-
 #Company Borrower List Function
 @company_required
 def borrowerLists(request):
     company = request.user.company_profile
-
+    
     # Get filter parameters
-    search = request.GET.get('search', '').strip()
+    search = request.GET.get('search', '')
     status = request.GET.get('status', '')
     risk = request.GET.get('risk', '')
-
-    # Base queryset - Only borrowers with approved loans from this company
-    borrowers_qs = Borrower.objects.filter(
+    
+    # Base queryset - only active borrowers
+    borrowers = Borrower.objects.filter(
         loanapplication__company=company,
-        loanapplication__status='approved'
-    ).distinct()
-
-    # Annotate outstanding amount for this company only
-    borrowers_qs = borrowers_qs.annotate(
+        is_active=True  # Only show active borrowers
+    ).distinct().annotate(
         outstanding_amount=Sum(
             'loanapplication__amount',
             filter=Q(loanapplication__company=company, loanapplication__status='approved')
         )
     )
-
-    # Search by name or email
+    
+    # Apply search filter
     if search:
-        borrowers_qs = borrowers_qs.filter(
+        borrowers = borrowers.filter(
             Q(first_name__icontains=search) |
             Q(last_name__icontains=search) |
             Q(user__email__icontains=search)
         )
-
-    # Filter by status
+    
+    # Apply status filter
     if status:
         if status == 'active':
-            borrowers_qs = borrowers_qs.filter(is_active=True)
+            borrowers = borrowers.filter(is_active=True)
         elif status == 'inactive':
-            borrowers_qs = borrowers_qs.filter(is_active=False)
+            borrowers = borrowers.filter(is_active=False)
         elif status == 'delinquent':
-            borrowers_qs = borrowers_qs.filter(
-                loanapplication__company=company,
-                loanapplication__status='delinquent'
-            ).distinct()
-        elif status == 'defaulted':
-            borrowers_qs = borrowers_qs.filter(
-                loanapplication__company=company,
-                loanapplication__status='defaulted'
-            ).distinct()
-
-    # Filter by risk level (if you have a 'risk_level' field)
-    if risk:
-        borrowers_qs = borrowers_qs.filter(risk_level=risk)
-
-    # Pagination
-    paginator = Paginator(borrowers_qs.order_by('-updated_at'), 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    # Calculate statistics for this company only
+            borrowers = borrowers.filter(
+                loanapplication__status='delinquent',
+                loanapplication__company=company
+            )
+    
+    # Statistics - only for active borrowers
     total_borrowers = Borrower.objects.filter(
         loanapplication__company=company,
-        loanapplication__status='approved'
+        is_active=True
     ).distinct().count()
     
     active_borrowers = Borrower.objects.filter(
@@ -301,15 +458,31 @@ def borrowerLists(request):
     
     delinquent_borrowers = Borrower.objects.filter(
         loanapplication__company=company,
-        loanapplication__status='delinquent'
+        loanapplication__status='delinquent',
+        is_active=True
     ).distinct().count()
     
     portfolio_value = LoanApplication.objects.filter(
         company=company,
-        status='approved'
-    ).aggregate(total=Sum('amount'))['total'] or 0
-
+        status='approved',
+        borrower__is_active=True  # Only active borrowers
+    ).aggregate(
+        total=Sum('amount')
+    )['total'] or 0
+    
+    # Pagination
+    paginator = Paginator(borrowers, 10)
+    page_number = request.GET.get('page', 1)
+    
+    try:
+        borrowers_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        borrowers_page = paginator.page(1)
+    except EmptyPage:
+        borrowers_page = paginator.page(paginator.num_pages)
+    
     context = {
+        'borrowers': borrowers_page,
         'total_borrowers': total_borrowers,
         'active_borrowers': active_borrowers,
         'delinquent_borrowers': delinquent_borrowers,
@@ -317,19 +490,19 @@ def borrowerLists(request):
         'search': search,
         'status': status,
         'risk': risk,
-        'page_obj': page_obj,
-        'borrowers': page_obj.object_list,
         'paginator': paginator,
-        'current_page': page_obj.number,
+        'current_page': borrowers_page.number,
         'total_pages': paginator.num_pages,
-        'has_previous': page_obj.has_previous(),
-        'has_next': page_obj.has_next(),
-        'previous_page_number': page_obj.previous_page_number() if page_obj.has_previous() else None,
-        'next_page_number': page_obj.next_page_number() if page_obj.has_next() else None,
-        'start_index': page_obj.start_index(),
-        'end_index': page_obj.end_index(),
+        'has_previous': borrowers_page.has_previous(),
+        'has_next': borrowers_page.has_next(),
+        'previous_page_number': borrowers_page.previous_page_number() if borrowers_page.has_previous() else None,
+        'next_page_number': borrowers_page.next_page_number() if borrowers_page.has_next() else None,
+        'start_index': borrowers_page.start_index(),
+        'end_index': borrowers_page.end_index(),
     }
+    
     return render(request, 'CompanyPages/companyBorrowerLists.html', context)
+
 
 #Company Active Loans Function
 @company_required
@@ -364,8 +537,8 @@ def activeLoans(request):
         status_map = {
             'current': 'approved',
             'late': 'delinquent',
-            'overdue': 'delinquent',  # adjust if you have a separate 'overdue'
-            'grace': 'review',        # adjust if you have a separate 'grace'
+            'overdue': 'delinquent',
+            'grace': 'review',
         }
         mapped_status = status_map.get(payment_status)
         if mapped_status:
@@ -386,21 +559,20 @@ def activeLoans(request):
     if date_range:
         today = timezone.now().date()
         if date_range == 'last-30':
-            start_date = today - datetime.timedelta(days=30)
+            start_date = today - timedelta(days=30)
             loans_qs = loans_qs.filter(created_at__gte=start_date)
         elif date_range == 'last-90':
-            start_date = today - datetime.timedelta(days=90)
+            start_date = today - timedelta(days=90)
             loans_qs = loans_qs.filter(created_at__gte=start_date)
         elif date_range == 'last-year':
-            start_date = today - datetime.timedelta(days=365)
+            start_date = today - timedelta(days=365)
             loans_qs = loans_qs.filter(created_at__gte=start_date)
-        # For 'custom', you'd need to handle custom date inputs
 
     # Statistics
     total_active_loans = loans_qs.count()
     portfolio_value = loans_qs.aggregate(total=models.Sum('amount'))['total'] or 0
 
-    # Loan Performance (same as before)
+    # Loan Performance
     on_time = loans_qs.filter(status='approved').count()
     late = loans_qs.filter(status='delinquent').count()
     missed = loans_qs.filter(status='defaulted').count() if 'defaulted' in dict(LoanApplication._meta.get_field('status').choices) else 0
@@ -409,19 +581,24 @@ def activeLoans(request):
     late_pct = round((late / total_perf * 100), 1) if total_perf else 0
     missed_pct = round((missed / total_perf * 100), 1) if total_perf else 0
 
-    # Loan Distribution by product_type
-    product_types = dict(company.LOAN_PRODUCT_CHOICES)
+    # Loan Distribution by product_type - Only show company's selected loan products
+    product_types_map = dict(Company.LOAN_PRODUCT_CHOICES)
     distribution = []
-    for key, label in product_types.items():
-        count = loans_qs.filter(product_type=key).count()
-        amount = loans_qs.filter(product_type=key).aggregate(total=models.Sum('amount'))['total'] or 0
+    
+    # Get only the loan products this company offers
+    company_loan_products = company.loan_products if company.loan_products else []
+    
+    for product_key in company_loan_products:
+        product_label = product_types_map.get(product_key, product_key)
+        count = loans_qs.filter(product_type=product_key).count()
+        amount = loans_qs.filter(product_type=product_key).aggregate(total=models.Sum('amount'))['total'] or 0
         percent = round((count / total_active_loans * 100), 1) if total_active_loans else 0
         distribution.append({
-            'label': label,
+            'key': product_key,
+            'label': product_label,
             'count': count,
             'amount': amount,
             'percent': percent,
-            'icon': key,
         })
 
     # Pagination
@@ -436,6 +613,7 @@ def activeLoans(request):
         'late_pct': late_pct,
         'missed_pct': missed_pct,
         'distribution': distribution,
+        'company_loan_products': company_loan_products,
         'page_obj': page_obj,
         'loans': page_obj.object_list,
         'paginator': paginator,
@@ -455,27 +633,7 @@ def activeLoans(request):
     }
     return render(request, 'CompanyPages/companyActiveLoans.html', context)
 
-#Company Reports function
-@company_required
-def reports(request):
-    company = request.user.company_profile
 
-    # Get filter parameters
-    search = request.GET.get('search', '').strip()
-    loan_type = request.GET.get('loanType', '')
-    payment_status = request.GET.get('paymentStatus', '')
-    amount_range = request.GET.get('amountRange', '')
-    date_range = request.GET.get('dateRange', '')
-
-    context = {
-        'search': search,
-        'loan_type': loan_type,
-        'payment_status': payment_status,
-        'amount_range': amount_range,
-        'date_range': date_range,
-    }
-
-    return render(request, 'CompanyPages/companyReports.html', context)
 
 #Company Settings function
 @company_required
@@ -484,27 +642,86 @@ def settings(request):
     total_loans = LoanApplication.objects.filter(company=company).count()
 
     if request.method == 'POST':
-        # Company Information
-        company.company_name = request.POST.get('company_name', company.company_name)
-        company.business_email = request.POST.get('business_email', company.business_email)
-        company.company_phone = request.POST.get('company_phone', company.company_phone)
-        company.website = request.POST.get('website', company.website)
-        # For simplicity, this example updates the main street_address field.
-        # You could expand this to update city, state, etc. if you add more fields to the form.
-        company.street_address = request.POST.get('business_address', company.street_address)
-
-        # Loan Settings
-        company.min_interest_rate = request.POST.get('min_interest_rate', company.min_interest_rate)
-        company.max_interest_rate = request.POST.get('max_interest_rate', company.max_interest_rate)
-        company.min_loan_term = request.POST.get('min_loan_term', company.min_loan_term)
-        company.max_loan_term = request.POST.get('max_loan_term', company.max_loan_term)
-        company.late_payment_fee = request.POST.get('late_payment_fee', company.late_payment_fee)
-        
         try:
+            # Company Information
+            company.company_name = request.POST.get('company_name', company.company_name).strip()
+            company.business_email = request.POST.get('business_email', company.business_email).strip()
+            company.company_phone = request.POST.get('company_phone', company.company_phone).strip()
+            
+            # Handle website (can be empty)
+            website = request.POST.get('website', '').strip()
+            company.website = website if website else None
+            
+            # Address fields
+            company.street_address = request.POST.get('street_address', company.street_address).strip()
+            company.city = request.POST.get('city', company.city).strip()
+            company.state = request.POST.get('state', company.state).strip()
+            company.postal_code = request.POST.get('postal_code', company.postal_code).strip()
+
+            # Loan Settings - Handle decimal fields properly
+            min_interest = request.POST.get('min_interest_rate', '').strip()
+            if min_interest:
+                try:
+                    company.min_interest_rate = Decimal(min_interest)
+                except (InvalidOperation, ValueError):
+                    messages.error(request, 'Invalid minimum interest rate. Please enter a valid number.')
+                    return redirect('company-settings')
+            
+            max_interest = request.POST.get('max_interest_rate', '').strip()
+            if max_interest:
+                try:
+                    company.max_interest_rate = Decimal(max_interest)
+                except (InvalidOperation, ValueError):
+                    messages.error(request, 'Invalid maximum interest rate. Please enter a valid number.')
+                    return redirect('company-settings')
+            
+            # Handle loan term fields (integers)
+            min_term = request.POST.get('min_loan_term', '').strip()
+            if min_term:
+                try:
+                    company.min_loan_term = int(min_term)
+                except ValueError:
+                    messages.error(request, 'Invalid minimum loan term. Please enter a valid number.')
+                    return redirect('company-settings')
+            
+            max_term = request.POST.get('max_loan_term', '').strip()
+            if max_term:
+                try:
+                    company.max_loan_term = int(max_term)
+                except ValueError:
+                    messages.error(request, 'Invalid maximum loan term. Please enter a valid number.')
+                    return redirect('company-settings')
+            
+            # Handle late payment fee
+            late_fee = request.POST.get('late_payment_fee', '').strip()
+            if late_fee:
+                try:
+                    company.late_payment_fee = Decimal(late_fee)
+                except (InvalidOperation, ValueError):
+                    messages.error(request, 'Invalid late payment fee. Please enter a valid number.')
+                    return redirect('company-settings')
+            else:
+                company.late_payment_fee = None
+            
+            # Validate interest rates
+            if company.min_interest_rate and company.max_interest_rate:
+                if company.min_interest_rate > company.max_interest_rate:
+                    messages.error(request, 'Minimum interest rate cannot be greater than maximum interest rate.')
+                    return redirect('company-settings')
+            
+            # Validate loan terms
+            if company.min_loan_term and company.max_loan_term:
+                if company.min_loan_term > company.max_loan_term:
+                    messages.error(request, 'Minimum loan term cannot be greater than maximum loan term.')
+                    return redirect('company-settings')
+            
             company.save()
             messages.success(request, 'Your settings have been updated successfully.')
+            
         except ValidationError as e:
             messages.error(request, f"Error saving settings: {e}")
+        except Exception as e:
+            messages.error(request, f"An unexpected error occurred: {str(e)}")
         
         return redirect('company-settings')
 
@@ -513,6 +730,8 @@ def settings(request):
         'total_loans': total_loans,
     }
     return render(request, 'CompanyPages/companySettings.html', context)
+
+
 
 #Company Active function
 @company_required
@@ -539,40 +758,6 @@ def activeBorrowers(request):
     }
     return render(request, 'BorrowerSubmenus/companyActiveBorrowers.html', context)
 
-#Company Potential Borrowers Function
-@company_required
-def potentialBorrowers(request):
-    company = request.user.company_profile
-
-    # Get borrowers who have pending applications with this company
-    potential_borrowers = Borrower.objects.filter(
-        loanapplication__company=company,
-        loanapplication__status='pending'
-    ).distinct().annotate(
-        pending_applications_count=Count(
-            'loanapplication',
-            filter=Q(loanapplication__company=company, loanapplication__status='pending')
-        )
-    )
-
-    # Statistics
-    total_potential = potential_borrowers.count()
-    total_pending_applications = LoanApplication.objects.filter(
-        company=company,
-        status='pending'
-    ).count()
-    total_requested_amount = LoanApplication.objects.filter(
-        company=company,
-        status='pending'
-    ).aggregate(total=Sum('amount'))['total'] or 0
-
-    context = {
-        'potential_borrowers': potential_borrowers,
-        'total_potential': total_potential,
-        'total_pending_applications': total_pending_applications,
-        'total_requested_amount': total_requested_amount,
-    }
-    return render(request, 'BorrowerSubmenus/companyPotentialBorrowers.html', context)
 
 #Company Archived Borrowers Function
 @company_required
@@ -772,153 +957,6 @@ def addBorrowers(request):
     return render(request, 'BorrowerSubmenus/companyAddBorrowers.html')
 
 
-#Company Financial Report function
-@company_required
-def financialReports(request):
-    company = request.user.company_profile
-
-    # Get filter parameters
-    search = request.GET.get('search', '').strip()
-    report_type = request.GET.get('reportType', '')
-    date_range = request.GET.get('dateRange', '')
-
-    # Date filtering logic
-    today = timezone.now().date()
-    start_date = None
-    if date_range == 'last-30':
-        start_date = today - datetime.timedelta(days=30)
-    elif date_range == 'last-90':
-        start_date = today - datetime.timedelta(days=90)
-    elif date_range == 'last-year':
-        start_date = today - datetime.timedelta(days=365)
-
-    loan_filter = Q(company=company)
-    if start_date:
-        loan_filter &= Q(created_at__gte=start_date)
-
-    # Financial metrics
-    revenue = LoanApplication.objects.filter(loan_filter, status='approved').aggregate(total=Sum('amount'))['total'] or 0
-    profit = LoanApplication.objects.filter(loan_filter, status='approved').aggregate(
-        total=Sum('amount')  # Replace with profit calculation if available
-    )['total'] or 0
-    expenses = 0  # Replace with real expense logic if available
-
-    # Example: summary by month (replace with real logic if needed)
-    monthly_summary = []
-    for i in range(3):
-        month = today - datetime.timedelta(days=30 * i)
-        month_start = month.replace(day=1)
-        month_end = (month_start + datetime.timedelta(days=32)).replace(day=1) - datetime.timedelta(days=1)
-        month_loans = LoanApplication.objects.filter(
-            company=company,
-            status='approved',
-            created_at__gte=month_start,
-            created_at__lte=month_end
-        )
-        month_revenue = month_loans.aggregate(total=Sum('amount'))['total'] or 0
-        monthly_summary.append({
-            'month': month_start.strftime('%B %Y'),
-            'revenue': month_revenue,
-        })
-
-    context = {
-        'search': search,
-        'report_type': report_type,
-        'date_range': date_range,
-        'revenue': revenue,
-        'profit': profit,
-        'expenses': expenses,
-        'monthly_summary': monthly_summary,
-    }
-
-    return render(request, 'ReportSubmenus/financialReports.html', context)
-
-#Company Portfolio Health function
-@company_required
-def portfolioHealth(request):
-    company = request.user.company_profile
-
-    # Get filter parameters
-    search = request.GET.get('search', '').strip()
-    date_range = request.GET.get('dateRange', '')
-
-    # Base queryset
-    loans_qs = LoanApplication.objects.filter(company=company)
-    total_loans = loans_qs.count()
-    active_loans = loans_qs.filter(status='approved').count()
-    delinquent_loans = loans_qs.filter(status='delinquent').count()
-    defaulted_loans = loans_qs.filter(status='defaulted').count()
-    portfolio_value = loans_qs.filter(status='approved').aggregate(total=Sum('amount'))['total'] or 0
-
-    delinquency_rate = round((delinquent_loans / total_loans * 100), 2) if total_loans else 0
-    default_rate = round((defaulted_loans / total_loans * 100), 2) if total_loans else 0
-
-    # Example: summary by product type
-    product_summary = []
-    for key, label in dict(company.LOAN_PRODUCT_CHOICES).items():
-        count = loans_qs.filter(product_type=key).count()
-        delinquent = loans_qs.filter(product_type=key, status='delinquent').count()
-        defaulted = loans_qs.filter(product_type=key, status='defaulted').count()
-        product_summary.append({
-            'label': label,
-            'count': count,
-            'delinquent': delinquent,
-            'defaulted': defaulted,
-        })
-
-    context = {
-        'search': search,
-        'date_range': date_range,
-        'active_loans': active_loans,
-        'portfolio_value': portfolio_value,
-        'delinquency_rate': delinquency_rate,
-        'default_rate': default_rate,
-        'product_summary': product_summary,
-        'total_loans': total_loans,
-    }
-
-    return render(request, 'ReportSubmenus/portfolioHealth.html', context)
-
-#Company Operational Reports function
-@company_required
-def operationalReports(request):
-    company = request.user.company_profile
-
-    # Get filter parameters
-    search = request.GET.get('search', '').strip()
-    date_range = request.GET.get('dateRange', '')
-
-    # Example metrics (replace with real queries as needed)
-    team_members = company.team_members.count() if hasattr(company, 'team_members') else 5  # Example fallback
-    avg_processing_time = LoanApplication.objects.filter(
-        company=company, status='approved', approved_date__isnull=False
-    ).annotate(
-        proc_time=models.F('approved_date') - models.F('created_at')
-    ).aggregate(avg=Avg('proc_time'))['avg']
-    avg_processing_days = avg_processing_time.days if avg_processing_time else 0
-
-    loans_processed = LoanApplication.objects.filter(company=company, status='approved').count()
-    client_acquisition_cost = 500  # Replace with real calculation if available
-
-    # Example: team performance summary (replace with real logic)
-    team_performance = [
-        {'name': 'Alice', 'loans_processed': 24, 'avg_processing_days': 3},
-        {'name': 'Bob', 'loans_processed': 18, 'avg_processing_days': 4},
-        {'name': 'Carol', 'loans_processed': 15, 'avg_processing_days': 2},
-    ]
-
-    context = {
-        'search': search,
-        'date_range': date_range,
-        'team_members': team_members,
-        'avg_processing_days': avg_processing_days,
-        'loans_processed': loans_processed,
-        'client_acquisition_cost': client_acquisition_cost,
-        'team_performance': team_performance,
-    }
-
-    return render(request, 'ReportSubmenus/operationalReports.html', context)
-
 @company_required
 def view_loan_application(request, application_id):
     company = request.user.company_profile
@@ -960,3 +998,172 @@ def reject_loan_application(request, application_id):
         except LoanApplication.DoesNotExist:
             messages.error(request, "Loan application not found or you don't have permission to reject it.")
     return redirect('company-loan-applications')
+
+
+
+# View Borrower Details from Active Loan (AJAX)
+@company_required
+def viewBorrowerDetailsFromLoan(request, loan_id):
+    """
+    Return borrower details from a loan application as JSON for modal display
+    """
+    try:
+        company = request.user.company_profile
+        loan = get_object_or_404(
+            LoanApplication.objects.select_related('borrower__user'),
+            id=loan_id,
+            company=company,
+            status='approved'
+        )
+        
+        borrower = loan.borrower
+        
+        # Format addresses safely
+        current_address = None
+        if borrower.current_street_address:
+            current_address = f"{borrower.current_street_address}, {borrower.current_city}, {borrower.current_state} {borrower.current_postal_code}"
+        
+        permanent_address = None
+        if borrower.permanent_street_address:
+            permanent_address = f"{borrower.permanent_street_address}, {borrower.permanent_city}, {borrower.permanent_state} {borrower.permanent_postal_code}"
+        
+        data = {
+            'success': True,
+            'loan': {
+                'id': loan.id,
+                'product_type': loan.product_type,
+                'amount': str(loan.amount),
+                'term': loan.term if loan.term else None,
+                'interest_rate': str(loan.interest_rate) if loan.interest_rate else None,
+                'monthly_payment': str(loan.monthly_payment) if loan.monthly_payment else None,
+                'total_payment': str(loan.total_payment) if loan.total_payment else None,
+                'total_interest': str(loan.total_interest) if loan.total_interest else None,
+                'status': loan.status,
+                'approved_date': loan.approved_date.strftime('%B %d, %Y at %I:%M %p') if loan.approved_date else None,
+                'created_at': loan.created_at.strftime('%B %d, %Y at %I:%M %p'),
+            },
+            'borrower': {
+                'id': borrower.id,
+                'full_name': borrower.full_name,
+                'email': borrower.user.email,
+                'mobile_number': borrower.mobile_number or 'Not provided',
+                'date_of_birth': borrower.date_of_birth.strftime('%B %d, %Y') if borrower.date_of_birth else 'Not provided',
+                'gender': borrower.gender or 'Not specified',
+                'marital_status': borrower.marital_status or 'Not specified',
+                'current_address': current_address or 'Not provided',
+                'permanent_address': permanent_address or 'Not provided',
+                'employment_status': borrower.employment_status or 'Not specified',
+                'company_name': borrower.company_name or None,
+                'job_title': borrower.job_title or None,
+                'monthly_income': str(borrower.monthly_income) if borrower.monthly_income else '0',
+                'income_source': borrower.income_source or 'Not specified',
+                'bank_name': borrower.bank_name or None,
+                'account_number': borrower.account_number or None,
+            }
+        }
+        
+        return JsonResponse(data)
+        
+    except LoanApplication.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Loan not found or not active.'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+
+
+# Archive Borrower (AJAX)
+@company_required
+@require_http_methods(["POST"])
+def archiveBorrower(request, borrower_id):
+    """
+    Archive a borrower (set is_active to False)
+    """
+    try:
+        company = request.user.company_profile
+        
+        # Get borrower who has loans with this company
+        borrower = get_object_or_404(
+            Borrower.objects.select_related('user'),
+            id=borrower_id,
+            loanapplication__company=company
+        )
+        
+        # Check if borrower has any active/pending loans
+        active_loans = LoanApplication.objects.filter(
+            borrower=borrower,
+            company=company,
+            status__in=['approved', 'pending']
+        ).count()
+        
+        if active_loans > 0:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cannot archive borrower with active or pending loans.'
+            }, status=400)
+        
+        # Archive the borrower
+        borrower.is_active = False
+        borrower.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Borrower archived successfully.'
+        })
+        
+    except Borrower.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Borrower not found.'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+# Restore Borrower (AJAX)
+@company_required
+@require_http_methods(["POST"])
+def restoreBorrower(request, borrower_id):
+    """
+    Restore an archived borrower (set is_active to True)
+    """
+    try:
+        company = request.user.company_profile
+        
+        # Get archived borrower who has loans with this company
+        borrower = get_object_or_404(
+            Borrower.objects.select_related('user'),
+            id=borrower_id,
+            loanapplication__company=company,
+            is_active=False  # Only restore archived borrowers
+        )
+        
+        # Restore the borrower
+        borrower.is_active = True
+        borrower.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Borrower restored successfully.'
+        })
+        
+    except Borrower.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Archived borrower not found.'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+

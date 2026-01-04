@@ -1,4 +1,5 @@
 {% extends 'Company/companyBase.html' %}
+{% load humanize %}
 
 {% block title %}Active Loans - Avendro{% endblock %}
 
@@ -19,20 +20,6 @@
             <h1 class="text-2xl font-bold text-gray-900">Active Loans</h1>
             <p class="mt-1 text-sm text-gray-600">Monitor and manage all active loan accounts</p>
         </div>
-        <div class="mt-4 sm:mt-0 flex space-x-3">
-            <button id="exportBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                <i class="fas fa-download mr-2"></i>
-                Export
-            </button>
-            <button id="paymentScheduleBtn" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                <i class="fas fa-calendar-alt mr-2"></i>
-                Payment Schedule
-            </button>
-            <button id="generateReportBtn" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                <i class="fas fa-chart-bar mr-2"></i>
-                Generate Report
-            </button>
-        </div>
     </div>
 </div>
 
@@ -44,7 +31,6 @@
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Active Loans</p>
                 <p class="text-3xl font-bold text-gray-900">{{ total_active_loans }}</p>
-                <!-- You can add a monthly change if you calculate it -->
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-file-contract text-blue-600 text-xl"></i>
@@ -57,7 +43,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Portfolio Value</p>
-                <p class="text-3xl font-bold text-gray-900">₱{{ portfolio_value|floatformat:2 }}</p>
+                <p class="text-3xl font-bold text-gray-900">₱{{ portfolio_value|floatformat:2|intcomma }}</p>
                 <p class="text-sm text-green-600 flex items-center mt-2">
                     <i class="fas fa-chart-line mr-1"></i>
                     Outstanding balance
@@ -128,39 +114,45 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-gray-900">Loan Distribution</h3>
-            <button class="text-sm text-green-600 hover:text-green-700">View Details</button>
         </div>
+        {% if distribution %}
         <div class="space-y-4">
             {% for item in distribution %}
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
                     <div class="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-                        {% if item.icon == 'personal_loans' %}
+                        {% if item.key == 'personal_loans' %}
                             <i class="fas fa-user text-blue-600 text-sm"></i>
-                        {% elif item.icon == 'auto_loans' %}
+                        {% elif item.key == 'auto_loans' %}
                             <i class="fas fa-car text-green-600 text-sm"></i>
-                        {% elif item.icon == 'business_loans' %}
+                        {% elif item.key == 'business_loans' %}
                             <i class="fas fa-briefcase text-purple-600 text-sm"></i>
-                        {% elif item.icon == 'home_loans' %}
+                        {% elif item.key == 'home_loans' %}
                             <i class="fas fa-home text-orange-600 text-sm"></i>
-                        {% elif item.icon == 'salary_loans' %}
+                        {% elif item.key == 'salary_loans' %}
                             <i class="fas fa-money-bill-wave text-indigo-600 text-sm"></i>
-                        {% elif item.icon == 'payday_loans' %}
+                        {% elif item.key == 'payday_loans' %}
                             <i class="fas fa-calendar-day text-pink-600 text-sm"></i>
                         {% endif %}
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-900">{{ item.label }}</p>
-                        <p class="text-xs text-gray-500">{{ item.count }} loans</p>
+                        <p class="text-xs text-gray-500">{{ item.count }} loan{{ item.count|pluralize }}</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm font-medium text-gray-900">₱{{ item.amount|floatformat:2 }}</p>
+                    <p class="text-sm font-medium text-gray-900">₱{{ item.amount|floatformat:0|intcomma }}</p>
                     <p class="text-xs text-gray-500">{{ item.percent }}%</p>
                 </div>
             </div>
             {% endfor %}
         </div>
+        {% else %}
+        <div class="text-center py-8">
+            <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500 text-sm">No active loans in your selected loan products.</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -178,7 +170,7 @@
             <select id="loanType" name="loanType" class="block w-full px-3 py-2 border border-gray-300 text-gray-800 rounded-lg">
                 <option value="">All Types</option>
                 {% for item in distribution %}
-                <option value="{{ key }}" {% if loan_type == key %}selected{% endif %}>{{ label }}</option>
+                <option value="{{ item.key }}" {% if loan_type == item.key %}selected{% endif %}>{{ item.label }}</option>
                 {% endfor %}
             </select>
         </div>
@@ -212,7 +204,6 @@
                 <option value="last-30" {% if date_range == 'last-30' %}selected{% endif %}>Last 30 days</option>
                 <option value="last-90" {% if date_range == 'last-90' %}selected{% endif %}>Last 90 days</option>
                 <option value="last-year" {% if date_range == 'last-year' %}selected{% endif %}>Last year</option>
-                <option value="custom" {% if date_range == 'custom' %}selected{% endif %}>Custom range</option>
             </select>
         </div>
     </div>
@@ -231,42 +222,11 @@
     </div>
 </form>
 
-<!-- Pagination Controls -->
-<div class="flex justify-center mt-6">
-    <nav class="inline-flex -space-x-px">
-        {% if has_previous %}
-            <a href="?page={{ previous_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-l-lg">
-                Previous
-            </a>
-        {% endif %}
-        {% for num in paginator.page_range %}
-            {% if num == current_page %}
-                <span class="px-3 py-2 border border-green-500 bg-green-50 text-green-600">{{ num }}</span>
-            {% elif num >= current_page|add:'-2' and num <= current_page|add:'2' %}
-                <a href="?page={{ num }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">{{ num }}</a>
-            {% endif %}
-        {% endfor %}
-        {% if has_next %}
-            <a href="?page={{ next_page_number }}&search={{ search }}&loanType={{ loan_type }}&paymentStatus={{ payment_status }}&amountRange={{ amount_range }}&dateRange={{ date_range }}" class="px-3 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50 rounded-r-lg">
-                Next
-            </a>
-        {% endif %}
-    </nav>
-</div>
-
 <!-- Active Loans Table -->
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200">
         <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">Active Loans Overview</h3>
-            <div class="flex items-center space-x-2">
-                <button class="text-sm text-gray-600 hover:text-gray-900" title="Card View">
-                    <i class="fas fa-th-large"></i>
-                </button>
-                <button class="text-sm text-green-600" title="Table View">
-                    <i class="fas fa-table"></i>
-                </button>
-            </div>
         </div>
     </div>
     
@@ -274,9 +234,6 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Loan Details
                     </th>
@@ -287,16 +244,10 @@
                         Amount & Terms
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Outstanding
+                        Monthly Payment
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Payment Status
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Next Payment
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Progress
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -306,9 +257,6 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for loan in loans %}
                 <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <input type="checkbox" class="rounded border-gray-300 text-green-600 focus:ring-green-500">
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
                             <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -327,7 +275,15 @@
                                 {% endif %}
                             </div>
                             <div class="ml-3">
-                                <div class="text-sm font-medium text-gray-900">{{ loan.get_product_type_display }}</div>
+                                <div class="text-sm font-medium text-gray-900">
+                                    {% if loan.product_type == 'personal_loans' %}Personal Loans
+                                    {% elif loan.product_type == 'auto_loans' %}Auto Loans
+                                    {% elif loan.product_type == 'business_loans' %}Business Loans
+                                    {% elif loan.product_type == 'home_loans' %}Home Loans
+                                    {% elif loan.product_type == 'salary_loans' %}Salary Loans
+                                    {% elif loan.product_type == 'payday_loans' %}Payday Loans
+                                    {% else %}{{ loan.product_type }}{% endif %}
+                                </div>
                                 <div class="text-sm text-gray-500">LN-{{ loan.id|stringformat:"06d" }}</div>
                             </div>
                         </div>
@@ -350,18 +306,19 @@
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">₱{{ loan.amount|floatformat:2 }}</div>
+                        <div class="text-sm font-medium text-gray-900">₱{{ loan.amount|floatformat:2|intcomma }}</div>
                         <div class="text-sm text-gray-500">
-                            <!-- If you have term and APR fields, display them here -->
                             {% if loan.term %}{{ loan.term }} months{% endif %}
-                            {% if loan.apr %} • {{ loan.apr }}% APR{% endif %}
+                            {% if loan.interest_rate %} • {{ loan.interest_rate }}%{% endif %}
                         </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm font-medium text-gray-900">₱{{ loan.amount|floatformat:2 }}</div>
-                        <div class="text-sm text-gray-500">
-                            <!-- If you have monthly payment, display here -->
-                        </div>
+                        {% if loan.monthly_payment %}
+                        <div class="text-sm font-medium text-green-600">₱{{ loan.monthly_payment|floatformat:2|intcomma }}</div>
+                        <div class="text-sm text-gray-500">per month</div>
+                        {% else %}
+                        <div class="text-sm text-gray-400">Not calculated</div>
+                        {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         {% if loan.status == 'approved' %}
@@ -385,32 +342,20 @@
                             </span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <!-- If you have next payment info, display here -->
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <!-- If you have progress info, display here -->
-                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-2">
-                            <button class="text-green-600 hover:text-green-900" title="View Loan">
+                            <button onclick="openBorrowerModal({{ loan.id }})" class="text-green-600 hover:text-green-900" title="View Borrower Details">
                                 <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="text-blue-600 hover:text-blue-900" title="Payment History">
-                                <i class="fas fa-history"></i>
-                            </button>
-                            <button class="text-purple-600 hover:text-purple-900" title="Schedule">
-                                <i class="fas fa-calendar-alt"></i>
-                            </button>
-                            <button class="text-gray-600 hover:text-gray-900" title="More Actions">
-                                <i class="fas fa-ellipsis-v"></i>
                             </button>
                         </div>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="9" class="text-center py-6 text-gray-500">No active loans found.</td>
+                    <td colspan="8" class="text-center py-12">
+                        <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No active loans found.</p>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -476,118 +421,33 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Search and filter functionality
-        const searchInput = document.getElementById('search');
-        const loanTypeFilter = document.getElementById('loanType');
-        const paymentStatusFilter = document.getElementById('paymentStatus');
-        const amountRangeFilter = document.getElementById('amountRange');
-        const dateRangeFilter = document.getElementById('dateRange');
-        
-        // Add event listeners for real-time filtering
-        searchInput.addEventListener('input', filterLoans);
-        loanTypeFilter.addEventListener('change', filterLoans);
-        paymentStatusFilter.addEventListener('change', filterLoans);
-        amountRangeFilter.addEventListener('change', filterLoans);
-        dateRangeFilter.addEventListener('change', filterLoans);
-        
         // Bulk selection functionality
         const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
         const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
         
-        selectAllCheckbox.addEventListener('change', function() {
-            rowCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
-            });
-            updateBulkActionsVisibility();
-        });
-        
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', function() {
-                updateSelectAllState();
+        if (selectAllCheckbox && rowCheckboxes.length > 0) {
+            selectAllCheckbox.addEventListener('change', function() {
+                rowCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
                 updateBulkActionsVisibility();
             });
-        });
-        
-        // Header action buttons
-        document.getElementById('exportBtn').addEventListener('click', function() {
-            console.log('Exporting active loans...');
-            // Add export logic here
-        });
-        
-        document.getElementById('paymentScheduleBtn').addEventListener('click', function() {
-            console.log('Opening payment schedule...');
-            // Add payment schedule logic here
-        });
-        
-        document.getElementById('generateReportBtn').addEventListener('click', function() {
-            console.log('Generating report...');
-            // Add report generation logic here
-        });
+            
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateSelectAllState();
+                    updateBulkActionsVisibility();
+                });
+            });
+        }
     });
-    
-    function filterLoans() {
-        const searchTerm = document.getElementById('search').value.toLowerCase();
-        const loanType = document.getElementById('loanType').value;
-        const paymentStatus = document.getElementById('paymentStatus').value;
-        const amountRange = document.getElementById('amountRange').value;
-        const dateRange = document.getElementById('dateRange').value;
-        
-        const rows = document.querySelectorAll('tbody tr');
-        
-        rows.forEach(row => {
-            const loanTypeText = row.querySelector('td:nth-child(2) .text-gray-900').textContent.toLowerCase();
-            const borrowerName = row.querySelector('td:nth-child(3) .text-gray-900').textContent.toLowerCase();
-            const borrowerEmail = row.querySelector('td:nth-child(3) .text-gray-500').textContent.toLowerCase();
-            const loanId = row.querySelector('td:nth-child(2) .text-gray-500').textContent.toLowerCase();
-            const amount = row.querySelector('td:nth-child(4) .text-gray-900').textContent;
-            const status = row.querySelector('td:nth-child(6) span').textContent.toLowerCase();
-            
-            let showRow = true;
-            
-            // Search filter
-            if (searchTerm && !loanTypeText.includes(searchTerm) && 
-                !borrowerName.includes(searchTerm) && !borrowerEmail.includes(searchTerm) && 
-                !loanId.includes(searchTerm)) {
-                showRow = false;
-            }
-            
-            // Loan type filter
-            if (loanType && !loanTypeText.includes(loanType)) {
-                showRow = false;
-            }
-            
-            // Payment status filter
-            if (paymentStatus && !status.includes(paymentStatus)) {
-                showRow = false;
-            }
-            
-            // Amount range filter
-            if (amountRange) {
-                const numAmount = parseFloat(amount.replace(/[$,]/g, ''));
-                switch(amountRange) {
-                    case '0-25000':
-                        if (numAmount > 25000) showRow = false;
-                        break;
-                    case '25000-100000':
-                        if (numAmount < 25000 || numAmount > 100000) showRow = false;
-                        break;
-                    case '100000-500000':
-                        if (numAmount < 100000 || numAmount > 500000) showRow = false;
-                        break;
-                    case '500000+':
-                        if (numAmount < 500000) showRow = false;
-                        break;
-                }
-            }
-            
-            row.style.display = showRow ? '' : 'none';
-        });
-    }
     
     function updateSelectAllState() {
         const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
         const rowCheckboxes = document.querySelectorAll('tbody input[type="checkbox"]');
         const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
+        
+        if (!selectAllCheckbox) return;
         
         if (checkedBoxes.length === 0) {
             selectAllCheckbox.indeterminate = false;
@@ -603,43 +463,255 @@
     function updateBulkActionsVisibility() {
         const checkedBoxes = document.querySelectorAll('tbody input[type="checkbox"]:checked');
         console.log(`${checkedBoxes.length} loans selected`);
-        // You can add bulk actions toolbar here if needed
     }
-    
-    // Individual loan action handlers
-    document.querySelectorAll('button[title="View Loan"]').forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Viewing loan details...');
-            // Add view loan logic
-        });
-    });
-    
-    document.querySelectorAll('button[title="Payment History"]').forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Viewing payment history...');
-            // Add payment history logic
-        });
-    });
-    
-    document.querySelectorAll('button[title="Schedule"]').forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Viewing payment schedule...');
-            // Add schedule logic
-        });
-    });
-    
-    document.querySelectorAll('button[title="Collection Action"], button[title="Urgent Collection"]').forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Opening collection actions...');
-            // Add collection logic
-        });
-    });
-    
-    document.querySelectorAll('button[title="Contact Borrower"]').forEach(button => {
-        button.addEventListener('click', function() {
-            console.log('Contacting borrower...');
-            // Add contact logic
-        });
+
+    // View Borrower Details Modal Functions
+    function openBorrowerModal(loanId) {
+        console.log('Opening modal for loan:', loanId);
+        const modal = document.getElementById('viewBorrowerModal');
+        const modalContent = document.getElementById('borrowerModalContent');
+        
+        if (!modal || !modalContent) {
+            console.error('Modal elements not found');
+            return;
+        }
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Show loading state
+        modalContent.innerHTML = `
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        `;
+        
+        // Fetch borrower data
+        fetch(`/Company/Active-Loans/${loanId}/view-borrower/`)
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Received data:', data);
+                if (data.success) {
+                    modalContent.innerHTML = generateBorrowerModalContent(data);
+                } else {
+                    modalContent.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-exclamation-circle text-red-500 text-5xl mb-4"></i>
+                            <p class="text-gray-600">${data.message || 'Failed to load borrower details.'}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modalContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-exclamation-circle text-red-500 text-5xl mb-4"></i>
+                        <p class="text-gray-600">An error occurred while loading borrower details.</p>
+                    </div>
+                `;
+            });
+    }
+
+    function closeBorrowerModal() {
+        const modal = document.getElementById('viewBorrowerModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    function generateBorrowerModalContent(data) {
+        const borrower = data.borrower;
+        const loan = data.loan;
+        
+        return `
+            <!-- Loan Summary Banner -->
+            <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-900">Active Loan #${loan.id}</h4>
+                        <p class="text-sm text-gray-600">${loan.product_type.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-600">Loan Amount</p>
+                        <p class="text-2xl font-bold text-green-600">₱${parseFloat(loan.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                </div>
+                ${loan.monthly_payment ? `
+                <div class="mt-4 pt-4 border-t border-blue-200 grid grid-cols-3 gap-4">
+                    <div>
+                        <p class="text-xs text-gray-600">Monthly Payment</p>
+                        <p class="text-sm font-semibold text-gray-900">₱${parseFloat(loan.monthly_payment).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-600">Term</p>
+                        <p class="text-sm font-semibold text-gray-900">${loan.term} months</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-600">Interest Rate</p>
+                        <p class="text-sm font-semibold text-gray-900">${parseFloat(loan.interest_rate).toFixed(2)}%</p>
+                    </div>
+                </div>
+                ` : ''}
+            </div>
+
+            <!-- Personal Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-user mr-2 text-blue-600"></i>
+                    Personal Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Full Name</p>
+                        <p class="font-medium text-gray-900">${borrower.full_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Email Address</p>
+                        <p class="font-medium text-gray-900">${borrower.email}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Mobile Number</p>
+                        <p class="font-medium text-gray-900">${borrower.mobile_number}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Date of Birth</p>
+                        <p class="font-medium text-gray-900">${borrower.date_of_birth}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Gender</p>
+                        <p class="font-medium text-gray-900">${borrower.gender.charAt(0).toUpperCase() + borrower.gender.slice(1)}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Marital Status</p>
+                        <p class="font-medium text-gray-900">${borrower.marital_status.charAt(0).toUpperCase() + borrower.marital_status.slice(1)}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-map-marker-alt mr-2 text-green-600"></i>
+                    Address Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Current Address</p>
+                        <p class="text-sm text-gray-600">${borrower.current_address}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">Permanent Address</p>
+                        <p class="text-sm text-gray-600">${borrower.permanent_address}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employment & Financial Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-briefcase mr-2 text-purple-600"></i>
+                    Employment & Financial Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Employment Status</p>
+                        <p class="font-medium text-gray-900">${borrower.employment_status.replace('_', ' ').charAt(0).toUpperCase() + borrower.employment_status.replace('_', ' ').slice(1)}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Monthly Income</p>
+                        <p class="font-medium text-gray-900">₱${parseFloat(borrower.monthly_income).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    ${borrower.company_name ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Company Name</p>
+                        <p class="font-medium text-gray-900">${borrower.company_name}</p>
+                    </div>
+                    ` : ''}
+                    ${borrower.job_title ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Job Title</p>
+                        <p class="font-medium text-gray-900">${borrower.job_title}</p>
+                    </div>
+                    ` : ''}
+                    <div class="md:col-span-2">
+                        <p class="text-sm text-gray-500">Source of Income</p>
+                        <p class="font-medium text-gray-900">${borrower.income_source}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Information -->
+            ${borrower.bank_name ? `
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-university mr-2 text-indigo-600"></i>
+                    Bank Information
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Bank Name</p>
+                        <p class="font-medium text-gray-900">${borrower.bank_name}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Account Number</p>
+                        <p class="font-medium text-gray-900">${borrower.account_number || 'N/A'}</p>
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Loan Information -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-file-invoice-dollar mr-2 text-orange-600"></i>
+                    Current Loan Details
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-sm text-gray-500">Loan ID</p>
+                        <p class="font-medium text-gray-900">LN-${String(loan.id).padStart(6, '0')}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Loan Status</p>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            ${loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                        </span>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Application Date</p>
+                        <p class="font-medium text-gray-900">${loan.created_at}</p>
+                    </div>
+                    ${loan.approved_date ? `
+                    <div>
+                        <p class="text-sm text-gray-500">Approved Date</p>
+                        <p class="font-medium text-gray-900">${loan.approved_date}</p>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button onclick="closeBorrowerModal()" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                    Close
+                </button>
+            </div>
+        `;
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const borrowerModal = document.getElementById('viewBorrowerModal');
+        if (event.target === borrowerModal) {
+            closeBorrowerModal();
+        }
     });
 </script>
 {% endblock %}

@@ -1,4 +1,5 @@
 {% extends 'Company/companyBase.html' %}
+{% load humanize %}
 
 {% block title %}Company Dashboard - Avendro{% endblock %}
 
@@ -29,7 +30,7 @@
             </div>
             <div class="hidden md:block">
                 <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <span class="text-4xl font-bold text-blue-700">
+                    <span class="text-4xl font-bold text-white">
                         {% if request.user.company_profile %}
                             {{ request.user.company_profile.company_name|slice:":1"|upper }}
                         {% else %}
@@ -49,7 +50,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Applications</p>
-                <p class="text-3xl font-bold text-gray-900">{{ total_applications }}</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_applications|intcomma }}</p>
             </div>
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-file-alt text-blue-600 text-xl"></i>
@@ -62,7 +63,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Active Loans</p>
-                <p class="text-3xl font-bold text-gray-900">{{ active_loans }}</p>
+                <p class="text-3xl font-bold text-gray-900">{{ active_loans|intcomma }}</p>
             </div>
             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-handshake text-green-600 text-xl"></i>
@@ -75,8 +76,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-sm font-medium text-gray-600">Total Disbursed</p>
-                <p class="text-3xl font-bold text-gray-900">₱{{ total_disbursed|floatformat:2 }}</p>
-                <!-- ...trend info... -->
+                <p class="text-3xl font-bold text-gray-900">₱{{ total_disbursed|floatformat:2|intcomma }}</p>
             </div>
             <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                 <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
@@ -105,14 +105,14 @@
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900">Loan Applications Overview</h3>
             <div class="flex space-x-2" id="chart-range-buttons">
-                <button class="chart-range-btn px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-lg" data-range="7">7 Days</button>
-                <button class="chart-range-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-range="30">30 Days</button>
-                <button class="chart-range-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg" data-range="90">90 Days</button>
+                <button class="chart-range-btn px-3 py-1 text-sm bg-blue-100 text-blue-600 rounded-lg font-medium" data-range="7">7 Days</button>
+                <button class="chart-range-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg font-medium" data-range="30">30 Days</button>
+                <button class="chart-range-btn px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded-lg font-medium" data-range="90">90 Days</button>
             </div>
         </div>
         
-        <div class="w-full min-h-64 h-[18rem] md:h-[22rem] lg:h-[28rem] bg-gray-50 rounded-lg flex items-center justify-center">
-            <canvas id="loanApplicationsChart" class="w-full h-full"></canvas>
+        <div class="w-full" style="height: 350px;">
+            <canvas id="loanApplicationsChart"></canvas>
         </div>
     </div>
 
@@ -120,17 +120,27 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <h3 class="text-lg font-semibold text-gray-900 mb-6">Quick Actions</h3>
         <div class="space-y-4">
-            <a href="#" id="open-loan-modal" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <a href="{% url 'company-add-borrowers' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-plus text-blue-600"></i>
+                    <i class="fas fa-user-plus text-blue-600"></i>
                 </div>
                 <div>
-                    <p class="font-medium text-gray-900">New Loan Product</p>
-                    <p class="text-sm text-gray-500">Create a new loan offering</p>
+                    <p class="font-medium text-gray-900">Add Borrower</p>
+                    <p class="text-sm text-gray-500">Register a new borrower</p>
                 </div>
             </a>
             
-            <a href="#" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <a href="{% url 'company-loan-applications' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-file-alt text-green-600"></i>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">View Applications</p>
+                    <p class="text-sm text-gray-500">Review pending loans</p>
+                </div>
+            </a>
+            
+            <a href="{% url 'company-settings' %}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
                     <i class="fas fa-cog text-purple-600"></i>
                 </div>
@@ -149,12 +159,12 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900">Recent Applications</h3>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</a>
+            <a href="{% url 'company-loan-applications' %}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View All</a>
         </div>
         
         <div class="space-y-4">
             {% for app in recent_applications %}
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="flex items-center space-x-3">
                     <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                         <span class="text-sm font-medium text-blue-600">
@@ -163,21 +173,35 @@
                     </div>
                     <div>
                         <p class="font-medium text-gray-900">{{ app.borrower.full_name }}</p>
-                        <p class="text-sm text-gray-500">{{ app.product_type|title }} • ₱{{ app.amount|floatformat:2 }}</p>
+                        <p class="text-sm text-gray-500">
+                            {% if app.product_type == 'personal_loans' %}Personal Loan
+                            {% elif app.product_type == 'auto_loans' %}Auto Loan
+                            {% elif app.product_type == 'business_loans' %}Business Loan
+                            {% elif app.product_type == 'home_loans' %}Home Loan
+                            {% elif app.product_type == 'salary_loans' %}Salary Loan
+                            {% elif app.product_type == 'payday_loans' %}Payday Loan
+                            {% else %}{{ app.product_type|title }}{% endif %}
+                            • ₱{{ app.amount|floatformat:2|intcomma }}
+                        </p>
                     </div>
                 </div>
                 <div class="text-right">
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                         {% if app.status == 'pending' %}bg-yellow-100 text-yellow-800
                         {% elif app.status == 'approved' %}bg-green-100 text-green-800
-                        {% else %}bg-blue-100 text-blue-800{% endif %}">
+                        {% elif app.status == 'review' %}bg-blue-100 text-blue-800
+                        {% elif app.status == 'rejected' %}bg-red-100 text-red-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
                         {{ app.status|title }}
                     </span>
-                    <p class="text-xs text-gray-500 mt-1">{{ app.created_at|timesince }} ago</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ app.created_at|naturaltime }}</p>
                 </div>
             </div>
             {% empty %}
-            <p class="text-gray-500 text-sm">No recent applications.</p>
+            <div class="text-center py-8">
+                <i class="fas fa-inbox text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500 text-sm">No recent applications.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -186,56 +210,73 @@
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900">Alerts & Notifications</h3>
-            <a href="#" class="text-sm text-blue-600 hover:text-blue-700 font-medium">Mark All Read</a>
+            <span class="text-sm text-gray-500 font-medium">{{ notifications|length }} notification{{ notifications|length|pluralize }}</span>
         </div>
         
         <div class="space-y-4">
             {% for notif in notifications %}
             <div class="flex items-start space-x-3 p-4 
-                {% if notif.type == 'overdue' %}bg-red-50 border border-red-200
-                {% elif notif.type == 'new_application' %}bg-blue-50 border border-blue-200
-                {% elif notif.type == 'payment_received' %}bg-blue-50 border border-blue-200
+                {% if notif.color == 'red' %}bg-red-50 border border-red-200
+                {% elif notif.color == 'blue' %}bg-blue-50 border border-blue-200
+                {% elif notif.color == 'green' %}bg-green-50 border border-green-200
+                {% elif notif.color == 'yellow' %}bg-yellow-50 border border-yellow-200
+                {% elif notif.color == 'orange' %}bg-orange-50 border border-orange-200
                 {% else %}bg-gray-50 border border-gray-200{% endif %}
                 rounded-lg">
                 <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                    {% if notif.type == 'overdue' %}bg-red-100
-                    {% elif notif.type == 'new_application' %}bg-blue-100
-                    {% elif notif.type == 'payment_received' %}bg-blue-100
+                    {% if notif.color == 'red' %}bg-red-100
+                    {% elif notif.color == 'blue' %}bg-blue-100
+                    {% elif notif.color == 'green' %}bg-green-100
+                    {% elif notif.color == 'yellow' %}bg-yellow-100
+                    {% elif notif.color == 'orange' %}bg-orange-100
                     {% else %}bg-gray-100{% endif %}">
-                    {% if notif.type == 'overdue' %}
-                        <i class="fas fa-exclamation-triangle text-red-600 text-sm"></i>
-                    {% elif notif.type == 'new_application' %}
-                        <i class="fas fa-info-circle text-blue-600 text-sm"></i>
-                    {% elif notif.type == 'payment_received' %}
-                        <i class="fas fa-check-circle text-blue-600 text-sm"></i>
-                    {% else %}
-                        <i class="fas fa-bell text-gray-600 text-sm"></i>
-                    {% endif %}
+                    <i class="{{ notif.icon }} 
+                        {% if notif.color == 'red' %}text-red-600
+                        {% elif notif.color == 'blue' %}text-blue-600
+                        {% elif notif.color == 'green' %}text-green-600
+                        {% elif notif.color == 'yellow' %}text-yellow-600
+                        {% elif notif.color == 'orange' %}text-orange-600
+                        {% else %}text-gray-600{% endif %}
+                        text-sm"></i>
                 </div>
-                <div>
+                <div class="flex-1">
                     <p class="text-sm font-medium 
-                        {% if notif.type == 'overdue' %}text-red-900
-                        {% elif notif.type == 'new_application' %}text-blue-900
-                        {% elif notif.type == 'payment_received' %}text-blue-900
+                        {% if notif.color == 'red' %}text-red-900
+                        {% elif notif.color == 'blue' %}text-blue-900
+                        {% elif notif.color == 'green' %}text-green-900
+                        {% elif notif.color == 'yellow' %}text-yellow-900
+                        {% elif notif.color == 'orange' %}text-orange-900
                         {% else %}text-gray-900{% endif %}">
                         {{ notif.message }}
                     </p>
                     {% if notif.related_application %}
-                        <p class="text-sm text-gray-500">
-                            Related to: {{ notif.related_application.borrower.full_name }} • {{ notif.related_application.product_type|title }}
+                        <p class="text-sm text-gray-600 mt-1">
+                            {% if notif.related_application.product_type == 'personal_loans' %}Personal Loan
+                            {% elif notif.related_application.product_type == 'auto_loans' %}Auto Loan
+                            {% elif notif.related_application.product_type == 'business_loans' %}Business Loan
+                            {% elif notif.related_application.product_type == 'home_loans' %}Home Loan
+                            {% elif notif.related_application.product_type == 'salary_loans' %}Salary Loan
+                            {% elif notif.related_application.product_type == 'payday_loans' %}Payday Loan
+                            {% else %}{{ notif.related_application.product_type|title }}{% endif %}
+                            • ₱{{ notif.related_application.amount|floatformat:2|intcomma }}
                         </p>
                     {% endif %}
                     <p class="text-xs mt-1 
-                        {% if notif.type == 'overdue' %}text-red-600
-                        {% elif notif.type == 'new_application' %}text-blue-600
-                        {% elif notif.type == 'payment_received' %}text-blue-600
+                        {% if notif.color == 'red' %}text-red-600
+                        {% elif notif.color == 'blue' %}text-blue-600
+                        {% elif notif.color == 'green' %}text-green-600
+                        {% elif notif.color == 'yellow' %}text-yellow-600
+                        {% elif notif.color == 'orange' %}text-orange-600
                         {% else %}text-gray-600{% endif %}">
-                        {{ notif.created_at|timesince }} ago
+                        {{ notif.created_at|naturaltime }}
                     </p>
                 </div>
             </div>
             {% empty %}
-            <p class="text-gray-500 text-sm">No notifications.</p>
+            <div class="text-center py-8">
+                <i class="fas fa-bell-slash text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500 text-sm">No notifications at this time.</p>
+            </div>
             {% endfor %}
         </div>
     </div>
@@ -267,7 +308,7 @@
         <!-- Customer Satisfaction -->
         <div class="text-center">
             <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                <span class="text-2xl font-bold text-purple-600">{{ satisfaction_score }}</span>
+                <span class="text-2xl font-bold text-purple-600">{{ satisfaction_score }}/5</span>
             </div>
             <h4 class="font-medium text-gray-900">Satisfaction Score</h4>
             <p class="text-sm text-gray-500">Average customer rating</p>
@@ -277,21 +318,133 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Add some interactivity to the dashboard
-    document.addEventListener('DOMContentLoaded', function() {
-        // Simulate real-time updates
-        setInterval(function() {
-            // You can add real-time data updates here
-            console.log('Dashboard data refreshed');
-        }, 30000); // Refresh every 30 seconds
-        
-        // Add click handlers for quick actions
-        document.querySelectorAll('.quick-action').forEach(function(element) {
-            element.addEventListener('click', function(e) {
-                e.preventDefault();
-                // Handle quick action clicks
-                console.log('Quick action clicked:', this.textContent);
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('loanApplicationsChart').getContext('2d');
+
+        // Get data from Django template
+        const dataSets = {{ chart_data|safe }};
+        let currentRange = '7';
+
+        // Generate labels based on current range
+        function generateLabels(range) {
+            const labels = [];
+            const length = dataSets[range].length;
+            
+            if (range === '7') {
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                const today = new Date();
+                for (let i = length - 1; i >= 0; i--) {
+                    const date = new Date(today);
+                    date.setDate(date.getDate() - i);
+                    labels.push(days[date.getDay()]);
+                }
+            } else if (range === '30') {
+                for (let i = length - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    labels.push(date.getDate());
+                }
+            } else {
+                for (let i = length - 1; i >= 0; i--) {
+                    const date = new Date();
+                    date.setDate(date.getDate() - i);
+                    if (i % 7 === 0) {
+                        labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+                    } else {
+                        labels.push('');
+                    }
+                }
+            }
+            return labels;
+        }
+
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: generateLabels(currentRange),
+                datasets: [{
+                    label: 'Applications',
+                    data: dataSets[currentRange],
+                    fill: true,
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointHoverRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: false 
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 12,
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Applications: ' + context.parsed.y;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { 
+                        grid: { 
+                            display: false 
+                        }, 
+                        ticks: { 
+                            color: '#6b7280', 
+                            font: { 
+                                family: 'Poppins', 
+                                size: 11 
+                            } 
+                        } 
+                    },
+                    y: { 
+                        beginAtZero: true,
+                        grid: { 
+                            color: '#f3f4f6' 
+                        }, 
+                        ticks: { 
+                            color: '#6b7280', 
+                            font: { 
+                                family: 'Poppins', 
+                                size: 11 
+                            },
+                            precision: 0
+                        } 
+                    }
+                }
+            }
+        });
+
+        // Range button functionality
+        document.querySelectorAll('.chart-range-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                currentRange = this.dataset.range;
+                chart.data.labels = generateLabels(currentRange);
+                chart.data.datasets[0].data = dataSets[currentRange];
+                chart.update();
+                
+                document.querySelectorAll('.chart-range-btn').forEach(b => {
+                    b.classList.remove('bg-blue-100', 'text-blue-600');
+                    b.classList.add('text-gray-600');
+                });
+                this.classList.add('bg-blue-100', 'text-blue-600');
+                this.classList.remove('text-gray-600');
             });
         });
     });
