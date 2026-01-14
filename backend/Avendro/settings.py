@@ -121,6 +121,18 @@ else:
         }
     }
 
+# Email Configuration (add these if not already present)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # or your email provider
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')  # Add to .env
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')  # Add to .env
+DEFAULT_FROM_EMAIL = 'noreply@avendro.com'
+
+# Site URL for reset links
+SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000')
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

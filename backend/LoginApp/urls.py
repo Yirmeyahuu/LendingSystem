@@ -12,4 +12,8 @@ urlpatterns = [
 
     #Url of company logout
     path('logout/company/', views.companyLogout, name='company-logout'),
+
+    # Password reset URLs
+    path('forgot-password/', views.passwordResetRequest, name='password-reset-request'),
+    path('reset-password/<uidb64>/<token>/', views.passwordResetConfirm, name='password-reset-confirm'),
 ]
