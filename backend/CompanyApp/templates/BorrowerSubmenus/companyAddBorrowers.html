@@ -1,5 +1,6 @@
 {% extends 'Company/companyBase.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}Add New Borrower - Avendro{% endblock %}
 
@@ -13,11 +14,11 @@
     <!-- Header -->
     <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900 mb-2">Add New Borrower</h1>
-        <p class="text-gray-600">Register a new borrower to your lending portfolio</p>
+        <p class="text-gray-600">Register a new borrower with an approved loan to your portfolio</p>
     </div>
 
     <!-- Multi-Step Form Container -->
-    <form method="POST" id="add-borrower-form" class="space-y-8" enctype="multipart/form-data">
+    <form method="POST" id="add-borrower-form" class="space-y-8">
         {% csrf_token %}
         
         <!-- Progress Bar -->
@@ -39,7 +40,7 @@
                 <div class="flex justify-between text-sm mt-3">
                     <span class="step-label text-blue-600 font-semibold text-center w-1/3">Personal Info</span>
                     <span class="step-label text-gray-500 text-center w-1/3">Employment</span>
-                    <span class="step-label text-gray-500 text-center w-1/3">Account</span>
+                    <span class="step-label text-gray-500 text-center w-1/3">Loan Details</span>
                 </div>
             </div>
         </div>
@@ -48,6 +49,12 @@
         <div class="form-step bg-white rounded-xl shadow-sm border border-gray-100 p-8" id="step-1">
             <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 1: Personal Information</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Email -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-900 mb-2" for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" placeholder="borrower@example.com" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
                 <!-- Full Name -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-900 mb-2">Full Legal Name *</label>
@@ -118,13 +125,13 @@
                 
                 <!-- Permanent Address -->
                 <div class="md:col-span-2" id="permanent-address-section">
-                    <label class="block text-sm font-medium text-gray-900 mb-2">Permanent Address *</label>
+                    <label class="block text-sm font-medium text-gray-900 mb-2">Permanent Address</label>
                     <div class="space-y-4">
-                        <input type="text" name="permanent_street_address" placeholder="Street Address" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" name="permanent_street_address" placeholder="Street Address" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <input type="text" name="permanent_city" placeholder="City" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <input type="text" name="permanent_state" placeholder="State / Province" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <input type="text" name="permanent_postal_code" placeholder="Postal Code" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" name="permanent_city" placeholder="City" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" name="permanent_state" placeholder="State / Province" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="text" name="permanent_postal_code" placeholder="Postal Code" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         </div>
                     </div>
                 </div>
@@ -156,7 +163,7 @@
                     
                     <!-- Monthly Income -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-900 mb-2" for="monthly_income">Monthly Income *</label>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="monthly_income">Monthly Income (₱) *</label>
                         <input type="number" id="monthly_income" name="monthly_income" placeholder="e.g., 50000" min="0" step="0.01" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
                     
@@ -204,53 +211,91 @@
             </div>
         </div>
 
-        <!-- Step 3: Account Credentials -->
+        <!-- Step 3: Loan Details -->
         <div class="form-step bg-white rounded-xl shadow-sm border border-gray-100 p-8 hidden" id="step-3">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 3: Create Account</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 3: Loan Details</h2>
+            
+            <!-- Loan Product Type -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-900 mb-2" for="loan_product_type">Loan Product Type *</label>
+                <select id="loan_product_type" name="loan_product_type" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Select Loan Type</option>
+                    {% for product in company.loan_products %}
+                        <option value="{{ product }}">
+                            {% if product == 'personal_loans' %}Personal Loan
+                            {% elif product == 'business_loans' %}Business Loan
+                            {% elif product == 'auto_loans' %}Auto Loan
+                            {% elif product == 'home_loans' %}Home Loan
+                            {% elif product == 'salary_loans' %}Salary Loan
+                            {% elif product == 'payday_loans' %}Payday Loan
+                            {% else %}{{ product|title }}
+                            {% endif %}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Loan Amount -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-900 mb-2" for="username">Username *</label>
-                    <input type="text" id="username" name="username" placeholder="Create a unique username" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="text-xs text-gray-500 mt-1">Username must be 3-20 characters long</p>
+                    <label class="block text-sm font-medium text-gray-900 mb-2" for="loan_amount">Loan Amount (₱) *</label>
+                    <input type="number" id="loan_amount" name="loan_amount" 
+                           min="{{ company.min_loan_amount }}" 
+                           max="{{ company.max_loan_amount }}" 
+                           step="1000"
+                           placeholder="Enter amount between ₱{{ company.min_loan_amount|floatformat:0|intcomma }} - ₱{{ company.max_loan_amount|floatformat:0|intcomma }}" 
+                           required 
+                           class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Min: ₱{{ company.min_loan_amount|floatformat:0|intcomma }} | Max: ₱{{ company.max_loan_amount|floatformat:0|intcomma }}</p>
                 </div>
+                
+                <!-- Loan Term -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-900 mb-2" for="email">Email Address *</label>
-                    <input type="email" id="email" name="email" placeholder="borrower@example.com" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-medium text-gray-900 mb-2" for="loan_term">Loan Term (months) *</label>
+                    <input type="number" id="loan_term" name="loan_term" 
+                           min="{{ company.min_loan_term }}" 
+                           max="{{ company.max_loan_term }}" 
+                           step="1"
+                           placeholder="Enter term between {{ company.min_loan_term }} - {{ company.max_loan_term }} months" 
+                           required 
+                           class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Min: {{ company.min_loan_term }} months | Max: {{ company.max_loan_term }} months</p>
                 </div>
+                
+                <!-- Interest Rate -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-900 mb-2" for="password">Password *</label>
-                    <div class="relative">
-                        <input type="password" id="password" name="password" placeholder="Create a strong password" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10">
-                        <button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700" onclick="togglePasswordVisibility('password')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-1">Minimum 8 characters</p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-900 mb-2" for="confirm_password">Confirm Password *</label>
-                    <div class="relative">
-                        <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm password" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10">
-                        <button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700" onclick="togglePasswordVisibility('confirm_password')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                    <div id="password-match" class="mt-1 text-xs hidden"></div>
+                    <label class="block text-sm font-medium text-gray-900 mb-2" for="interest_rate">Interest Rate (%) *</label>
+                    <input type="number" id="interest_rate" name="interest_rate" 
+                           min="{{ company.min_interest_rate }}" 
+                           max="{{ company.max_interest_rate }}" 
+                           step="0.01"
+                           value="{{ company.min_interest_rate }}"
+                           placeholder="Enter rate between {{ company.min_interest_rate }}% - {{ company.max_interest_rate }}%" 
+                           required 
+                           class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Min: {{ company.min_interest_rate }}% | Max: {{ company.max_interest_rate }}%</p>
                 </div>
             </div>
             
-            <!-- Account Status -->
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
-                <div class="space-y-3">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="is_verified" checked class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                        <span class="text-sm text-gray-900">Mark account as verified</span>
-                    </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="is_active" checked class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3">
-                        <span class="text-sm text-gray-900">Activate account immediately</span>
-                    </label>
+            <!-- Loan Calculator Results -->
+            <div id="loan-calculator" class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-calculator text-blue-600 mr-2"></i>
+                    Loan Calculation Preview
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-1">Monthly Payment</p>
+                        <p class="text-2xl font-bold text-blue-600" id="calc-monthly">₱0.00</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-1">Total Payment</p>
+                        <p class="text-2xl font-bold text-green-600" id="calc-total">₱0.00</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 shadow-sm">
+                        <p class="text-sm text-gray-600 mb-1">Total Interest</p>
+                        <p class="text-2xl font-bold text-orange-600" id="calc-interest">₱0.00</p>
+                    </div>
                 </div>
             </div>
             
@@ -259,7 +304,7 @@
                     <i class="fas fa-arrow-left mr-2"></i> Previous
                 </button>
                 <button type="submit" class="bg-gradient-to-r from-blue-600 to-green-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-300 font-semibold shadow-lg">
-                    <i class="fas fa-user-plus mr-2"></i> Add Borrower
+                    <i class="fas fa-user-plus mr-2"></i> Add Borrower with Approved Loan
                 </button>
             </div>
         </div>
@@ -273,6 +318,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const formSteps = document.querySelectorAll('.form-step');
     const stepIndicators = document.querySelectorAll('.step-indicator');
     const stepLabels = document.querySelectorAll('.step-label');
+    const stepLines = document.querySelectorAll('.step-line');
 
     function showStep(stepNumber) {
         formSteps.forEach((step, index) => {
@@ -292,6 +338,11 @@ document.addEventListener('DOMContentLoaded', function() {
             label.classList.toggle('font-semibold', index === stepNumber - 1);
             label.classList.toggle('text-gray-500', index !== stepNumber - 1);
         });
+        
+        stepLines.forEach((line, index) => {
+            line.classList.toggle('bg-blue-600', index < stepNumber - 1);
+            line.classList.toggle('bg-gray-300', index >= stepNumber - 1);
+        });
     }
 
     document.querySelectorAll('.next-step').forEach(button => {
@@ -299,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (validateCurrentStep() && currentStep < totalSteps) {
                 currentStep++;
                 showStep(currentStep);
+                window.scrollTo(0, 0);
             }
         });
     });
@@ -308,6 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentStep > 1) {
                 currentStep--;
                 showStep(currentStep);
+                window.scrollTo(0, 0);
             }
         });
     });
@@ -325,15 +378,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        if (currentStep === totalSteps) {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            if (password !== confirmPassword) {
-                isValid = false;
-                document.getElementById('confirm_password').classList.add('border-red-500');
-            }
-        }
-
         if (!isValid) {
             alert('Please fill in all required fields marked with *');
         }
@@ -343,11 +387,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Address checkbox functionality
     document.getElementById('same-address').addEventListener('change', function() {
         const permanentSection = document.getElementById('permanent-address-section');
-        const permanentFields = permanentSection.querySelectorAll('input');
-
+        
         if (this.checked) {
             permanentSection.style.display = 'none';
-            permanentFields.forEach(field => field.removeAttribute('required'));
             
             document.querySelector('[name="permanent_street_address"]').value = document.querySelector('[name="current_street_address"]').value;
             document.querySelector('[name="permanent_city"]').value = document.querySelector('[name="current_city"]').value;
@@ -355,7 +397,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('[name="permanent_postal_code"]').value = document.querySelector('[name="current_postal_code"]').value;
         } else {
             permanentSection.style.display = 'block';
-            permanentFields.forEach(field => field.setAttribute('required', 'required'));
         }
     });
 
@@ -371,42 +412,50 @@ document.addEventListener('DOMContentLoaded', function() {
             jobTitleField.style.display = 'none';
             companyInput.removeAttribute('required');
             jobTitleInput.removeAttribute('required');
+            companyInput.value = 'N/A';
+            jobTitleInput.value = 'N/A';
         } else {
             companyField.style.display = 'block';
             jobTitleField.style.display = 'block';
             companyInput.setAttribute('required', 'required');
             jobTitleInput.setAttribute('required', 'required');
+            if (companyInput.value === 'N/A') companyInput.value = '';
+            if (jobTitleInput.value === 'N/A') jobTitleInput.value = '';
         }
     });
 
-    // Password match validation
-    document.getElementById('confirm_password').addEventListener('input', function() {
-        const password = document.getElementById('password').value;
-        const matchIndicator = document.getElementById('password-match');
-        matchIndicator.classList.remove('hidden');
-        if (this.value === password) {
-            matchIndicator.textContent = 'Passwords match';
-            matchIndicator.className = 'mt-1 text-xs text-green-600';
-            this.classList.remove('border-red-500');
-        } else {
-            matchIndicator.textContent = 'Passwords do not match';
-            matchIndicator.className = 'mt-1 text-xs text-red-600';
+    // Loan Calculator
+    function calculateLoan() {
+        const amount = parseFloat(document.getElementById('loan_amount').value) || 0;
+        const term = parseInt(document.getElementById('loan_term').value) || 0;
+        const rate = parseFloat(document.getElementById('interest_rate').value) || 0;
+
+        if (amount > 0 && term > 0 && rate >= 0) {
+            const monthlyRate = (rate / 100) / 12;
+            let monthlyPayment;
+
+            if (monthlyRate > 0) {
+                const numerator = monthlyRate * Math.pow(1 + monthlyRate, term);
+                const denominator = Math.pow(1 + monthlyRate, term) - 1;
+                monthlyPayment = amount * (numerator / denominator);
+            } else {
+                monthlyPayment = amount / term;
+            }
+
+            const totalPayment = monthlyPayment * term;
+            const totalInterest = totalPayment - amount;
+
+            document.getElementById('calc-monthly').textContent = '₱' + monthlyPayment.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('calc-total').textContent = '₱' + totalPayment.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('calc-interest').textContent = '₱' + totalInterest.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
-    });
+    }
+
+    document.getElementById('loan_amount').addEventListener('input', calculateLoan);
+    document.getElementById('loan_term').addEventListener('input', calculateLoan);
+    document.getElementById('interest_rate').addEventListener('input', calculateLoan);
 
     showStep(currentStep);
 });
-
-function togglePasswordVisibility(fieldId) {
-    const field = document.getElementById(fieldId);
-    const icon = field.nextElementSibling.querySelector('i');
-    if (field.type === 'password') {
-        field.type = 'text';
-        icon.className = 'fas fa-eye-slash';
-    } else {
-        field.type = 'password';
-        icon.className = 'fas fa-eye';
-    }
-}
 </script>
 {% endblock %}

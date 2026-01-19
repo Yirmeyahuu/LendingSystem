@@ -27,6 +27,8 @@
 
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Load confirmation modal JS -->
+    <script src="{% static 'js/company/confirmationModal.js' %}"></script>
     
     <!-- Tailwind CSS -->
     {% tailwind_css %}
@@ -252,7 +254,7 @@
 
 
 
-<!-- View Loan Application Modal -->
+<!-- View Loan Application Modal (Loan Application) -->
 <div id="viewLoanModal" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
     <div class="relative top-20 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-xl bg-white mb-20">
         <!-- Modal Header -->
@@ -268,6 +270,63 @@
             <!-- Loading State -->
             <div class="flex justify-center items-center py-12">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Loan Application Modal (Borrower List) -->
+<div id="viewLoanModalBorrowerList" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-full max-w-5xl shadow-lg rounded-xl bg-white mb-20">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-2xl font-bold text-gray-900">Loan Application Details</h3>
+            <button onclick="closeViewLoanModalBorrowerList()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div id="modalContentBorrowerList" class="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
+            <!-- Loading State -->
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="fixed inset-0 z-[10000] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-1/2 transform -translate-y-1/2 mx-auto p-5 border w-full max-w-md shadow-lg rounded-xl bg-white">
+        <!-- Modal Content -->
+        <div class="text-center p-6">
+            <!-- Icon -->
+            <i id="confirmationModalIcon" class="fas fa-question-circle text-gray-400 text-6xl mb-4"></i>
+            
+            <!-- Title -->
+            <h3 id="confirmationModalTitle" class="text-2xl font-bold text-gray-900 mb-3">
+                Confirm Action
+            </h3>
+            
+            <!-- Message -->
+            <p id="confirmationModalMessage" class="text-gray-600 mb-6">
+                Are you sure you want to proceed with this action?
+            </p>
+            
+            <!-- Action Buttons -->
+            <div class="flex justify-center space-x-4">
+                <button 
+                    onclick="closeConfirmationModal()" 
+                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </button>
+                <button 
+                    id="confirmActionBtn"
+                    onclick="confirmAction()" 
+                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                    <i class="fas fa-check mr-2"></i>Confirm
+                </button>
             </div>
         </div>
     </div>
@@ -356,7 +415,6 @@
                     <div x-show="open" @click.away="open = false" x-collapse class="mt-2 space-y-1 ml-4 pl-5 border-l border-slate-700">
                         <a href="{% url 'company-borrower-lists' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-borrower-lists' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">All Clients</a>
                         <a href="{% url 'company-active-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-active-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Active Borrowers</a>
-                        <a href="{% url 'company-archived-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-archived-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Archived Borrowers</a>
                         <a href="{% url 'company-add-borrowers' %}" class="block px-4 py-2 text-sm rounded-lg transition-colors {% if request.resolver_match.url_name == 'company-add-borrowers' %}text-blue-400 font-semibold{% else %}text-slate-400 hover:text-white{% endif %}">Add Borrower</a>
                     </div>
                 </div>
@@ -456,9 +514,6 @@
                                 </a>
                                 <a href="{% url 'company-active-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-active-borrowers' %}font-bold text-green-700{% endif %}">
                                     Active Borrowers
-                                </a>
-                                <a href="{% url 'company-archived-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-archived-borrowers' %}font-bold text-green-700{% endif %}">
-                                    Archived Borrowers
                                 </a>
                                 <a href="{% url 'company-add-borrowers' %}" class="block py-2 text-sm text-gray-700 hover:text-green-700 {% if request.resolver_match.url_name == 'company-add-borrowers' %}font-bold text-green-700{% endif %}">
                                     Add Borrower

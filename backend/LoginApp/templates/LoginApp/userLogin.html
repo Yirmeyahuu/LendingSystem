@@ -1,3 +1,4 @@
+<!-- filepath: backend/LoginApp/templates/LoginApp/userLogin.html -->
 {% load static %}
 {% load tailwind_tags %}
 
@@ -6,11 +7,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - Avendro</title>
+    <title>Company Sign In - Avendro</title>
     <link rel="icon" href="{% static 'assets/img/AvendroRel.svg' %}">
     {% tailwind_css %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css?family=Poppins:400,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Poppins:400,500,600&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Poppins', sans-serif; }
         .preloader {
@@ -20,7 +21,7 @@
         }
         .preloader.active { display: flex; }
         .loader {
-            width: 48px; height: 48px; border: 4px solid #e5e7eb;
+            width: 40px; height: 40px; border: 3px solid #e5e7eb;
             border-top-color: #3b82f6; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
@@ -32,172 +33,229 @@
     <div id="preloader" class="preloader"><div class="loader"></div></div>
 
     <!-- Main Container -->
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="relative flex flex-col m-6 space-y-8 bg-white shadow-2xl rounded-2xl md:flex-row md:space-y-0 w-full max-w-5xl">
-            <!-- Left Column (Image) - Hidden on Mobile -->
-            <div class="relative hidden lg:block lg:w-1/2">
-                <img src="{% static 'assets/img/image3.png' %}" alt="Financial Platform" class="w-full h-full object-cover rounded-l-2xl">
-                <!-- Overlay Text -->
-                <div class="absolute top-0 left-0 w-full h-full bg-sky-700/20 bg-opacity-40 rounded-l-2xl p-10 text-white flex flex-col justify-between">
+    <div class="min-h-screen flex items-center justify-center px-4 py-6 sm:px-6 lg:px-8">
+        <div class="relative flex flex-col lg:flex-row bg-white shadow-xl rounded-xl lg:rounded-2xl w-full max-w-4xl overflow-hidden">
+            
+            <!-- Left Column (Image) - Hidden on Mobile/Tablet -->
+            <div class="relative hidden lg:block lg:w-2/5">
+                <img src="{% static 'assets/img/image3.png' %}" alt="Financial Platform" class="w-full h-full object-cover">
+                <!-- Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-600/60 to-blue-800/40 p-8 flex flex-col justify-between">
+                    <!-- Logo -->
                     <div>
                         <a href="{% url 'landing-page' %}" class="inline-flex items-center space-x-2">
-                           <img src="{% static 'assets/img/AvendroRel.svg' %}" alt="Avendro Logo" class="w-8 h-8">
-                           <span class="text-xl font-bold">Avendro</span>
+                           <img src="{% static 'assets/img/AvendroRel.svg' %}" alt="Avendro Logo" class="w-7 h-7">
+                           <span class="text-lg font-semibold text-white">Avendro</span>
                         </a>
                     </div>
+                    
+                    <!-- Middle Content -->
                     <div class="space-y-3">
-                        <h2 class="text-3xl font-bold">"The premier marketplace for borrowers and lenders."</h2>
-                        <p class="text-gray-200">Join a community that fosters growth and financial opportunity.</p>
+                        <h2 class="text-2xl font-bold text-white leading-tight">Lender Portal Access</h2>
+                        <p class="text-sm text-blue-50 leading-relaxed">Manage your loan portfolio and grow your lending business with powerful tools.</p>
+                        <div class="pt-3 space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-check-circle text-green-300 text-sm"></i>
+                                <span class="text-xs text-white">Track applications in real-time</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-check-circle text-green-300 text-sm"></i>
+                                <span class="text-xs text-white">Manage borrower relationships</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-check-circle text-green-300 text-sm"></i>
+                                <span class="text-xs text-white">Advanced analytics & reporting</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="text-sm">&copy; 2025 Avendro. All Rights Reserved.</div>
+                    
+                    <!-- Footer -->
+                    <div class="text-xs text-blue-100">&copy; 2025 Avendro. All Rights Reserved.</div>
                 </div>
             </div>
 
             <!-- Right Column (Login Form) -->
-            <div class="w-full lg:w-1/2 p-8 sm:p-12">
-                <!-- Back Button (Visible on Mobile) -->
-                <div class="lg:hidden mb-6">
-                    <a href="{% url 'landing-page' %}" class="inline-flex items-center text-sm font-medium text-gray-600 hover:text-gray-900">
-                        <i class="fas fa-arrow-left mr-2"></i>
-                        Back to Home
+            <div class="w-full lg:w-3/5 p-6 sm:p-8 lg:p-10">
+                <!-- Mobile Logo & Back Button -->
+                <div class="lg:hidden mb-6 flex items-center justify-between">
+                    <a href="{% url 'landing-page' %}" class="inline-flex items-center space-x-2">
+                        <img src="{% static 'assets/img/AvendroRel.svg' %}" alt="Avendro Logo" class="w-6 h-6">
+                        <span class="text-base font-semibold text-gray-900">Avendro</span>
+                    </a>
+                    <a href="{% url 'landing-page' %}" class="inline-flex items-center text-xs font-medium text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-1.5 text-xs"></i>
+                        Back
                     </a>
                 </div>
                 
                 <!-- Header -->
-                <div class="text-center">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-                    <p class="text-gray-600">Sign in to your Avendro account.</p>
+                <div class="text-center mb-6">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-100 mb-3">
+                        <i class="fas fa-building text-blue-600 text-lg"></i>
+                    </div>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Company Sign In</h2>
+                    <p class="text-sm text-gray-600">Access your lending dashboard</p>
                 </div>
 
-                <form class="mt-8 space-y-6" method="POST" id="loginForm">
+                <!-- Error Messages -->
+                {% if messages %}
+                    <div class="mb-5 space-y-2">
+                        {% for message in messages %}
+                            <div class="bg-red-50 border-l-4 border-red-500 p-3 rounded-md" role="alert">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <i class="fas fa-exclamation-circle text-red-500 text-sm"></i>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-xs sm:text-sm text-red-700">{{ message }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Login Form -->
+                <form class="space-y-4" method="POST" id="loginForm">
                     {% csrf_token %}
                     
                     <!-- Username/Email Field -->
                     <div>
-                        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">Email or Username</label>
+                        <label for="username" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
+                            Company Email or Username
+                        </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3"><i class="fas fa-user text-gray-400"></i></span>
-                            <input id="username" name="username" type="text" required class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500" placeholder="your.email@example.com">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-user text-gray-400 text-xs"></i>
+                            </span>
+                            <input 
+                                id="username" 
+                                name="username" 
+                                type="text" 
+                                required 
+                                autocomplete="username"
+                                class="block w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400" 
+                                placeholder="company@example.com"
+                            >
                         </div>
                     </div>
 
                     <!-- Password Field -->
                     <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                        <label for="password" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5">
+                            Password
+                        </label>
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3"><i class="fas fa-lock text-gray-400"></i></span>
-                            <input id="password" name="password" type="password" required class="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-500" placeholder="Enter your password">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                                <i class="fas fa-lock text-gray-400 text-xs"></i>
+                            </span>
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                required 
+                                autocomplete="current-password"
+                                class="block w-full pl-9 pr-10 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400" 
+                                placeholder="Enter your password"
+                            >
                             <button type="button" class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" onclick="togglePassword()">
-                                <i id="togglePasswordIcon" class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+                                <i id="togglePasswordIcon" class="fas fa-eye text-gray-400 hover:text-gray-600 text-xs"></i>
                             </button>
                         </div>
                     </div>
 
-                    <!-- User Type Selection -->
-                    <div class="pt-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-3 text-center">I am a:</label>
-                        <div class="grid grid-cols-2 gap-4">
-                            <label class="user-type-label flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-400 transition-colors duration-200">
-                                <input type="radio" name="user_type" value="borrower" class="sr-only" checked>
-                                <i class="fas fa-user text-blue-600 text-2xl mb-2"></i>
-                                <span class="text-sm font-semibold text-gray-800">Borrower</span>
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input 
+                                id="remember-me" 
+                                name="remember-me" 
+                                type="checkbox" 
+                                class="h-3.5 w-3.5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            >
+                            <label for="remember-me" class="ml-2 block text-xs sm:text-sm text-gray-700">
+                                Remember me
                             </label>
-                            <label class="user-type-label flex flex-col items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-400 transition-colors duration-200">
-                                <input type="radio" name="user_type" value="lender" class="sr-only">
-                                <i class="fas fa-building text-green-600 text-2xl mb-2"></i>
-                                <span class="text-sm font-semibold text-gray-800">Lender</span>
-                            </label>
+                        </div>
+                        <div class="text-xs sm:text-sm">
+                            <a href="{% url 'password-reset-request' %}" class="font-medium text-blue-600 hover:text-blue-500">
+                                Forgot password?
+                            </a>
                         </div>
                     </div>
 
                     <!-- Sign In Button -->
                     <div class="pt-2">
-                        <button type="submit" id="submitBtn" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-semibold rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 shadow-md hover:shadow-lg">
-                            <span class="absolute left-0 inset-y-0 flex items-center pl-4"><i class="fas fa-sign-in-alt"></i></span>
-                            Sign In
+                        <button 
+                            type="submit" 
+                            id="submitBtn" 
+                            class="group relative w-full flex justify-center items-center py-2.5 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+                        >
+                            <i class="fas fa-sign-in-alt mr-2 text-xs"></i>
+                            Sign In to Dashboard
                         </button>
                     </div>
 
-                    <!-- After the password field, before user type selection -->
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <label for="remember-me" class="ml-2 block text-sm text-gray-900">Remember me</label>
-                        </div>
-                        <div class="text-sm">
-                            <a href="{% url 'password-reset-request' %}" class="font-medium text-blue-600 hover:text-blue-500">
-                                Forgot your password?
-                            </a>
+                    <!-- Info Box -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="flex">
+                            <div class="flex-shrink-0 pt-0.5">
+                                <i class="fas fa-info-circle text-blue-500 text-xs"></i>
+                            </div>
+                            <div class="ml-2.5">
+                                <p class="text-xs text-blue-700 leading-relaxed">
+                                    <strong class="font-semibold">Looking to apply for a loan?</strong><br>
+                                    Borrowers don't need to sign in. <a href="{% url 'select-company' %}" class="font-semibold underline hover:text-blue-900">Apply directly here</a>.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="text-center text-sm text-gray-600">
-                        Don't have an account? 
-                        <a href="{% url 'borrower-registration' %}" class="font-medium text-blue-600 hover:text-blue-500">Sign up as Borrower</a> or 
-                        <a href="{% url 'company-registration' %}" class="font-medium text-green-600 hover:text-green-500">as Lender</a>
+                    <!-- Registration Link -->
+                    <div class="text-center pt-4 border-t border-gray-200">
+                        <p class="text-xs sm:text-sm text-gray-600">
+                            Don't have a company account? 
+                            <a href="{% url 'company-registration' %}" class="font-medium text-blue-600 hover:text-blue-500">
+                                Register your company
+                            </a>
+                        </p>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Error Messages -->
-    {% if messages %}
-        <div class="fixed top-5 right-5 z-50 space-y-3">
-            {% for message in messages %}
-                <div class="max-w-sm bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md shadow-lg" role="alert">
-                    <div class="flex">
-                        <div class="py-1"><i class="fas fa-exclamation-circle mr-3"></i></div>
-                        <div><p class="font-bold">{{ message.tags|title }}</p><p class="text-sm">{{ message }}</p></div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
     <script>
+        // Show preloader on form submit
         document.getElementById('loginForm').addEventListener('submit', function() {
             document.getElementById('preloader').classList.add('active');
         });
 
+        // Toggle password visibility
         function togglePassword() {
             const passwordField = document.getElementById('password');
             const toggleIcon = document.getElementById('togglePasswordIcon');
             if (passwordField.type === 'password') {
                 passwordField.type = 'text';
-                toggleIcon.className = 'fas fa-eye-slash text-gray-400 hover:text-gray-600';
+                toggleIcon.className = 'fas fa-eye-slash text-gray-400 hover:text-gray-600 text-xs';
             } else {
                 passwordField.type = 'password';
-                toggleIcon.className = 'fas fa-eye text-gray-400 hover:text-gray-600';
+                toggleIcon.className = 'fas fa-eye text-gray-400 hover:text-gray-600 text-xs';
             }
         }
 
+        // Auto-hide messages after 5 seconds
         document.addEventListener('DOMContentLoaded', function() {
-            const radioButtons = document.querySelectorAll('input[name="user_type"]');
-            
-            function updateSelection() {
-                radioButtons.forEach(radio => {
-                    const label = radio.closest('.user-type-label');
-                    if (radio.checked) {
-                        if (radio.value === 'borrower') {
-                            label.classList.add('border-blue-500', 'bg-blue-50');
-                            label.classList.remove('border-gray-200');
-                        } else {
-                            label.classList.add('border-green-500', 'bg-green-50');
-                            label.classList.remove('border-gray-200');
-                        }
-                    } else {
-                        label.classList.remove('border-blue-500', 'bg-blue-50', 'border-green-500', 'bg-green-50');
-                        label.classList.add('border-gray-200');
-                    }
-                });
-            }
-
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', updateSelection);
+            const messages = document.querySelectorAll('[role="alert"]');
+            messages.forEach(function(message) {
+                setTimeout(function() {
+                    message.style.opacity = '0';
+                    message.style.transition = 'opacity 0.5s ease';
+                    setTimeout(function() {
+                        message.remove();
+                    }, 500);
+                }, 5000);
             });
-
-            updateSelection(); // Initial check
         });
     </script>
 </body>

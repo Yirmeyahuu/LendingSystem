@@ -1,0 +1,1010 @@
+{% load static %}
+{% load tailwind_tags %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Application - {{ company.company_name }} - Avendro</title>
+    <link rel="icon" href="{% static 'assets/img/AvendroRel.svg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+<!-- Back Button -->
+<div class="absolute top-4 left-4 z-50">
+    <a href="{% url 'select-company' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors shadow-sm">
+        <i class="fas fa-arrow-left mr-2"></i>
+        Back to Companies
+    </a>
+</div>
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16 sm:py-24">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header with Company Info -->
+        <div class="text-center mb-10">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600 mb-4">
+                <i class="fas fa-building text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Loan Application</h1>
+            <p class="text-lg text-gray-700 font-semibold">{{ company.company_name }}</p>
+            <p class="text-sm text-gray-600">{{ company.city }}, {{ company.state }}</p>
+            
+            <!-- Loan Info Box -->
+            <div class="mt-6 bg-white rounded-lg shadow-md p-4 max-w-2xl mx-auto">
+                <div class="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                        <p class="text-gray-600">Loan Amount</p>
+                        <p class="font-semibold text-gray-900">₱{{ company.min_loan_amount|floatformat:0|intcomma }} - ₱{{ company.max_loan_amount|floatformat:0|intcomma }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Interest Rate</p>
+                        <p class="font-semibold text-gray-900">{{ company.min_interest_rate }}% - {{ company.max_interest_rate }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-600">Term</p>
+                        <p class="font-semibold text-gray-900">{{ company.min_loan_term }} - {{ company.max_loan_term }} months</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="bg-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-100 border border-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-400 text-{% if message.tags == 'error' %}red{% elif message.tags == 'success' %}green{% elif message.tags == 'warning' %}yellow{% else %}blue{% endif %}-700 px-4 py-3 rounded relative mb-2" role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Multi-Step Form Container -->
+        <form method="POST" id="registration-form" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between">
+                    <div class="flex-1 flex items-center">
+                        <div class="step-indicator active flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white font-bold">1</div>
+                        <div class="flex-1 h-1 bg-gray-300 mx-2 step-line"></div>
+                    </div>
+                    <div class="flex-1 flex items-center">
+                        <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-gray-500 font-bold">2</div>
+                        <div class="flex-1 h-1 bg-gray-300 mx-2 step-line"></div>
+                    </div>
+                    <div class="flex-1 flex items-center">
+                        <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-gray-500 font-bold">3</div>
+                        <div class="flex-1 h-1 bg-gray-300 mx-2 step-line"></div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="step-indicator flex items-center justify-center w-10 h-10 rounded-full bg-gray-300 text-gray-500 font-bold">4</div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs sm:text-sm mt-2">
+                    <span class="step-label text-blue-600 font-semibold text-center" style="width: 25%">Personal</span>
+                    <span class="step-label text-gray-500 text-center" style="width: 25%">Employment</span>
+                    <span class="step-label text-gray-500 text-center" style="width: 25%">Loan Details</span>
+                    <span class="step-label text-gray-500 text-center" style="width: 25%">Review</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Personal Information -->
+            <div class="form-step bg-white rounded-2xl shadow-lg p-6 sm:p-8" id="step-1">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 1: Personal Information</h2>
+                
+                <!-- Existing Application Alert -->
+                <div id="existing-application-alert" class="hidden mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-red-500 text-xl"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-bold text-red-800">Existing Application Found</h3>
+                            <p class="mt-1 text-sm text-red-700" id="existing-application-message"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Email -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" placeholder="your.email@example.com" value="{{ form_data.email|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p id="email-check-status" class="text-xs mt-1 hidden"></p>
+                    </div>
+                    
+                    <!-- Full Name -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">Full Legal Name *</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <input type="text" id="first_name" name="first_name" placeholder="First Name" value="{{ form_data.first_name|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" name="middle_name" placeholder="Middle Name (Optional)" value="{{ form_data.middle_name|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <input type="text" id="last_name" name="last_name" placeholder="Last Name" value="{{ form_data.last_name|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <!-- Date of Birth -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="date_of_birth">Date of Birth *</label>
+                        <input type="date" id="date_of_birth" name="date_of_birth" value="{{ form_data.date_of_birth|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <!-- Gender -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="gender">Gender *</label>
+                        <select id="gender" name="gender" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Gender</option>
+                            <option value="male" {% if form_data.gender == 'male' %}selected{% endif %}>Male</option>
+                            <option value="female" {% if form_data.gender == 'female' %}selected{% endif %}>Female</option>
+                            <option value="other" {% if form_data.gender == 'other' %}selected{% endif %}>Other</option>
+                            <option value="prefer_not_to_say" {% if form_data.gender == 'prefer_not_to_say' %}selected{% endif %}>Prefer not to say</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Marital Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="marital_status">Marital Status *</label>
+                        <select id="marital_status" name="marital_status" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Status</option>
+                            <option value="single" {% if form_data.marital_status == 'single' %}selected{% endif %}>Single</option>
+                            <option value="married" {% if form_data.marital_status == 'married' %}selected{% endif %}>Married</option>
+                            <option value="divorced" {% if form_data.marital_status == 'divorced' %}selected{% endif %}>Divorced</option>
+                            <option value="widowed" {% if form_data.marital_status == 'widowed' %}selected{% endif %}>Widowed</option>
+                            <option value="separated" {% if form_data.marital_status == 'separated' %}selected{% endif %}>Separated</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Mobile Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="mobile_number">Mobile Number *</label>
+                        <input type="tel" id="mobile_number" name="mobile_number" placeholder="e.g., +639123456789" value="{{ form_data.mobile_number|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+                    
+                    <!-- Current Address -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">Current Address *</label>
+                        <div class="space-y-4">
+                            <input type="text" name="current_street_address" placeholder="Street Address" value="{{ form_data.current_street_address|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <input type="text" name="current_city" placeholder="City" value="{{ form_data.current_city|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="current_state" placeholder="State / Province" value="{{ form_data.current_state|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="current_postal_code" placeholder="Postal Code" value="{{ form_data.current_postal_code|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Permanent Address Same as Current -->
+                    <div class="md:col-span-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="same-address" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2">
+                            <span class="text-sm text-gray-900">Permanent address is same as current address</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Permanent Address -->
+                    <div class="md:col-span-2" id="permanent-address-section">
+                        <label class="block text-sm font-medium text-gray-900 mb-2">Permanent Address</label>
+                        <div class="space-y-4">
+                            <input type="text" name="permanent_street_address" placeholder="Street Address" value="{{ form_data.permanent_street_address|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <input type="text" name="permanent_city" placeholder="City" value="{{ form_data.permanent_city|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="permanent_state" placeholder="State / Province" value="{{ form_data.permanent_state|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <input type="text" name="permanent_postal_code" placeholder="Postal Code" value="{{ form_data.permanent_postal_code|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-8">
+                    <button type="button" id="step1-next" class="next-step bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow">
+                        Next Step <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Employment & Financial Information -->
+            <div class="form-step bg-white rounded-2xl shadow-lg p-6 sm:p-8 hidden" id="step-2">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 2: Employment & Financial Information</h2>
+                <div class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Employment Status -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2" for="employment_status">Employment Status *</label>
+                            <select id="employment_status" name="employment_status" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">Select Status</option>
+                                <option value="employed" {% if form_data.employment_status == 'employed' %}selected{% endif %}>Employed</option>
+                                <option value="self_employed" {% if form_data.employment_status == 'self_employed' %}selected{% endif %}>Self-Employed</option>
+                                <option value="unemployed" {% if form_data.employment_status == 'unemployed' %}selected{% endif %}>Unemployed</option>
+                                <option value="student" {% if form_data.employment_status == 'student' %}selected{% endif %}>Student</option>
+                                <option value="retired" {% if form_data.employment_status == 'retired' %}selected{% endif %}>Retired</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Monthly Income -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-900 mb-2" for="monthly_income">Monthly Income (₱) *</label>
+                            <input type="number" id="monthly_income" name="monthly_income" placeholder="e.g., 50000" min="0" step="0.01" value="{{ form_data.monthly_income|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <!-- Company Name -->
+                        <div id="company-field">
+                            <label class="block text-sm font-medium text-gray-900 mb-2" for="company_name">Company Name *</label>
+                            <input type="text" id="company_name" name="company_name" placeholder="e.g., ABC Corporation" value="{{ form_data.company_name|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        
+                        <!-- Job Title -->
+                        <div id="job-title-field">
+                            <label class="block text-sm font-medium text-gray-900 mb-2" for="job_title">Job Title / Position *</label>
+                            <input type="text" id="job_title" name="job_title" placeholder="e.g., Software Engineer" value="{{ form_data.job_title|default:'' }}" class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    
+                    <!-- Source of Income -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="income_source">Source of Income *</label>
+                        <textarea id="income_source" name="income_source" rows="3" placeholder="Briefly describe your primary source of income..." required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-y">{{ form_data.income_source|default:'' }}</textarea>
+                    </div>
+                    
+                    <!-- Bank Details -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Bank Account Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2" for="bank_name">Bank Name *</label>
+                                <input type="text" id="bank_name" name="bank_name" placeholder="e.g., BDO, BPI, Metrobank" value="{{ form_data.bank_name|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-900 mb-2" for="account_number">Account Number *</label>
+                                <input type="text" id="account_number" name="account_number" placeholder="Your account number" value="{{ form_data.account_number|default:'' }}" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-200 text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button type="button" class="next-step bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow">
+                        Next Step <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Loan Details -->
+            <div class="form-step bg-white rounded-2xl shadow-lg p-6 sm:p-8 hidden" id="step-3">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 3: Loan Details</h2>
+                
+                <!-- Loan Product Type -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-900 mb-2" for="loan_product_type">Loan Product Type *</label>
+                    <select id="loan_product_type" name="loan_product_type" required class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Select Loan Type</option>
+                        {% for product in company.loan_products %}
+                            <option value="{{ product }}" {% if form_data.loan_product_type == product %}selected{% endif %}>
+                                {% if product == 'personal_loans' %}Personal Loan
+                                {% elif product == 'business_loans' %}Business Loan
+                                {% elif product == 'auto_loans' %}Auto Loan
+                                {% elif product == 'home_loans' %}Home Loan
+                                {% elif product == 'salary_loans' %}Salary Loan
+                                {% elif product == 'payday_loans' %}Payday Loan
+                                {% else %}{{ product|title }}
+                                {% endif %}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Loan Amount -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="loan_amount">Loan Amount (₱) *</label>
+                        <input type="number" id="loan_amount" name="loan_amount" 
+                               min="{{ company.min_loan_amount }}" 
+                               max="{{ company.max_loan_amount }}" 
+                               step="1000"
+                               value="{{ form_data.loan_amount|default:'' }}"
+                               placeholder="Enter amount between ₱{{ company.min_loan_amount|floatformat:0|intcomma }} - ₱{{ company.max_loan_amount|floatformat:0|intcomma }}" 
+                               required 
+                               class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Min: ₱{{ company.min_loan_amount|floatformat:0|intcomma }} | Max: ₱{{ company.max_loan_amount|floatformat:0|intcomma }}</p>
+                        <p id="loan-amount-error" class="text-xs text-red-600 mt-1 hidden"></p>
+                    </div>
+                    
+                    <!-- Loan Term -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="loan_term">Loan Term (months) *</label>
+                        <input type="number" id="loan_term" name="loan_term" 
+                               min="{{ company.min_loan_term }}" 
+                               max="{{ company.max_loan_term }}" 
+                               step="1"
+                               value="{{ form_data.loan_term|default:'' }}"
+                               placeholder="Enter term between {{ company.min_loan_term }} - {{ company.max_loan_term }} months" 
+                               required 
+                               class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Min: {{ company.min_loan_term }} months | Max: {{ company.max_loan_term }} months</p>
+                        <p id="loan-term-error" class="text-xs text-red-600 mt-1 hidden"></p>
+                    </div>
+                    
+                    <!-- Interest Rate -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-900 mb-2" for="interest_rate">Interest Rate (%) *</label>
+                        <input type="number" id="interest_rate" name="interest_rate" 
+                               min="{{ company.min_interest_rate }}" 
+                               max="{{ company.max_interest_rate }}" 
+                               step="0.01"
+                               value="{{ form_data.interest_rate|default:company.min_interest_rate }}"
+                               placeholder="Enter rate between {{ company.min_interest_rate }}% - {{ company.max_interest_rate }}%" 
+                               required 
+                               class="block w-full px-4 py-3 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Min: {{ company.min_interest_rate }}% | Max: {{ company.max_interest_rate }}%</p>
+                        <p id="interest-rate-error" class="text-xs text-red-600 mt-1 hidden"></p>
+                    </div>
+                </div>
+                
+                <!-- Loan Calculator Results -->
+                <div id="loan-calculator" class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                        <i class="fas fa-calculator text-blue-600 mr-2"></i>
+                        Loan Calculation Preview
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-1">Monthly Payment</p>
+                            <p class="text-2xl font-bold text-blue-600" id="calc-monthly">₱0.00</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-1">Total Payment</p>
+                            <p class="text-2xl font-bold text-green-600" id="calc-total">₱0.00</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 shadow-sm">
+                            <p class="text-sm text-gray-600 mb-1">Total Interest</p>
+                            <p class="text-2xl font-bold text-orange-600" id="calc-interest">₱0.00</p>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-4">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        This is an estimate. Final amounts may vary based on company policies and approval.
+                    </p>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button type="button" class="prev-step bg-gray-200 text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button type="button" id="next-to-review" class="next-step bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow">
+                        Next Step <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review & Submit -->
+            <div class="form-step bg-white rounded-2xl shadow-lg p-6 sm:p-8 hidden" id="step-4">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Step 4: Review Your Application</h2>
+                
+                <!-- Review Sections -->
+                <div class="space-y-6">
+                    <!-- Personal Information Review -->
+                    <div class="border-b border-gray-200 pb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-user text-blue-600 mr-2"></i>
+                            Personal Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-600">Full Name</p>
+                                <p class="font-semibold text-gray-900" id="review-name"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Email</p>
+                                <p class="font-semibold text-gray-900" id="review-email"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Date of Birth</p>
+                                <p class="font-semibold text-gray-900" id="review-dob"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Mobile Number</p>
+                                <p class="font-semibold text-gray-900" id="review-mobile"></p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <p class="text-gray-600">Current Address</p>
+                                <p class="font-semibold text-gray-900" id="review-address"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Employment Information Review -->
+                    <div class="border-b border-gray-200 pb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-briefcase text-green-600 mr-2"></i>
+                            Employment & Financial Information
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-600">Employment Status</p>
+                                <p class="font-semibold text-gray-900" id="review-employment"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Monthly Income</p>
+                                <p class="font-semibold text-gray-900" id="review-income"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Company Name</p>
+                                <p class="font-semibold text-gray-900" id="review-company"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Bank Name</p>
+                                <p class="font-semibold text-gray-900" id="review-bank"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Loan Details Review -->
+                    <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                            <i class="fas fa-money-bill-wave text-orange-600 mr-2"></i>
+                            Loan Details
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
+                            <div>
+                                <p class="text-gray-600">Lending Company</p>
+                                <p class="font-bold text-gray-900">{{ company.company_name }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Loan Product</p>
+                                <p class="font-semibold text-gray-900" id="review-product"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Loan Amount</p>
+                                <p class="font-semibold text-gray-900" id="review-amount"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Loan Term</p>
+                                <p class="font-semibold text-gray-900" id="review-term"></p>
+                            </div>
+                            <div>
+                                <p class="text-gray-600">Interest Rate</p>
+                                <p class="font-semibold text-gray-900" id="review-rate"></p>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-300 pt-4">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <p class="text-gray-600 text-xs">Monthly Payment</p>
+                                    <p class="text-xl font-bold text-blue-600" id="review-monthly"></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-xs">Total Payment</p>
+                                    <p class="text-xl font-bold text-green-600" id="review-total"></p>
+                                </div>
+                                <div>
+                                    <p class="text-gray-600 text-xs">Total Interest</p>
+                                    <p class="text-xl font-bold text-orange-600" id="review-interest"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Terms and Conditions -->
+                <div class="mt-8 space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="flex items-start">
+                            <input type="checkbox" name="terms_accepted" required class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3 mt-1 flex-shrink-0">
+                            <span class="text-sm text-gray-900">
+                                I agree to the <a href="#" class="text-blue-600 hover:underline font-semibold">Terms of Service</a> and <a href="#" class="text-blue-600 hover:underline font-semibold">Privacy Policy</a>. I authorize {{ company.company_name }} and Avendro to process my personal information for loan evaluation purposes. I understand that this is a loan application and not a guarantee of approval. *
+                            </span>
+                        </label>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <label class="flex items-start">
+                            <input type="checkbox" name="marketing_consent" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-3 mt-1 flex-shrink-0">
+                            <span class="text-sm text-gray-900">
+                                I would like to receive marketing communications about loan offers and financial products from {{ company.company_name }}.
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-8 gap-4">
+                    <button type="button" class="prev-step bg-gray-200 text-gray-900 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors font-semibold w-full sm:w-auto">
+                        <i class="fas fa-arrow-left mr-2"></i> Previous
+                    </button>
+                    <button type="submit" class="bg-gradient-to-r from-blue-600 to-green-600 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-green-700 transition-all duration-300 font-semibold shadow-lg w-full sm:w-auto">
+                        <i class="fas fa-paper-plane mr-2"></i> Submit Application
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentStep = 1;
+    const totalSteps = 4;
+    const formSteps = document.querySelectorAll('.form-step');
+    const stepIndicators = document.querySelectorAll('.step-indicator');
+    const stepLabels = document.querySelectorAll('.step-label');
+    const stepLines = document.querySelectorAll('.step-line');
+
+    // Company limits from Django template
+    const companyLimits = {
+        minLoanAmount: parseFloat('{{ company.min_loan_amount }}'),
+        maxLoanAmount: parseFloat('{{ company.max_loan_amount }}'),
+        minLoanTerm: parseInt('{{ company.min_loan_term }}'),
+        maxLoanTerm: parseInt('{{ company.max_loan_term }}'),
+        minInterestRate: parseFloat('{{ company.min_interest_rate }}'),
+        maxInterestRate: parseFloat('{{ company.max_interest_rate }}')
+    };
+
+    const companyId = {{ company.id }};
+
+    // Validation flags
+    let isLoanAmountValid = true;
+    let isLoanTermValid = true;
+    let isInterestRateValid = true;
+    let canProceedWithApplication = true;
+    let checkTimeout = null;
+
+    // Get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    // Check for existing borrower
+    function checkExistingBorrower() {
+        const email = document.getElementById('email').value.trim().toLowerCase();
+        const firstName = document.getElementById('first_name').value.trim();
+        const lastName = document.getElementById('last_name').value.trim();
+        
+        const alertBox = document.getElementById('existing-application-alert');
+        const alertMessage = document.getElementById('existing-application-message');
+        const emailStatus = document.getElementById('email-check-status');
+        
+        // Reset alert
+        alertBox.classList.add('hidden');
+        emailStatus.classList.add('hidden');
+        canProceedWithApplication = true;
+        
+        if (!email || !firstName || !lastName) {
+            return;
+        }
+        
+        // Show checking status
+        emailStatus.textContent = '🔍 Checking for existing applications...';
+        emailStatus.classList.remove('hidden', 'text-red-600', 'text-green-600');
+        emailStatus.classList.add('text-blue-600');
+        
+        // Make AJAX request
+        fetch(`/borrower/check-existing-borrower/${companyId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrftoken
+            },
+            body: `email=${encodeURIComponent(email)}&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            emailStatus.classList.add('hidden');
+            
+            if (data.exists && !data.can_proceed) {
+                // Show alert
+                alertBox.classList.remove('hidden');
+                alertMessage.textContent = data.message;
+                
+                // Update alert styling based on status
+                if (data.status === 'approved') {
+                    alertBox.classList.remove('bg-yellow-50', 'border-yellow-500');
+                    alertBox.classList.add('bg-red-50', 'border-red-500');
+                    alertMessage.classList.remove('text-yellow-700');
+                    alertMessage.classList.add('text-red-700');
+                } else if (data.status === 'pending') {
+                    alertBox.classList.remove('bg-red-50', 'border-red-500');
+                    alertBox.classList.add('bg-yellow-50', 'border-yellow-500');
+                    alertMessage.classList.remove('text-red-700');
+                    alertMessage.classList.add('text-yellow-700');
+                    alertBox.querySelector('.fa-exclamation-circle').classList.remove('text-red-500');
+                    alertBox.querySelector('.fa-exclamation-circle').classList.add('text-yellow-500');
+                }
+                
+                emailStatus.textContent = '❌ Cannot proceed with this application';
+                emailStatus.classList.remove('hidden', 'text-blue-600', 'text-green-600');
+                emailStatus.classList.add('text-red-600');
+                
+                canProceedWithApplication = false;
+                
+                // Disable the next button
+                document.getElementById('step1-next').disabled = true;
+                document.getElementById('step1-next').classList.add('opacity-50', 'cursor-not-allowed');
+            } else if (data.exists && data.can_proceed && data.status === 'rejected') {
+                // Show info message for rejected applications
+                emailStatus.textContent = 'ℹ️ Previous application was rejected. You may apply again.';
+                emailStatus.classList.remove('hidden', 'text-red-600', 'text-green-600');
+                emailStatus.classList.add('text-blue-600');
+                canProceedWithApplication = true;
+                
+                // Enable the next button
+                document.getElementById('step1-next').disabled = false;
+                document.getElementById('step1-next').classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                // No existing application or can proceed
+                emailStatus.textContent = '✓ No existing application found';
+                emailStatus.classList.remove('hidden', 'text-red-600', 'text-blue-600');
+                emailStatus.classList.add('text-green-600');
+                canProceedWithApplication = true;
+                
+                // Enable the next button
+                document.getElementById('step1-next').disabled = false;
+                document.getElementById('step1-next').classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        })
+        .catch(error => {
+            console.error('Error checking existing borrower:', error);
+            emailStatus.textContent = '⚠️ Unable to verify. Please try again.';
+            emailStatus.classList.remove('hidden', 'text-green-600', 'text-blue-600');
+            emailStatus.classList.add('text-red-600');
+            canProceedWithApplication = true; // Allow proceeding on error
+        });
+    }
+
+    // Debounced check on input
+    function debouncedCheck() {
+        clearTimeout(checkTimeout);
+        checkTimeout = setTimeout(checkExistingBorrower, 800);
+    }
+
+    // Add event listeners for email and name fields
+    document.getElementById('email').addEventListener('input', debouncedCheck);
+    document.getElementById('email').addEventListener('blur', checkExistingBorrower);
+    document.getElementById('first_name').addEventListener('input', debouncedCheck);
+    document.getElementById('first_name').addEventListener('blur', checkExistingBorrower);
+    document.getElementById('last_name').addEventListener('input', debouncedCheck);
+    document.getElementById('last_name').addEventListener('blur', checkExistingBorrower);
+
+    function showStep(stepNumber) {
+        formSteps.forEach((step, index) => {
+            step.classList.toggle('hidden', index + 1 !== stepNumber);
+        });
+
+        stepIndicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index < stepNumber);
+            indicator.classList.toggle('bg-blue-600', index < stepNumber);
+            indicator.classList.toggle('text-white', index < stepNumber);
+            indicator.classList.toggle('bg-gray-300', index >= stepNumber);
+            indicator.classList.toggle('text-gray-500', index >= stepNumber);
+        });
+        
+        stepLabels.forEach((label, index) => {
+            label.classList.toggle('text-blue-600', index === stepNumber - 1);
+            label.classList.toggle('font-semibold', index === stepNumber - 1);
+            label.classList.toggle('text-gray-500', index !== stepNumber - 1);
+        });
+        
+        stepLines.forEach((line, index) => {
+            line.classList.toggle('bg-blue-600', index < stepNumber - 1);
+            line.classList.toggle('bg-gray-300', index >= stepNumber - 1);
+        });
+        
+        // If on step 4, populate review
+        if (stepNumber === 4) {
+            populateReview();
+        }
+    }
+
+    // Real-time validation for Loan Amount
+    document.getElementById('loan_amount').addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        const errorElement = document.getElementById('loan-amount-error');
+        
+        this.classList.remove('border-red-500', 'border-green-500');
+        errorElement.classList.add('hidden');
+        
+        if (this.value && !isNaN(value)) {
+            if (value < companyLimits.minLoanAmount) {
+                this.classList.add('border-red-500');
+                errorElement.textContent = `⚠️ Amount is below the minimum of ₱${companyLimits.minLoanAmount.toLocaleString('en-PH')}`;
+                errorElement.classList.remove('hidden');
+                isLoanAmountValid = false;
+            } else if (value > companyLimits.maxLoanAmount) {
+                this.classList.add('border-red-500');
+                errorElement.textContent = `⚠️ Amount exceeds the maximum of ₱${companyLimits.maxLoanAmount.toLocaleString('en-PH')}`;
+                errorElement.classList.remove('hidden');
+                isLoanAmountValid = false;
+            } else {
+                this.classList.add('border-green-500');
+                errorElement.textContent = `✓ Valid loan amount`;
+                errorElement.classList.remove('hidden', 'text-red-600');
+                errorElement.classList.add('text-green-600');
+                isLoanAmountValid = true;
+            }
+        }
+        
+        calculateLoan();
+    });
+
+    // Real-time validation for Loan Term
+    document.getElementById('loan_term').addEventListener('input', function() {
+        const value = parseInt(this.value);
+        const errorElement = document.getElementById('loan-term-error');
+        
+        this.classList.remove('border-red-500', 'border-green-500');
+        errorElement.classList.add('hidden');
+        
+        if (this.value && !isNaN(value)) {
+            if (value < companyLimits.minLoanTerm) {
+                this.classList.add('border-red-500');
+                errorElement.textContent = `⚠️ Term is below the minimum of ${companyLimits.minLoanTerm} months`;
+                errorElement.classList.remove('hidden');
+                isLoanTermValid = false;
+            } else if (value > companyLimits.maxLoanTerm) {
+                this.classList.add('border-red-500');
+                errorElement.textContent = `⚠️ Term exceeds the maximum of ${companyLimits.maxLoanTerm} months`;
+                errorElement.classList.remove('hidden');
+                isLoanTermValid = false;
+            } else {
+                this.classList.add('border-green-500');
+                errorElement.textContent = `✓ Valid loan term`;
+                errorElement.classList.remove('hidden', 'text-red-600');
+                errorElement.classList.add('text-green-600');
+                isLoanTermValid = true;
+            }
+        }
+        
+        calculateLoan();
+    });
+
+    // Real-time validation for Interest Rate
+    document.getElementById('interest_rate').addEventListener('input', function() {
+        const value = parseFloat(this.value);
+        const errorElement = document.getElementById('interest-rate-error');
+        
+        this.classList.remove('border-red-500', 'border-green-500');
+        errorElement.classList.add('hidden');
+        
+        if (this.value && !isNaN(value)) {
+            if (value < companyLimits.minInterestRate) {
+                this.classList.add('border-red-500');
+                errorElement.textContent = `⚠️ Rate is below the minimum of ${companyLimits.minInterestRate}%`;
+                errorElement.classList.remove('hidden');
+                isInterestRateValid = false;
+            } else if (value > companyLimits.maxInterestRate) {
+                this.classList.add('border-red-500');
+                errorElement.textContent = `⚠️ Rate exceeds the maximum of ${companyLimits.maxInterestRate}%`;
+                errorElement.classList.remove('hidden');
+                isInterestRateValid = false;
+            } else {
+                this.classList.add('border-green-500');
+                errorElement.textContent = `✓ Valid interest rate`;
+                errorElement.classList.remove('hidden', 'text-red-600');
+                errorElement.classList.add('text-green-600');
+                isInterestRateValid = true;
+            }
+        }
+        
+        calculateLoan();
+    });
+
+    document.querySelectorAll('.next-step').forEach(button => {
+        button.addEventListener('click', () => {
+            // Check if this is step 1 and user cannot proceed
+            if (currentStep === 1 && !canProceedWithApplication) {
+                alert('❌ You already have an existing application with this company. Please resolve your existing application before submitting a new one.');
+                return;
+            }
+            
+            // Special validation for Step 3 (Loan Details)
+            if (currentStep === 3) {
+                if (!isLoanAmountValid || !isLoanTermValid || !isInterestRateValid) {
+                    alert('❌ Please ensure all loan values are within the company\'s specified limits before proceeding.');
+                    return;
+                }
+            }
+            
+            if (validateCurrentStep() && currentStep < totalSteps) {
+                currentStep++;
+                showStep(currentStep);
+                window.scrollTo(0, 0);
+            }
+        });
+    });
+
+    document.querySelectorAll('.prev-step').forEach(button => {
+        button.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                showStep(currentStep);
+                window.scrollTo(0, 0);
+            }
+        });
+    });
+
+    function validateCurrentStep() {
+        const currentStepElement = formSteps[currentStep - 1];
+        const requiredFields = currentStepElement.querySelectorAll('[required]');
+        let isValid = true;
+        let errors = [];
+
+        requiredFields.forEach(field => {
+            field.classList.remove('border-red-500');
+            if (field.type === 'checkbox') {
+                if (!field.checked) {
+                    isValid = false;
+                    field.closest('label').classList.add('border', 'border-red-500', 'rounded-lg');
+                    errors.push('Please accept the required terms and conditions');
+                } else {
+                    field.closest('label').classList.remove('border', 'border-red-500', 'rounded-lg');
+                }
+            } else {
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('border-red-500');
+                    errors.push(`${field.placeholder || field.name} is required`);
+                }
+            }
+        });
+
+        if (!isValid) {
+            alert('⚠️ Please fill in all required fields marked with *');
+        }
+        return isValid;
+    }
+
+    // Address checkbox functionality
+    document.getElementById('same-address').addEventListener('change', function() {
+        const permanentSection = document.getElementById('permanent-address-section');
+        
+        if (this.checked) {
+            permanentSection.style.display = 'none';
+            
+            document.querySelector('[name="permanent_street_address"]').value = document.querySelector('[name="current_street_address"]').value;
+            document.querySelector('[name="permanent_city"]').value = document.querySelector('[name="current_city"]').value;
+            document.querySelector('[name="permanent_state"]').value = document.querySelector('[name="current_state"]').value;
+            document.querySelector('[name="permanent_postal_code"]').value = document.querySelector('[name="current_postal_code"]').value;
+        } else {
+            permanentSection.style.display = 'block';
+        }
+    });
+
+    // Employment status change
+    document.getElementById('employment_status').addEventListener('change', function() {
+        const companyField = document.getElementById('company-field');
+        const jobTitleField = document.getElementById('job-title-field');
+        const companyInput = document.querySelector('[name="company_name"]');
+        const jobTitleInput = document.querySelector('[name="job_title"]');
+
+        if (this.value === 'unemployed' || this.value === 'student' || this.value === 'retired') {
+            companyField.style.display = 'none';
+            jobTitleField.style.display = 'none';
+            companyInput.removeAttribute('required');
+            jobTitleInput.removeAttribute('required');
+            companyInput.value = 'N/A';
+            jobTitleInput.value = 'N/A';
+        } else {
+            companyField.style.display = 'block';
+            jobTitleField.style.display = 'block';
+            companyInput.setAttribute('required', 'required');
+            jobTitleInput.setAttribute('required', 'required');
+            if (companyInput.value === 'N/A') companyInput.value = '';
+            if (jobTitleInput.value === 'N/A') jobTitleInput.value = '';
+        }
+    });
+
+    // Loan Calculator
+    function calculateLoan() {
+        const amount = parseFloat(document.getElementById('loan_amount').value) || 0;
+        const term = parseInt(document.getElementById('loan_term').value) || 0;
+        const rate = parseFloat(document.getElementById('interest_rate').value) || 0;
+
+        if (amount > 0 && term > 0 && rate >= 0) {
+            const monthlyRate = (rate / 100) / 12;
+            let monthlyPayment;
+
+            if (monthlyRate > 0) {
+                const numerator = monthlyRate * Math.pow(1 + monthlyRate, term);
+                const denominator = Math.pow(1 + monthlyRate, term) - 1;
+                monthlyPayment = amount * (numerator / denominator);
+            } else {
+                monthlyPayment = amount / term;
+            }
+
+            const totalPayment = monthlyPayment * term;
+            const totalInterest = totalPayment - amount;
+
+            document.getElementById('calc-monthly').textContent = '₱' + monthlyPayment.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('calc-total').textContent = '₱' + totalPayment.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('calc-interest').textContent = '₱' + totalInterest.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+    }
+
+    // Populate Review Step
+    function populateReview() {
+        // Personal Info
+        const firstName = document.querySelector('[name="first_name"]').value;
+        const middleName = document.querySelector('[name="middle_name"]').value;
+        const lastName = document.querySelector('[name="last_name"]').value;
+        document.getElementById('review-name').textContent = `${firstName} ${middleName} ${lastName}`.trim();
+        
+        document.getElementById('review-email').textContent = document.getElementById('email').value;
+        document.getElementById('review-dob').textContent = document.getElementById('date_of_birth').value;
+        document.getElementById('review-mobile').textContent = document.getElementById('mobile_number').value;
+        
+        const street = document.querySelector('[name="current_street_address"]').value;
+        const city = document.querySelector('[name="current_city"]').value;
+        const state = document.querySelector('[name="current_state"]').value;
+        const postal = document.querySelector('[name="current_postal_code"]').value;
+        document.getElementById('review-address').textContent = `${street}, ${city}, ${state} ${postal}`;
+        
+        // Employment Info
+        const employmentStatus = document.getElementById('employment_status').value;
+        document.getElementById('review-employment').textContent = employmentStatus.replace('_', ' ').toUpperCase();
+        
+        const monthlyIncome = parseFloat(document.getElementById('monthly_income').value);
+        document.getElementById('review-income').textContent = '₱' + monthlyIncome.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        document.getElementById('review-company').textContent = document.querySelector('[name="company_name"]').value || 'N/A';
+        document.getElementById('review-bank').textContent = document.getElementById('bank_name').value;
+        
+        // Loan Details - Format the product name
+        const productType = document.getElementById('loan_product_type').value;
+        const productSelect = document.getElementById('loan_product_type');
+        const selectedOption = productSelect.options[productSelect.selectedIndex];
+        document.getElementById('review-product').textContent = selectedOption.text;
+        
+        const loanAmount = parseFloat(document.getElementById('loan_amount').value);
+        document.getElementById('review-amount').textContent = '₱' + loanAmount.toLocaleString('en-PH', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        const loanTerm = document.getElementById('loan_term').value;
+        document.getElementById('review-term').textContent = loanTerm + ' months';
+        
+        const interestRate = document.getElementById('interest_rate').value;
+        document.getElementById('review-rate').textContent = interestRate + '%';
+        
+        // Copy calculated values
+        document.getElementById('review-monthly').textContent = document.getElementById('calc-monthly').textContent;
+        document.getElementById('review-total').textContent = document.getElementById('calc-total').textContent;
+        document.getElementById('review-interest').textContent = document.getElementById('calc-interest').textContent;
+    }
+
+    // Form submission validation
+    document.getElementById('registration-form').addEventListener('submit', function(e) {
+        if (!canProceedWithApplication) {
+            e.preventDefault();
+            alert('❌ You already have an existing application with this company. Please resolve your existing application before submitting a new one.');
+            currentStep = 1;
+            showStep(currentStep);
+            window.scrollTo(0, 0);
+            return false;
+        }
+        
+        if (!isLoanAmountValid || !isLoanTermValid || !isInterestRateValid) {
+            e.preventDefault();
+            alert('❌ Please ensure all loan values are within the company\'s specified limits before submitting.');
+            currentStep = 3;
+            showStep(currentStep);
+            window.scrollTo(0, 0);
+            return false;
+        }
+    });
+
+    showStep(currentStep);
+});
+</script>
+</body>
+</html>

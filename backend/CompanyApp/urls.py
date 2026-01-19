@@ -13,6 +13,10 @@ urlpatterns = [
     path('Loan-Applications/<int:application_id>/view/', views.viewLoanApplication, name='view-loan-application-ajax'),
     path('Loan-Applications/<int:application_id>/approve/', views.approve_loan_application, name='approve-loan-application'),
     path('Loan-Applications/<int:application_id>/reject/', views.reject_loan_application, name='reject-loan-application'),
+    path('Borrower-Lists/<int:borrower_id>/view/', views.viewBorrowerDetails, name='view-borrower-details'),
+
+    # Replace the archived borrowers URLs with:
+    path('Application-History/', views.applicationHistory, name='company-application-history'),
 
     #Url of Company Borrower List
     path('Borrower-Lists/', views.borrowerLists, name='company-borrower-lists'),
@@ -27,10 +31,6 @@ urlpatterns = [
     #Url of Company Active Borrowers
     path('company-active-borrowers/', views.activeBorrowers, name='company-active-borrowers'),
 
-    #Url of Company Archived Borrowers
-    path('company-archived-borrowers/', views.archivedBorrowers, name='company-archived-borrowers'),
-
-    path('Borrower-Lists/<int:borrower_id>/archive/', views.archiveBorrower, name='archive-borrower'),
 
     #Url of Company Add Borrowers
     path('company-add-borrowers/', views.addBorrowers, name='company-add-borrowers'),

@@ -1,0 +1,273 @@
+{% extends 'Company/companyBase.html' %}
+{% load humanize %}
+
+{% block title %}Application History - Avendro{% endblock %}
+
+{% block breadcrumb %}
+<li>
+    <div class="flex items-center">
+        <i class="fas fa-chevron-right text-gray-400 mx-2"></i>
+        <span class="ml-1 text-sm font-medium text-gray-500">Application History</span>
+    </div>
+</li>
+{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Application History</h1>
+            <p class="mt-1 text-sm text-gray-600">View all loan applications and their current status</p>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Applications -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Applications</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_applications }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Pending</p>
+                <p class="text-3xl font-bold text-gray-900">{{ pending_count }}</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Approved -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Approved</p>
+                <p class="text-3xl font-bold text-gray-900">{{ approved_count }}</p>
+                <p class="text-xs text-green-600 mt-1">₱{{ total_approved_value|floatformat:2 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejected -->
+    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Rejected</p>
+                <p class="text-3xl font-bold text-gray-900">{{ rejected_count }}</p>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-times-circle text-red-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<form method="get">
+<div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Search -->
+        <div class="md:col-span-2">
+            <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Applications</label>
+            <input type="text" id="search" name="search" value="{{ search }}" 
+                   class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                   placeholder="Search by borrower name or email...">
+        </div>
+
+        <!-- Status Filter -->
+        <div>
+            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select id="status" name="status" 
+                    class="block w-full px-3 py-2 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">All Status</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                <option value="review" {% if status_filter == 'review' %}selected{% endif %}>Under Review</option>
+                <option value="delinquent" {% if status_filter == 'delinquent' %}selected{% endif %}>Delinquent</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+        <span class="text-sm text-gray-500">Showing {{ start_index }}-{{ end_index }} of {{ paginator.count }} applications</span>
+        <div class="flex items-center space-x-2">
+            <a href="{% url 'company-application-history' %}" 
+               class="px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                Clear Filters
+            </a>
+            <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
+                Apply Filters
+            </button>
+        </div>
+    </div>
+</div>
+</form>
+
+<!-- Applications Table -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900">All Applications</h3>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Application ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrower</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loan Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Applied Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for app in applications %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">APP-{{ app.id|stringformat:"06d" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-600 font-medium text-sm">
+                                    {{ app.borrower.first_name|slice:":1" }}{{ app.borrower.last_name|slice:":1" }}
+                                </span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ app.borrower.first_name }} {{ app.borrower.last_name }}
+                                </div>
+                                <div class="text-sm text-gray-500">{{ app.borrower.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">
+                            {% if app.product_type == 'personal_loans' %}Personal Loan
+                            {% elif app.product_type == 'auto_loans' %}Auto Loan
+                            {% elif app.product_type == 'business_loans' %}Business Loan
+                            {% elif app.product_type == 'home_loans' %}Home Loan
+                            {% elif app.product_type == 'salary_loans' %}Salary Loan
+                            {% elif app.product_type == 'payday_loans' %}Payday Loan
+                            {% else %}{{ app.product_type }}{% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">₱{{ app.amount|floatformat:2 }}</div>
+                        {% if app.term %}
+                        <div class="text-sm text-gray-500">{{ app.term }} months</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ app.created_at|date:"M d, Y" }}</div>
+                        <div class="text-sm text-gray-500">{{ app.created_at|date:"h:i A" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if app.status == 'approved' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Approved
+                            </span>
+                        {% elif app.status == 'rejected' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Rejected
+                            </span>
+                        {% elif app.status == 'pending' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i>
+                                Pending
+                            </span>
+                        {% elif app.status == 'review' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-search mr-1"></i>
+                                Under Review
+                            </span>
+                        {% elif app.status == 'delinquent' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>
+                                Delinquent
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ app.get_status_display }}
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-12">
+                        <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
+                        <p class="text-gray-500">No applications found.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            {% if has_previous %}
+                <a href="?page={{ previous_page_number }}&search={{ search }}&status={{ status_filter }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Previous
+                </a>
+            {% endif %}
+            {% if has_next %}
+                <a href="?page={{ next_page_number }}&search={{ search }}&status={{ status_filter }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Next
+                </a>
+            {% endif %}
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">{{ start_index }}</span> to <span class="font-medium">{{ end_index }}</span> of <span class="font-medium">{{ paginator.count }}</span> results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    {% if has_previous %}
+                        <a href="?page={{ previous_page_number }}&search={{ search }}&status={{ status_filter }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    {% endif %}
+                    {% for num in paginator.page_range %}
+                        {% if num == current_page %}
+                            <span class="z-10 bg-blue-50 border-blue-500 text-blue-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</span>
+                        {% elif num >= current_page|add:'-2' and num <= current_page|add:'2' %}
+                            <a href="?page={{ num }}&search={{ search }}&status={{ status_filter }}" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    {% if has_next %}
+                        <a href="?page={{ next_page_number }}&search={{ search }}&status={{ status_filter }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

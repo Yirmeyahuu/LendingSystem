@@ -213,23 +213,9 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <div class="flex items-center space-x-3">
-                            <a onclick="openViewModal({{ app.id }}); return false;" class="text-green-600 hover:text-green-900" title="View Details">
-                                <i class="fas fa-eye"></i>
+                            <a onclick="openViewModal({{ app.id }}); return false;" class="text-green-600 hover:text-green-900 cursor-pointer" title="View Details">
+                                <i class="fas fa-eye"></i> View
                             </a>
-                            {% if app.status == 'pending' or app.status == 'review' %}
-                            <form action="{% url 'approve-loan-application' app.id %}" method="post" class="inline">
-                                {% csrf_token %}
-                                <button type="submit" class="text-blue-600 hover:text-blue-900" title="Approve">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            </form>
-                            <form action="{% url 'reject-loan-application' app.id %}" method="post" class="inline">
-                                {% csrf_token %}
-                                <button type="submit" class="text-red-600 hover:text-red-900" title="Reject">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </form>
-                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -421,6 +407,7 @@
         modal.classList.add('hidden');
     }
     
+    
     function generateModalContent(app) {
         const statusColors = {
             'pending': 'bg-yellow-100 text-yellow-800',
@@ -443,11 +430,11 @@
                     </span>
                 </div>
             </div>
-
+    
             <!-- Loan Details with Calculation -->
             <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-money-check-alt mr-2 text-yellow-600"></i>
+                    <i class="fas fa-money-check-alt mr-2 text-green-600"></i>
                     Loan Details & Payment Information
                 </h5>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -455,7 +442,7 @@
                     <div class="space-y-4">
                         <div>
                             <p class="text-sm text-gray-500">Product Type</p>
-                            <p class="font-medium text-gray-900">${app.product_type ? app.product_type.replace('_', ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A'}</p>
+                            <p class="font-medium text-gray-900">${app.product_type ? app.product_type.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A'}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">Loan Amount</p>
@@ -473,14 +460,8 @@
                             <p class="font-medium text-gray-900">${parseFloat(app.interest_rate).toFixed(2)}% per year</p>
                         </div>
                         ` : ''}
-                        ${app.purpose ? `
-                        <div>
-                            <p class="text-sm text-gray-500">Purpose</p>
-                            <p class="font-medium text-gray-900">${app.purpose}</p>
-                        </div>
-                        ` : ''}
                     </div>
-
+    
                     <!-- Right Column: Payment Calculation -->
                     ${app.monthly_payment && app.total_payment && app.total_interest ? `
                     <div class="bg-gradient-to-br from-blue-50 to-green-50 rounded-lg p-5 space-y-4">
@@ -525,7 +506,7 @@
                     `}
                 </div>
             </div>
-
+    
             <!-- Borrower Information -->
             <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -551,15 +532,15 @@
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Gender</p>
-                        <p class="font-medium text-gray-900">${app.borrower.gender ? app.borrower.gender.charAt(0).toUpperCase() + app.borrower.gender.slice(1) : 'N/A'}</p>
+                        <p class="font-medium text-gray-900">${app.borrower.gender || 'N/A'}</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Marital Status</p>
-                        <p class="font-medium text-gray-900">${app.borrower.marital_status ? app.borrower.marital_status.charAt(0).toUpperCase() + app.borrower.marital_status.slice(1) : 'N/A'}</p>
+                        <p class="font-medium text-gray-900">${app.borrower.marital_status || 'N/A'}</p>
                     </div>
                 </div>
             </div>
-
+    
             <!-- Address Information -->
             <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -577,7 +558,7 @@
                     </div>
                 </div>
             </div>
-
+    
             <!-- Employment & Financial Information -->
             <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
                 <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -587,7 +568,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <p class="text-sm text-gray-500">Employment Status</p>
-                        <p class="font-medium text-gray-900">${app.borrower.employment_status ? app.borrower.employment_status.replace('_', ' ').charAt(0).toUpperCase() + app.borrower.employment_status.replace('_', ' ').slice(1) : 'N/A'}</p>
+                        <p class="font-medium text-gray-900">${app.borrower.employment_status || 'N/A'}</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Monthly Income</p>
@@ -613,7 +594,7 @@
                     ` : ''}
                 </div>
             </div>
-
+    
             <!-- Bank Information -->
             ${app.borrower.bank_name ? `
             <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
@@ -633,22 +614,22 @@
                 </div>
             </div>
             ` : ''}
-
+    
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
                 ${app.status === 'pending' || app.status === 'review' ? `
-                <form action="/Company/Loan-Applications/${app.id}/approve/" method="post" class="inline" onsubmit="return confirm('Are you sure you want to approve this loan application?');">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-                    <button type="submit" class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
-                        <i class="fas fa-check mr-2"></i>Approve
-                    </button>
-                </form>
-                <form action="/Company/Loan-Applications/${app.id}/reject/" method="post" class="inline" onsubmit="return confirm('Are you sure you want to reject this loan application?');">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-                    <button type="submit" class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold">
-                        <i class="fas fa-times mr-2"></i>Reject
-                    </button>
-                </form>
+                <button 
+                    type="button"
+                    onclick="showConfirmationModal('approve', ${app.id})" 
+                    class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    <i class="fas fa-check mr-2"></i>Approve
+                </button>
+                <button 
+                    type="button"
+                    onclick="showConfirmationModal('reject', ${app.id})" 
+                    class="px-6 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold">
+                    <i class="fas fa-times mr-2"></i>Reject
+                </button>
                 ` : ''}
                 <button onclick="closeViewModal()" class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
                     Close

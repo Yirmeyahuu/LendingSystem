@@ -1,136 +1,101 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from CompanyApp.models import Company
-from decorators.auth_decorators import anonymous_required
-from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.core.mail import send_mail
 from django.conf import settings
-from BorrowerApp.models import Borrower
+from decorators.auth_decorators import anonymous_required
 
 
-#User login (Borrower or Company) Login function
 @anonymous_required
 def userLogin(request):
+    """
+    Login view - ONLY for Company users
+    Borrowers don't need to login - they apply directly
+    """
     if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user_type = request.POST.get('user_type')
-        remember_me = request.POST.get('remember-me')
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '').strip()
         
-        # Authenticate user
+        if not username or not password:
+            messages.error(request, 'Please provide both username/email and password.')
+            return render(request, 'LoginApp/userLogin.html')
+        
+        # Try to authenticate
         user = authenticate(request, username=username, password=password)
         
         if user is not None:
-            # Check if user is active
-            if not user.is_active:
-                messages.error(request, 'Your account is not active. Please contact support.')
-                return render(request, 'LoginApp/userLogin.html')
-            
-            # Validate user type selection matches user's actual type
-            if user_type == 'lender':
-                # Check if user is actually a company/lender
-                try:
-                    company = Company.objects.get(user=user)
-                    
-                    # Login successful for company
+            # ONLY allow company users to login
+            if hasattr(user, 'company_profile'):
+                # Check if company is approved
+                if user.company_profile.is_approved:
                     login(request, user)
-                    
-                    # Handle remember me
-                    if not remember_me:
-                        request.session.set_expiry(0)  # Session expires when browser closes
-                    
-                    messages.success(request, f'Welcome back, {company.company_name}!')
-                    return redirect('company-dashboard')  # Redirect to company dashboard
-                    
-                except Company.DoesNotExist:
-                    messages.error(request, 'No company account found. Please register as a lending company first.')
-                    return render(request, 'LoginApp/userLogin.html')
-            
-            elif user_type == 'borrower':
-                # Check if user is actually a borrower (not a company)
-                try:
-                    company = Company.objects.get(user=user)
-                    # If company exists, this user is a lender, not a borrower
-                    messages.error(request, 'This account is registered as a lending company. Please select "Lender" as your account type.')
-                    return render(request, 'LoginApp/userLogin.html')
-                    
-                except Company.DoesNotExist:
-                    # No company profile means this is a borrower
-                    login(request, user)
-                    
-                    # Handle remember me
-                    if not remember_me:
-                        request.session.set_expiry(0)
-                    
-                    messages.success(request, f'Welcome back, {user.first_name or user.username}!')
-                    return redirect('borrower-dashboard')  # Redirect to borrower dashboard
-            
+                    messages.success(request, f'Welcome back, {user.company_profile.company_name}!')
+                    return redirect('company-dashboard')
+                else:
+                    messages.error(request, 'Your company registration is pending approval. Please check back later.')
             else:
-                messages.error(request, 'Please select a valid account type.')
-                return render(request, 'LoginApp/userLogin.html')
-        
+                messages.error(request, 'This login is only for registered lending companies. Borrowers can apply directly without an account.')
         else:
-            messages.error(request, 'Invalid username/email or password.')
-            return render(request, 'LoginApp/userLogin.html')
+            messages.error(request, 'Invalid username/email or password. Please try again.')
     
-    # GET request - show login form
     return render(request, 'LoginApp/userLogin.html')
 
-#Borrower logout function
-def userLogout(request):
-    if request.user.is_authenticated:
-        logout(request)
-        messages.success(request, "You have been logged out successfully.")
-    return redirect('user-login')
 
-#Company logout function
-def companyLogout(request):
-    if request.user.is_authenticated:
-        # Check if user is a company before logging out
-        if hasattr(request.user, 'company_profile'):
-            company_name = request.user.company_profile.company_name
-            logout(request)
-            messages.success(request, f"{company_name} have been logged out successfully.")
-        else:
-            logout(request)
-            messages.success(request, "You have been logged out successfully.")
+@login_required
+def userLogout(request):
+    """
+    Logout view - Only for authenticated company users
+    """
+    if hasattr(request.user, 'company_profile'):
+        company_name = request.user.company_profile.company_name
+        logout(request)
+        messages.success(request, f'{company_name} has been logged out successfully.')
+    else:
+        logout(request)
+        messages.success(request, 'You have been logged out successfully.')
     
     return redirect('landing-page')
 
+
+# Alias for company logout (same as userLogout)
+def companyLogout(request):
+    """Company-specific logout (redirects to userLogout)"""
+    return userLogout(request)
+
+
 @anonymous_required
 def passwordResetRequest(request):
-    """Handle password reset request"""
+    """Handle password reset request - ONLY for company accounts"""
     if request.method == 'POST':
         email_or_username = request.POST.get('email_or_username', '').strip()
-        user_type = request.POST.get('user_type')
         
-        if not email_or_username or not user_type:
-            messages.error(request, 'Please provide email/username and select account type.')
+        if not email_or_username:
+            messages.error(request, 'Please provide your email or username.')
             return render(request, 'LoginApp/passwordResetRequest.html')
         
         # Find user by email or username
+        user = None
         try:
             user = User.objects.get(email=email_or_username)
         except User.DoesNotExist:
             try:
                 user = User.objects.get(username=email_or_username)
             except User.DoesNotExist:
-                messages.error(request, 'No account found with that email/username.')
-                return render(request, 'LoginApp/passwordResetRequest.html')
+                pass
         
-        # Verify user type matches
-        if user_type == 'lender':
-            if not hasattr(user, 'company_profile'):
-                messages.error(request, 'This account is not registered as a lender.')
-                return render(request, 'LoginApp/passwordResetRequest.html')
-        elif user_type == 'borrower':
-            if not hasattr(user, 'borrower_profile'):
-                messages.error(request, 'This account is not registered as a borrower.')
-                return render(request, 'LoginApp/passwordResetRequest.html')
+        if not user:
+            messages.error(request, 'No company account found with that email/username.')
+            return render(request, 'LoginApp/passwordResetRequest.html')
+        
+        # Verify user is a company (not borrower)
+        if not hasattr(user, 'company_profile'):
+            messages.error(request, 'This account is not registered as a lending company.')
+            return render(request, 'LoginApp/passwordResetRequest.html')
         
         # Generate token and send email
         token = default_token_generator.make_token(user)
@@ -138,18 +103,18 @@ def passwordResetRequest(request):
         
         reset_url = f"{settings.SITE_URL}/Auth/reset-password/{uid}/{token}/"
         
-        subject = 'Password Reset Request - Avendro'
+        subject = 'Password Reset Request - Avendro Company Portal'
         message = f"""
-Hello {user.first_name or user.username},
+Hello {user.company_profile.company_name},
 
-You requested to reset your password for your Avendro account.
+You requested to reset your password for your Avendro company account.
 
 Click the link below to reset your password:
 {reset_url}
 
 This link will expire in 24 hours.
 
-If you didn't request this, please ignore this email.
+If you didn't request this, please ignore this email and your password will remain unchanged.
 
 Best regards,
 Avendro Team
@@ -166,7 +131,7 @@ Avendro Team
             messages.success(request, 'Password reset instructions have been sent to your email.')
             return redirect('user-login')
         except Exception as e:
-            messages.error(request, f'Failed to send email: {str(e)}')
+            messages.error(request, f'Failed to send email. Please try again later.')
             return render(request, 'LoginApp/passwordResetRequest.html')
     
     return render(request, 'LoginApp/passwordResetRequest.html')
@@ -181,11 +146,16 @@ def passwordResetConfirm(request, uidb64, token):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
     
-    # Verify token
+    # Verify token and user is a company
     if user is not None and default_token_generator.check_token(user, token):
+        # Double-check user is a company
+        if not hasattr(user, 'company_profile'):
+            messages.error(request, 'Invalid account type.')
+            return redirect('user-login')
+        
         if request.method == 'POST':
-            new_password = request.POST.get('new_password')
-            confirm_password = request.POST.get('confirm_password')
+            new_password = request.POST.get('new_password', '').strip()
+            confirm_password = request.POST.get('confirm_password', '').strip()
             
             # Validate passwords
             if not new_password or not confirm_password:

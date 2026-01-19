@@ -1,4 +1,5 @@
 {% extends 'Company/companyBase.html' %}
+{% load humanize %}
 
 {% block title %}Active Borrowers - Avendro{% endblock %}
 
@@ -13,18 +14,21 @@
         <div>
             <p class="text-sm font-medium text-gray-600">Active Borrowers</p>
             <p class="text-3xl font-bold text-gray-900">{{ total_active_borrowers }}</p>
+            <p class="text-xs text-gray-500 mt-1">With approved loans</p>
         </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div>
             <p class="text-sm font-medium text-gray-600">Active Loans</p>
             <p class="text-3xl font-bold text-gray-900">{{ total_loans }}</p>
+            <p class="text-xs text-gray-500 mt-1">Currently approved</p>
         </div>
     </div>
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div>
             <p class="text-sm font-medium text-gray-600">Portfolio Value</p>
             <p class="text-3xl font-bold text-gray-900">₱{{ total_portfolio|floatformat:2 }}</p>
+            <p class="text-xs text-gray-500 mt-1">Total disbursed</p>
         </div>
     </div>
 </div>
@@ -32,7 +36,7 @@
 <!-- Active Borrowers Table -->
 <div class="bg-white rounded-xl text-gray-900 shadow-sm border border-gray-100 overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">Clients with at least one active loan</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Clients with approved loans</h3>
     </div>
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
@@ -40,25 +44,50 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Borrower</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Active Loans</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loan Amount</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for borrower in active_borrowers %}
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        {{ borrower.first_name }} {{ borrower.last_name }}
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-600 font-medium text-sm">
+                                    {{ borrower.first_name|slice:":1" }}{{ borrower.last_name|slice:":1" }}
+                                </span>
+                            </div>
+                            <div class="ml-3">
+                                <div class="text-sm font-medium text-gray-900">
+                                    {{ borrower.full_name }}
+                                </div>
+                                <div class="text-sm text-gray-500">ID: BOR-{{ borrower.id|stringformat:"04d" }}</div>
+                            </div>
+                        </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        {{ borrower.user.email }}
+                        <div class="text-sm text-gray-900">{{ borrower.email }}</div>
+                        <div class="text-sm text-gray-500">{{ borrower.mobile_number }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        {{ borrower.active_loans_count }}
+                        <div class="text-sm font-medium text-gray-900">
+                            ₱{{ borrower.loan_application.amount|floatformat:2|intcomma }}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            {{ borrower.loan_application.term }} months
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            Active
+                        </span>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="3" class="text-center py-6 text-gray-500">No active borrowers found.</td>
+                    <td colspan="4" class="text-center py-6 text-gray-500">No active borrowers found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

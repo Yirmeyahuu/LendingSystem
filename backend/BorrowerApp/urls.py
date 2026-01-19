@@ -2,29 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    #Urls of Borrower Content
-
-    #Url of dashboard content
-    path('Dashboard/', views.borrowerDashboard, name='borrower-dashboard'),
-    #Url of Active loan content
-    path('active-loan/', views.activeLoans, name='borrower-active-loan'),
-    #Url of Loan history content
-    path('loan-history/', views.loanHistory, name='borrower-loan-history'),
-    #Url of Apply Loan content
-    path('apply-loan/', views.applyLoan, name='borrower-apply-loan'),
-    #Url of Payment content
-    path('payments/', views.borrowerPayments, name='borrower-payments'),
-    #Url of Borrower profile content
-    path('profile/', views.borrowerProfile, name='borrower-profile'),
-    #Url of Borrower Change password content
-    path('change-password/', views.changePassword, name='borrower-change-password'),
-    #Url of Security questions
-    path('profile/security-questions/', views.update_security_questions, name='update_security_questions'),
-
-    # Loan calculation endpoints
-    path('company/<int:company_id>/details/', views.get_company_loan_details, name='get-company-details'),
-    path('calculate-loan/', views.calculate_loan_payment, name='calculate-loan-payment'),
-
-    #Logout Url
-    path('logout/', views.borrower_logout, name='borrower-logout'),
+    # Public loan application flow (no authentication)
+    path('select-company/', views.selectCompany, name='select-company'),
+    path('application/<int:company_id>/', views.borrowerApplication, name='borrower-application'),
+    path('application/success/', views.applicationSuccess, name='application-success'),
+    path('check-existing-borrower/<int:company_id>/', views.check_existing_borrower, name='check-existing-borrower'),
 ]

@@ -1,0 +1,119 @@
+<!-- filepath: backend/BorrowerApp/templates/BorrowerApp/company_selection.html -->
+{% load static %}
+{% load tailwind_tags %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Lending Company - Avendro</title>
+    <link rel="icon" href="{% static 'assets/img/AvendroRel.svg' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% tailwind_css %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Back Button -->
+    <div class="absolute top-4 left-4 z-50">
+        <a href="{% url 'landing-page' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors shadow-sm">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Home
+        </a>
+    </div>
+
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-white py-16 sm:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                    <i class="fas fa-building text-blue-600 text-2xl"></i>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Choose Your Lending Partner</h1>
+                <p class="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+                    Select a trusted lending company below to start your loan application. Each company offers different loan products, interest rates, and terms tailored to your needs.
+                </p>
+                <div class="mt-4 inline-flex items-center px-4 py-2 bg-blue-100 rounded-full text-sm text-blue-800 font-medium">
+                    <i class="fas fa-shield-alt mr-2"></i>
+                    All companies are verified and regulated
+                </div>
+            </div>
+
+            <!-- Companies Grid -->
+            {% if companies %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for company in companies %}
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-6">
+                            <h3 class="text-xl font-bold text-white mb-2">{{ company.company_name }}</h3>
+                            <p class="text-blue-100 text-sm">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ company.city }}, {{ company.state }}
+                            </p>
+                        </div>
+                        
+                        <div class="p-6 space-y-4">
+                            <!-- Loan Products -->
+                            <div>
+                                <h4 class="text-sm font-semibold text-gray-700 mb-2">Loan Products:</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for product in company.loan_products %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {% if product == 'personal_loan' %}Personal Loan
+                                            {% elif product == 'business_loan' %}Business Loan
+                                            {% elif product == 'auto_loan' %}Auto Loan
+                                            {% elif product == 'home_loan' %}Home Loan
+                                            {% elif product == 'education_loan' %}Education Loan
+                                            {% elif product == 'medical_loan' %}Medical Loan
+                                            {% else %}{{ product|title }}
+                                            {% endif %}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Loan Amount Range -->
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-coins text-green-600 mr-2"></i>
+                                <span>₱{{ company.min_loan_amount|floatformat:0|intcomma }} - ₱{{ company.max_loan_amount|floatformat:0|intcomma }}</span>
+                            </div>
+
+                            <!-- Interest Rate Range -->
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-percentage text-orange-600 mr-2"></i>
+                                <span>{{ company.min_interest_rate }}% - {{ company.max_interest_rate }}% Interest</span>
+                            </div>
+
+                            <!-- Loan Term Range -->
+                            <div class="flex items-center text-sm text-gray-600">
+                                <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>
+                                <span>{{ company.min_loan_term }} - {{ company.max_loan_term }} months</span>
+                            </div>
+
+                            <!-- Apply Button -->
+                            <a href="{% url 'borrower-application' company.id %}" 
+                               class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300 mt-4">
+                                <i class="fas fa-file-alt mr-2"></i>
+                                Apply Now
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- No Companies Available -->
+                <div class="text-center py-12">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-200 mb-4">
+                        <i class="fas fa-building text-gray-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-2">No Lending Companies Available</h3>
+                    <p class="text-gray-600 mb-6">There are currently no approved lending companies. Please check back later.</p>
+                    <a href="{% url 'landing-page' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-home mr-2"></i>
+                        Return Home
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

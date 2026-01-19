@@ -1,19 +1,23 @@
 from django.db import models
-from django.contrib.auth.models import User
-from django.core.validators import RegexValidator, MinValueValidator, MaxValueValidator
+from django.core.validators import RegexValidator, MinValueValidator
 from decimal import Decimal
 
 class Borrower(models.Model):
+    """
+    Borrower model - Each application to a company creates a new borrower record
+    This allows tracking of application history across multiple companies
+    """
+    # Link to Company
+    company = models.ForeignKey('CompanyApp.Company', on_delete=models.CASCADE, related_name='borrowers', null=True, blank=True)
+    
     # Personal Information
     first_name = models.CharField(max_length=50)
     middle_name = models.CharField(max_length=50, blank=True, null=True)
     last_name = models.CharField(max_length=50)
     date_of_birth = models.DateField()
-
-    security_question_1 = models.CharField(max_length=255, blank=True, null=True)
-    security_answer_1 = models.CharField(max_length=255, blank=True, null=True)
-    security_question_2 = models.CharField(max_length=255, blank=True, null=True)
-    security_answer_2 = models.CharField(max_length=255, blank=True, null=True)
+    
+    # Email for communication
+    email = models.EmailField(verbose_name="Email Address", null=True, blank=True)
     
     GENDER_CHOICES = [
         ('male', 'Male'),
@@ -73,27 +77,33 @@ class Borrower(models.Model):
     bank_name = models.CharField(max_length=100)
     account_number = models.CharField(max_length=50)
     
-    # Sign In Credentials (linked to Django User model)
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='borrower_profile')
-    
-    # Consent and Agreement fields
+    # Consent
     terms_accepted = models.BooleanField(default=False)
     marketing_consent = models.BooleanField(default=False)
     
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    is_verified = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    
+    # Duplicate detection fields
+    duplicate_check_hash = models.CharField(max_length=64, db_index=True, blank=True)
     
     class Meta:
         db_table = 'borrower'
         ordering = ['-created_at']
-        verbose_name = 'Borrower'
-        verbose_name_plural = 'Borrowers'
+        verbose_name = 'Borrower Application'
+        verbose_name_plural = 'Borrower Applications'
+        # One borrower can have multiple applications to different companies
+        unique_together = [['email', 'company']]
+        indexes = [
+            models.Index(fields=['email', 'company', 'date_of_birth']),
+            models.Index(fields=['first_name', 'last_name', 'email']),
+        ]
     
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.user.email})"
+        company_name = self.company.company_name if self.company else "No Company"
+        loan_status = self.loan_application.status if hasattr(self, 'loan_application') else 'No Loan'
+        return f"{self.first_name} {self.last_name} - {company_name} ({loan_status})"
     
     @property
     def full_name(self):
@@ -112,7 +122,7 @@ class Borrower(models.Model):
         """Returns the complete permanent address"""
         if self.permanent_street_address:
             return f"{self.permanent_street_address}, {self.permanent_city}, {self.permanent_state} {self.permanent_postal_code}"
-        return self.current_address_full  # Use current address if permanent is not provided
+        return self.current_address_full
     
     @property
     def age(self):
@@ -121,41 +131,25 @@ class Borrower(models.Model):
         today = date.today()
         return today.year - self.date_of_birth.year - ((today.month, today.day) < (self.date_of_birth.month, self.date_of_birth.day))
     
+    @property
+    def application_status(self):
+        """Get the application status from related loan application"""
+        if hasattr(self, 'loan_application'):
+            return self.loan_application.status
+        return 'pending'
+    
     def save(self, *args, **kwargs):
-        """Override save method to handle permanent address logic"""
-        # If permanent address fields are empty, copy from current address
+        """Override save to handle permanent address and duplicate detection"""
+        # Copy current to permanent if empty
         if not self.permanent_street_address:
             self.permanent_street_address = self.current_street_address
             self.permanent_city = self.current_city
             self.permanent_state = self.current_state
             self.permanent_postal_code = self.current_postal_code
         
+        # Generate duplicate check hash
+        import hashlib
+        check_string = f"{self.first_name}{self.last_name}{self.email}".lower()
+        self.duplicate_check_hash = hashlib.sha256(check_string.encode()).hexdigest()
+        
         super().save(*args, **kwargs)
-    
-    def get_employment_display_with_details(self):
-        """Returns employment status with company details if applicable"""
-        employment = self.get_employment_status_display()
-        if self.employment_status in ['employed', 'self_employed'] and self.company_name:
-            return f"{employment} at {self.company_name}"
-        return employment
-    
-    def is_eligible_for_loan(self):
-        """Basic eligibility check - can be expanded with business logic"""
-        # Must be at least 18 years old
-        if self.age < 18:
-            return False
-        
-        # Must have some income
-        if self.monthly_income <= 0:
-            return False
-        
-        # Must have verified identity
-        if not self.is_verified:
-            return False
-        
-        # Must have active status
-        if not self.is_active:
-            return False
-        
-        return True
-    

@@ -3,7 +3,6 @@ from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 from django.db import models
-from BorrowerApp.models import Borrower
 
 class Company(models.Model):
     LOAN_PRODUCT_CHOICES = [
@@ -101,43 +100,51 @@ class Company(models.Model):
 
 
 class LoanApplication(models.Model):
-    borrower = models.ForeignKey(Borrower, on_delete=models.CASCADE)
-    company = models.ForeignKey(Company, on_delete=models.CASCADE)
-    product_type = models.CharField(max_length=50)
-    amount = models.DecimalField(max_digits=12, decimal_places=2)
-    term = models.PositiveIntegerField(help_text="Loan term in months", null=True, blank=True)  # NEW
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Interest rate %")  # NEW
-    monthly_payment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
-    total_payment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
-    total_interest = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)  # NEW
+    """
+    Loan application is now automatically created with Borrower application
+    """
+    borrower = models.OneToOneField('BorrowerApp.Borrower', on_delete=models.CASCADE, related_name='loan_application')
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, null=True, blank=True)
+
+    
+    # Loan details (copied from Borrower for quick access)
+    product_type = models.CharField(max_length=50, blank=True, null=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    term = models.PositiveIntegerField(help_text="Loan term in months", null=True, blank=True)
+    interest_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Interest rate %", null=True, blank=True)
+    
+    # Calculated fields
+    monthly_payment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    total_payment = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    total_interest = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    
+    # Status tracking
     approved_date = models.DateTimeField(null=True, blank=True)
     rating = models.DecimalField(max_digits=2, decimal_places=1, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=[
+    
+    STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
         ('rejected', 'Rejected'),
         ('review', 'Under Review'),
         ('delinquent', 'Delinquent'),
-    ])
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    
     created_at = models.DateTimeField(auto_now_add=True)
     
     def calculate_loan_payment(self):
         """Calculate monthly payment, total payment, and total interest"""
         if self.amount and self.interest_rate and self.term:
-            # Convert annual interest rate to monthly rate
             monthly_rate = (self.interest_rate / 100) / 12
             
             if monthly_rate > 0:
-                # Calculate monthly payment using amortization formula
-                # M = P * [r(1+r)^n] / [(1+r)^n - 1]
                 numerator = monthly_rate * (1 + monthly_rate) ** self.term
                 denominator = (1 + monthly_rate) ** self.term - 1
                 self.monthly_payment = self.amount * (numerator / denominator)
             else:
-                # If interest rate is 0, simple division
                 self.monthly_payment = self.amount / self.term
             
-            # Calculate total payment and interest
             self.total_payment = self.monthly_payment * self.term
             self.total_interest = self.total_payment - self.amount
         
