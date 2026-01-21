@@ -220,7 +220,7 @@ class Payment(models.Model):
         ('pending', 'Pending'),
         ('paid', 'Paid'),
         ('failed', 'Failed'),
-        ('overdue', 'Overdue'),
+        ('overdue', 'Overdue'),  # Add this
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -230,3 +230,6 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment {self.id} for Loan {self.loan_application.id} - {self.status}"
+    
+
+
