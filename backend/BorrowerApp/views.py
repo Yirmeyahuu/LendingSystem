@@ -45,7 +45,7 @@ def selectCompany(request):
 
 @require_http_methods(["POST"])
 def check_existing_borrower(request, company_id):
-    """Check if borrower already has an application with ANY company"""
+    """Check if borrower already has an application with ANY company - Email only check"""
     try:
         from CompanyApp.models import Company
         from .models import Borrower
@@ -53,28 +53,23 @@ def check_existing_borrower(request, company_id):
         company = get_object_or_404(Company, id=company_id, is_approved=True)
         
         email = request.POST.get('email', '').strip().lower()
-        first_name = request.POST.get('first_name', '').strip()
-        last_name = request.POST.get('last_name', '').strip()
         
         print(f"\n{'='*80}")
-        print(f"CHECK EXISTING BORROWER - GLOBAL CHECK")
+        print(f"CHECK EXISTING BORROWER - EMAIL ONLY CHECK")
         print(f"{'='*80}")
         print(f"Applying to Company: {company.company_name} (ID: {company_id})")
         print(f"Email: {email}")
-        print(f"Name: {first_name} {last_name}")
         
-        if not email or not first_name or not last_name:
-            print("Missing required fields - allowing application")
+        if not email:
+            print("Missing email - allowing application")
             return JsonResponse({
                 'exists': False,
                 'can_proceed': True
             })
         
-        # ===== STEP 1: Check for existing borrower with ANY company =====
+        # ===== STEP 1: Check for existing borrower by EMAIL only =====
         all_borrowers_with_email = Borrower.objects.filter(
-            email__iexact=email,
-            first_name__iexact=first_name,
-            last_name__iexact=last_name
+            email__iexact=email
         ).select_related('loan_application', 'company')
         
         print(f"\nFound {all_borrowers_with_email.count()} total borrower record(s) with this email across ALL companies:")
@@ -88,6 +83,7 @@ def check_existing_borrower(request, company_id):
         for borrower in all_borrowers_with_email:
             company_name = borrower.company.company_name if borrower.company else "No Company"
             print(f"\n  Borrower ID: {borrower.id}")
+            print(f"  Name: {borrower.full_name}")
             print(f"  Company: {company_name}")
             
             if hasattr(borrower, 'loan_application'):

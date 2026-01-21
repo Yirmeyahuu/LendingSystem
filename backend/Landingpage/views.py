@@ -125,4 +125,4 @@ def companyRegistration(request):
 
 #Company Success Registration function
 def companyRegistrationSuccess(request):
-    return render(request, 'CompanyRegistration/registrationSuccess.html')
+    return render(request, 'CompanyRegistration/registerSuccess.html')
