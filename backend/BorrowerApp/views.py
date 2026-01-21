@@ -8,14 +8,19 @@ from datetime import datetime
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 import hashlib
+from django.views.decorators.csrf import csrf_exempt
+import traceback
+from django.db.models import Count
 
 def selectCompany(request):
     """Show list of approved companies - Filter out companies where borrower has active loan"""
     email = request.session.get('borrower_email', '')
     full_name = request.session.get('borrower_name', '')
     
-    # Get all approved companies
-    companies = Company.objects.filter(is_approved=True)
+    # Get all approved companies with borrower count and order by borrower count (descending)
+    companies = Company.objects.filter(is_approved=True).annotate(
+        borrower_count=Count('borrowers', distinct=True)  # Changed from 'borrower' to 'borrowers'
+    ).order_by('-borrower_count', 'company_name')  # Order by count DESC, then name ASC
     
     # If we have borrower info in session, filter out companies with active loans
     if email and full_name:
@@ -27,7 +32,7 @@ def selectCompany(request):
             loan_application__status='approved'
         ).values_list('company_id', flat=True)
         
-        # Exclude companies with active loans
+        # Exclude companies with active loans but keep the annotation
         companies = companies.exclude(id__in=active_loan_companies)
     
     context = {
@@ -40,64 +45,181 @@ def selectCompany(request):
 
 @require_http_methods(["POST"])
 def check_existing_borrower(request, company_id):
-    """Check if borrower already has an application with this company"""
+    """Check if borrower already has an application with ANY company"""
     try:
+        from CompanyApp.models import Company
+        from .models import Borrower
+        
         company = get_object_or_404(Company, id=company_id, is_approved=True)
         
         email = request.POST.get('email', '').strip().lower()
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
         
+        print(f"\n{'='*80}")
+        print(f"CHECK EXISTING BORROWER - GLOBAL CHECK")
+        print(f"{'='*80}")
+        print(f"Applying to Company: {company.company_name} (ID: {company_id})")
+        print(f"Email: {email}")
+        print(f"Name: {first_name} {last_name}")
+        
         if not email or not first_name or not last_name:
+            print("Missing required fields - allowing application")
             return JsonResponse({
                 'exists': False,
                 'can_proceed': True
             })
         
-        # Check for existing borrower
-        check_string = f"{first_name}{last_name}{email}".lower()
-        duplicate_hash = hashlib.sha256(check_string.encode()).hexdigest()
+        # ===== STEP 1: Check for existing borrower with ANY company =====
+        all_borrowers_with_email = Borrower.objects.filter(
+            email__iexact=email,
+            first_name__iexact=first_name,
+            last_name__iexact=last_name
+        ).select_related('loan_application', 'company')
         
-        existing_borrower = Borrower.objects.filter(
-            company=company,
-            duplicate_check_hash=duplicate_hash
-        ).first()
+        print(f"\nFound {all_borrowers_with_email.count()} total borrower record(s) with this email across ALL companies:")
         
-        if existing_borrower and hasattr(existing_borrower, 'loan_application'):
-            loan_app = existing_borrower.loan_application
+        # Track all applications
+        active_loans = []
+        pending_applications = []
+        rejected_applications = []
+        paid_loans = []
+        
+        for borrower in all_borrowers_with_email:
+            company_name = borrower.company.company_name if borrower.company else "No Company"
+            print(f"\n  Borrower ID: {borrower.id}")
+            print(f"  Company: {company_name}")
             
-            if loan_app.status == 'approved':
-                return JsonResponse({
-                    'exists': True,
-                    'can_proceed': False,
-                    'status': 'approved',
-                    'message': f'You already have an active loan with {company.company_name}. Please contact the company to discuss your existing loan before applying for a new one.'
-                })
-            elif loan_app.status == 'pending':
-                return JsonResponse({
-                    'exists': True,
-                    'can_proceed': False,
-                    'status': 'pending',
-                    'message': f'You already have a pending application with {company.company_name}. Please wait for review before submitting a new application.'
-                })
-            elif loan_app.status == 'rejected':
-                return JsonResponse({
-                    'exists': True,
-                    'can_proceed': True,
-                    'status': 'rejected',
-                    'message': f'Your previous application was rejected. You may submit a new application.'
-                })
+            if hasattr(borrower, 'loan_application'):
+                loan_app = borrower.loan_application
+                print(f"  Loan Status: {loan_app.status}")
+                print(f"  Loan Amount: {loan_app.amount}")
+                print(f"  Total Payment: {loan_app.total_payment}")
+                
+                if loan_app.status == 'approved':
+                    remaining_balance = loan_app.remaining_balance
+                    print(f"  Remaining Balance: {remaining_balance}")
+                    
+                    if remaining_balance > 0:
+                        active_loans.append({
+                            'borrower': borrower,
+                            'loan': loan_app,
+                            'company': borrower.company,
+                            'balance': remaining_balance
+                        })
+                    else:
+                        paid_loans.append({
+                            'borrower': borrower,
+                            'loan': loan_app,
+                            'company': borrower.company
+                        })
+                        
+                elif loan_app.status == 'pending':
+                    # Only track pending with THIS company
+                    if borrower.company.id == company_id:
+                        pending_applications.append({
+                            'borrower': borrower,
+                            'loan': loan_app,
+                            'company': borrower.company
+                        })
+                        
+                elif loan_app.status == 'rejected':
+                    # Only track rejected with THIS company
+                    if borrower.company.id == company_id:
+                        rejected_applications.append({
+                            'borrower': borrower,
+                            'loan': loan_app,
+                            'company': borrower.company
+                        })
         
+        # ===== STEP 2: Check for active loans (highest priority) =====
+        if active_loans:
+            print(f"\n❌ BLOCKING - Found {len(active_loans)} active loan(s) with outstanding balance:")
+            
+            # Get the loan with the highest balance or most recent
+            primary_loan = active_loans[0]
+            
+            for loan_info in active_loans:
+                print(f"  - Company: {loan_info['company'].company_name}")
+                print(f"    Balance: ₱{loan_info['balance']:,.2f}")
+            
+            # Create message listing all companies with outstanding loans
+            if len(active_loans) == 1:
+                message = f"You currently have a pending balance of ₱{primary_loan['balance']:,.2f} with {primary_loan['company'].company_name}. Please settle your account before applying for a new loan. Thank you."
+            else:
+                companies_list = ", ".join([loan['company'].company_name for loan in active_loans])
+                total_balance = sum(loan['balance'] for loan in active_loans)
+                message = f"You currently have outstanding loans with multiple companies ({companies_list}) totaling ₱{total_balance:,.2f}. Please settle your accounts before applying for new loans. Thank you."
+            
+            return JsonResponse({
+                'exists': True,
+                'can_proceed': False,
+                'status': 'approved',
+                'has_balance': True,
+                'remaining_balance': float(primary_loan['balance']),
+                'total_loan': float(primary_loan['loan'].total_payment or 0),
+                'total_paid': float(primary_loan['loan'].total_paid),
+                'company_name': primary_loan['company'].company_name,
+                'multiple_loans': len(active_loans) > 1,
+                'loan_count': len(active_loans),
+                'message': message
+            })
+        
+        # ===== STEP 3: Check for pending applications with THIS company =====
+        if pending_applications:
+            print(f"\n⏳ BLOCKING - Pending application with THIS company")
+            pending_app = pending_applications[0]
+            return JsonResponse({
+                'exists': True,
+                'can_proceed': False,
+                'status': 'pending',
+                'message': f'You already have a pending application with {pending_app["company"].company_name}. Please wait for review before submitting a new application.'
+            })
+        
+        # ===== STEP 4: Check for rejected applications with THIS company =====
+        if rejected_applications:
+            print(f"\nℹ️ ALLOWING - Previous application with THIS company was rejected")
+            rejected_app = rejected_applications[0]
+            return JsonResponse({
+                'exists': True,
+                'can_proceed': True,
+                'status': 'rejected',
+                'message': f'Your previous application with {rejected_app["company"].company_name} was rejected. You may submit a new application.'
+            })
+        
+        # ===== STEP 5: Check for fully paid loans =====
+        if paid_loans:
+            print(f"\n✓ ALLOWING - Found {len(paid_loans)} fully paid loan(s)")
+            for paid_loan in paid_loans:
+                print(f"  - Company: {paid_loan['company'].company_name} (Fully Paid)")
+            
+            return JsonResponse({
+                'exists': True,
+                'can_proceed': True,
+                'status': 'paid',
+                'message': f'You have successfully completed previous loans. You may apply for a new loan.'
+            })
+        
+        # ===== STEP 6: No existing applications found =====
+        print(f"\n✓ NO EXISTING APPLICATIONS - Allowing new application")
+        print(f"{'='*80}\n")
         return JsonResponse({
             'exists': False,
             'can_proceed': True
         })
         
     except Exception as e:
+        print(f"\n❌ ERROR in check_existing_borrower:")
+        print(f"  {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        print(f"{'='*80}\n")
+        
         return JsonResponse({
             'error': str(e),
-            'can_proceed': True
-        }, status=500)
+            'can_proceed': True,
+            'exists': False
+        }, status=200)
 
 
 def borrowerApplication(request, company_id):
@@ -211,3 +333,5 @@ def borrowerApplication(request, company_id):
 def applicationSuccess(request):
     """Show success page after application submission"""
     return render(request, 'BorrowerApp/application_success.html')
+
+

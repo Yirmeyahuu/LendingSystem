@@ -14,6 +14,10 @@ urlpatterns = [
     path('Loan-Applications/<int:application_id>/approve/', views.approve_loan_application, name='approve-loan-application'),
     path('Loan-Applications/<int:application_id>/reject/', views.reject_loan_application, name='reject-loan-application'),
     path('Borrower-Lists/<int:borrower_id>/view/', views.viewBorrowerDetails, name='view-borrower-details'),
+    
+    # Payment management
+    path('Borrower-Lists/loan/<int:loan_id>/payments/', views.viewLoanPayments, name='view-loan-payments'),
+    path('Borrower-Lists/loan/<int:loan_id>/record-payment/', views.recordPayment, name='record-payment'),
 
     # Replace the archived borrowers URLs with:
     path('Application-History/', views.applicationHistory, name='company-application-history'),

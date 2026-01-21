@@ -262,12 +262,23 @@
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button 
-                            onclick="openViewBorrowerModal({{ borrower.id }})" 
-                            class="text-blue-600 hover:text-blue-900" 
-                            title="View Borrower Details">
-                            <i class="fas fa-eye mr-1"></i>View
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button 
+                                onclick="openViewBorrowerModal({{ borrower.id }})" 
+                                class="text-blue-600 hover:text-blue-900" 
+                                title="View Borrower Details">
+                                <i class="fas fa-eye mr-1"></i>View
+                            </button>
+                            {% if borrower.loan_application and borrower.loan_application.status == 'approved' %}
+                            <span class="text-gray-300">|</span>
+                            <button 
+                                onclick="openPaymentModal({{ borrower.loan_application.id }})" 
+                                class="text-green-600 hover:text-green-900" 
+                                title="View Due Dates & Payments">
+                                <i class="fas fa-calendar-check mr-1"></i>Due Dates
+                            </button>
+                            {% endif %}
+                        </div>
                     </td>
                 </tr>
                 {% empty %}
@@ -355,6 +366,106 @@
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
             </div>
         </div>
+    </div>
+</div>
+
+
+<!-- Payment/Due Dates Modal -->
+<div id="paymentModal" class="fixed inset-0 z-[9999] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-10 mx-auto p-5 text-gray-900 border w-full max-w-6xl shadow-lg rounded-xl bg-white mb-20">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-900">Payment Schedule & Due Dates</h3>
+                <p class="text-sm text-gray-600 mt-1">Track and record loan payments</p>
+            </div>
+            <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div id="paymentModalContent" class="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+            <!-- Loading State -->
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Payment Modal -->
+<div id="recordPaymentModal" class="fixed inset-0 z-[10000] bg-gray-900/80 hidden overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border text-gray-900 w-full max-w-2xl shadow-lg rounded-xl bg-white mb-20">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <h3 class="text-xl font-bold text-gray-900">Record Payment</h3>
+            <button onclick="closeRecordPaymentModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="recordPaymentForm" class="p-6 space-y-4">
+            {% csrf_token %}
+            <input type="hidden" id="payment_id" name="payment_id">
+            <input type="hidden" id="loan_application_id" name="loan_application_id">
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Amount</label>
+                <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-gray-500">₱</span>
+                    <input type="number" step="0.01" id="payment_amount" name="amount" required
+                           class="block w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           placeholder="0.00">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Date</label>
+                <input type="date" id="payment_date" name="paid_date" required
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <select id="payment_method" name="method" required
+                        class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="">Select payment method</option>
+                    <option value="cash">Cash</option>
+                    <option value="bank_transfer">Bank Transfer</option>
+                    <option value="check">Check</option>
+                    <option value="online">Online Payment</option>
+                    <option value="otc">Over the Counter</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Reference Number (Optional)</label>
+                <input type="text" id="reference_number" name="reference_number"
+                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                       placeholder="Transaction reference or check number">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
+                <textarea id="payment_notes" name="notes" rows="3"
+                          class="block w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Additional notes about this payment..."></textarea>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t border-gray-200">
+                <button type="button" onclick="closeRecordPaymentModal()" 
+                        class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold">
+                    <i class="fas fa-check mr-2"></i>Record Payment
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}
@@ -506,7 +617,7 @@
                         </div>
                         ` : ''}
                     </div>
-    
+
                     <!-- Right Column: Payment Calculation -->
                     ${app.monthly_payment && app.total_payment && app.total_interest ? `
                     <div class="bg-gradient-to-br from-blue-50 to-green-50 rounded-lg p-5 space-y-4">
@@ -763,6 +874,291 @@
         }
         if (event.target === loanModal) {
             closeViewLoanModalBorrowerList();
+        }
+    });
+
+
+
+        // Payment Modal Functions
+    function openPaymentModal(loanId) {
+        const modal = document.getElementById('paymentModal');
+        const modalContent = document.getElementById('paymentModalContent');
+        
+        // Show modal
+        modal.classList.remove('hidden');
+        
+        // Show loading state
+        modalContent.innerHTML = `
+            <div class="flex justify-center items-center py-12">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        `;
+        
+        // Fetch payment details
+        fetch(`/Company/Borrower-Lists/loan/${loanId}/payments/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    modalContent.innerHTML = generatePaymentModalContent(data);
+                } else {
+                    modalContent.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-exclamation-circle text-red-500 text-5xl mb-4"></i>
+                            <p class="text-red-600 font-semibold">${data.message || 'Failed to load payment details.'}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modalContent.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-exclamation-circle text-red-500 text-5xl mb-4"></i>
+                        <p class="text-red-600 font-semibold">An error occurred while loading payment details.</p>
+                    </div>
+                `;
+            });
+    }
+
+    function closePaymentModal() {
+        document.getElementById('paymentModal').classList.add('hidden');
+    }
+
+    function openRecordPaymentModal(paymentId, loanId, amount) {
+        const modal = document.getElementById('recordPaymentModal');
+        document.getElementById('payment_id').value = paymentId;
+        document.getElementById('loan_application_id').value = loanId;
+        document.getElementById('payment_amount').value = amount;
+        
+        // Set today's date as default
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('payment_date').value = today;
+        
+        modal.classList.remove('hidden');
+    }
+
+    function closeRecordPaymentModal() {
+        document.getElementById('recordPaymentModal').classList.add('hidden');
+        document.getElementById('recordPaymentForm').reset();
+    }
+
+    // Handle Record Payment Form Submission
+    document.getElementById('recordPaymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const loanId = document.getElementById('loan_application_id').value;
+        
+        // Show loading
+        const submitBtn = this.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Processing...';
+        
+        fetch(`/Company/Borrower-Lists/loan/${loanId}/record-payment/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message
+                alert('Payment recorded successfully!');
+                
+                // Close record payment modal
+                closeRecordPaymentModal();
+                
+                // Reload payment modal to show updated data
+                openPaymentModal(loanId);
+            } else {
+                alert('Error: ' + (data.message || 'Failed to record payment'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while recording the payment');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    });
+
+    function generatePaymentModalContent(data) {
+        const loan = data.loan;
+        const borrower = data.borrower;
+        const payments = data.payments || [];
+        const remainingBalance = parseFloat(data.remaining_balance);
+        const totalPaid = parseFloat(data.total_paid);
+        const progressPercent = data.progress_percentage;
+        
+        // Generate payment schedule
+        let paymentScheduleHtml = '';
+        if (payments.length > 0) {
+            paymentScheduleHtml = payments.map((payment, index) => `
+                <tr class="${payment.status === 'paid' ? 'bg-green-50' : payment.status === 'overdue' ? 'bg-red-50' : 'bg-white'}">
+                    <td class="px-4 py-3 text-sm text-gray-900">${index + 1}</td>
+                    <td class="px-4 py-3 text-sm text-gray-900">${payment.due_date}</td>
+                    <td class="px-4 py-3 text-sm font-semibold text-gray-900">₱${parseFloat(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                    <td class="px-4 py-3 text-sm">
+                        ${payment.status === 'paid' 
+                            ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>Paid
+                               </span>
+                               <div class="text-xs text-gray-500 mt-1">${payment.paid_date || ''}</div>`
+                            : payment.status === 'overdue'
+                            ? `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-exclamation-circle mr-1"></i>Overdue
+                               </span>`
+                            : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i>Pending
+                               </span>`
+                        }
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        ${payment.method ? `<span class="text-gray-600">${payment.method.replace(/_/g, ' ').charAt(0).toUpperCase() + payment.method.replace(/_/g, ' ').slice(1)}</span>` : '-'}
+                        ${payment.reference_number ? `<div class="text-xs text-gray-500">Ref: ${payment.reference_number}</div>` : ''}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        ${payment.status === 'pending' 
+                            ? `<button onclick="openRecordPaymentModal(${payment.id}, ${loan.id}, ${payment.amount})" 
+                                       class="text-green-600 hover:text-green-900 font-medium">
+                                    <i class="fas fa-check mr-1"></i>Record Payment
+                               </button>`
+                            : payment.status === 'paid'
+                            ? `<span class="text-gray-400"><i class="fas fa-check"></i></span>`
+                            : `<button onclick="openRecordPaymentModal(${payment.id}, ${loan.id}, ${payment.amount})" 
+                                       class="text-orange-600 hover:text-orange-900 font-medium">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Pay Now
+                               </button>`
+                        }
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            paymentScheduleHtml = `
+                <tr>
+                    <td colspan="6" class="text-center py-8 text-gray-500">
+                        <i class="fas fa-info-circle text-3xl mb-2"></i>
+                        <p>No payment schedule generated yet.</p>
+                    </td>
+                </tr>
+            `;
+        }
+        
+        return `
+            <!-- Loan Summary Header -->
+            <div class="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">Borrower</h4>
+                        <p class="text-xl font-bold text-gray-900">${borrower.full_name}</p>
+                        <p class="text-sm text-gray-600">${borrower.email}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">Loan Amount</h4>
+                        <p class="text-2xl font-bold text-blue-600">₱${parseFloat(loan.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                        <p class="text-sm text-gray-600">${loan.term} months @ ${loan.interest_rate}%</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-600 mb-1">Loan Status</h4>
+                        <p class="text-lg font-semibold ${remainingBalance > 0 ? 'text-orange-600' : 'text-green-600'}">
+                            ${remainingBalance > 0 ? 'Active' : 'Fully Paid'}
+                        </p>
+                        <p class="text-sm text-gray-600">Approved: ${loan.approved_date}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Progress -->
+            <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+                <h5 class="text-lg font-bold text-gray-900 mb-4">Payment Progress</h5>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="text-center p-4 bg-blue-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Total Loan</p>
+                        <p class="text-2xl font-bold text-blue-600">₱${parseFloat(loan.total_payment).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="text-center p-4 bg-green-50 rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Total Paid</p>
+                        <p class="text-2xl font-bold text-green-600">₱${totalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="text-center p-4 ${remainingBalance > 0 ? 'bg-orange-50' : 'bg-green-50'} rounded-lg">
+                        <p class="text-sm text-gray-600 mb-1">Remaining Balance</p>
+                        <p class="text-2xl font-bold ${remainingBalance > 0 ? 'text-orange-600' : 'text-green-600'}">₱${remainingBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm text-gray-600">
+                        <span>Payment Progress</span>
+                        <span class="font-semibold">${progressPercent.toFixed(1)}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-4">
+                        <div class="bg-gradient-to-r from-blue-500 to-green-500 h-4 rounded-full transition-all duration-500" 
+                             style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Schedule Table -->
+            <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h5 class="text-lg font-bold text-gray-900">Payment Schedule</h5>
+                    <p class="text-sm text-gray-600 mt-1">Monthly payment: ₱${parseFloat(loan.monthly_payment).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment Info</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${paymentScheduleHtml}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button onclick="closePaymentModal()" 
+                        class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                    Close
+                </button>
+            </div>
+        `;
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function(event) {
+        const borrowerModal = document.getElementById('viewBorrowerModal');
+        const loanModal = document.getElementById('viewLoanModalBorrowerList');
+        const paymentModal = document.getElementById('paymentModal');
+        const recordPaymentModal = document.getElementById('recordPaymentModal');
+        
+        if (event.target === borrowerModal) {
+            closeViewBorrowerModal();
+        }
+        if (event.target === loanModal) {
+            closeViewLoanModalBorrowerList();
+        }
+        if (event.target === paymentModal) {
+            closePaymentModal();
+        }
+        if (event.target === recordPaymentModal) {
+            closeRecordPaymentModal();
         }
     });
 </script>

@@ -128,6 +128,7 @@ class LoanApplication(models.Model):
         ('rejected', 'Rejected'),
         ('review', 'Under Review'),
         ('delinquent', 'Delinquent'),
+        ('completed', 'Completed'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     
@@ -153,6 +154,38 @@ class LoanApplication(models.Model):
             'total_payment': self.total_payment,
             'total_interest': self.total_interest
         }
+    
+    @property
+    def remaining_balance(self):
+        """Calculate remaining balance based on total payment and paid amounts"""
+        from decimal import Decimal
+        
+        if not self.total_payment:
+            return Decimal('0.00')
+        
+        # Get all paid payments
+        paid_payments = self.payments.filter(status='paid')
+        total_paid = sum(payment.amount for payment in paid_payments) if paid_payments.exists() else Decimal('0.00')
+        
+        # Calculate remaining balance
+        remaining = self.total_payment - total_paid
+        return max(remaining, Decimal('0.00'))  # Ensure non-negative
+    
+    @property
+    def total_paid(self):
+        """Calculate total amount paid so far"""
+        from decimal import Decimal
+        
+        paid_payments = self.payments.filter(status='paid')
+        return sum(payment.amount for payment in paid_payments) if paid_payments.exists() else Decimal('0.00')
+    
+    @property
+    def payment_progress_percentage(self):
+        """Calculate payment progress as percentage"""
+        if not self.total_payment or self.total_payment == 0:
+            return 0
+        
+        return (self.total_paid / self.total_payment) * 100
 
 
 class Notification(models.Model):
@@ -171,22 +204,29 @@ class Notification(models.Model):
     
 
 class Payment(models.Model):
-    loan_application = models.ForeignKey('LoanApplication', on_delete=models.CASCADE, related_name='payments')
+    loan_application = models.ForeignKey(
+        'LoanApplication', 
+        on_delete=models.CASCADE, 
+        related_name='payments'  # ← Make sure this is present
+    )
     amount = models.DecimalField(max_digits=12, decimal_places=2)
-    method = models.CharField(max_length=50)  # e.g., 'bank', 'card', 'gateway', 'otc'
+    method = models.CharField(max_length=50)
     due_date = models.DateField()
     paid_date = models.DateField(null=True, blank=True)
     receipt = models.FileField(upload_to='receipts/', null=True, blank=True)
     reference_number = models.CharField(max_length=100, blank=True, null=True)
-    status = models.CharField(max_length=20, choices=[
+    
+    STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('paid', 'Paid'),
         ('failed', 'Failed'),
-    ], default='pending')
+        ('overdue', 'Overdue'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-due_date']
 
     def __str__(self):
-        return f"Payment {self.id} for Loan {self.loan_application.id}"
+        return f"Payment {self.id} for Loan {self.loan_application.id} - {self.status}"

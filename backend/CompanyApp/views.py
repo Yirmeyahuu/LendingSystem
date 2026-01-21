@@ -22,6 +22,8 @@ import re
 from django.views.decorators.http import require_http_methods
 from django.contrib.humanize.templatetags.humanize import intcomma, naturaltime
 from collections import defaultdict
+from CompanyApp.models import Payment
+from dateutil.relativedelta import relativedelta
 
 
 
@@ -1181,6 +1183,165 @@ def viewBorrowerDetails(request, borrower_id):
         return JsonResponse({
             'success': False,
             'message': 'Borrower not found.'
+        }, status=404)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+    
+
+
+
+@company_required
+def viewLoanPayments(request, loan_id):
+    """Return loan payment schedule and details as JSON"""
+    try:
+        company = request.user.company_profile
+        
+        # Get loan application
+        loan = get_object_or_404(
+            LoanApplication,
+            id=loan_id,
+            company=company,
+            status='approved'
+        )
+        
+        borrower = loan.borrower
+        
+        # Get all payments for this loan
+        payments = Payment.objects.filter(loan_application=loan).order_by('due_date')
+        
+        # If no payments exist, generate payment schedule
+        if not payments.exists() and loan.monthly_payment and loan.term:
+            # Generate payment schedule
+            start_date = loan.approved_date.date() if loan.approved_date else timezone.now().date()
+            
+            for i in range(loan.term):
+                due_date = start_date + relativedelta(months=i+1)
+                Payment.objects.create(
+                    loan_application=loan,
+                    amount=loan.monthly_payment,
+                    method='',
+                    due_date=due_date,
+                    status='pending'
+                )
+            
+            # Refresh payments queryset
+            payments = Payment.objects.filter(loan_application=loan).order_by('due_date')
+        
+        # Check for overdue payments
+        today = timezone.now().date()
+        for payment in payments:
+            if payment.status == 'pending' and payment.due_date < today:
+                payment.status = 'overdue'
+                payment.save()
+        
+        # Format payments data
+        payments_data = []
+        for payment in payments:
+            payments_data.append({
+                'id': payment.id,
+                'amount': str(payment.amount),
+                'due_date': payment.due_date.strftime('%B %d, %Y'),
+                'paid_date': payment.paid_date.strftime('%B %d, %Y') if payment.paid_date else None,
+                'status': payment.status,
+                'method': payment.method if payment.method else '',
+                'reference_number': payment.reference_number if payment.reference_number else '',
+            })
+        
+        data = {
+            'success': True,
+            'loan': {
+                'id': loan.id,
+                'amount': str(loan.amount),
+                'term': loan.term,
+                'interest_rate': str(loan.interest_rate),
+                'monthly_payment': str(loan.monthly_payment),
+                'total_payment': str(loan.total_payment),
+                'approved_date': loan.approved_date.strftime('%B %d, %Y') if loan.approved_date else None,
+            },
+            'borrower': {
+                'full_name': borrower.full_name,
+                'email': borrower.email,
+            },
+            'payments': payments_data,
+            'remaining_balance': float(loan.remaining_balance),
+            'total_paid': float(loan.total_paid),
+            'progress_percentage': float(loan.payment_progress_percentage),
+        }
+        
+        return JsonResponse(data)
+        
+    except LoanApplication.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Loan not found or not approved.'
+        }, status=404)
+    except Exception as e:
+        import traceback
+        print("ERROR in viewLoanPayments:")
+        print(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'message': f'Error: {str(e)}'
+        }, status=500)
+
+
+@company_required
+def recordPayment(request, loan_id):
+    """Record a payment for a loan"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+    
+    try:
+        company = request.user.company_profile
+        
+        # Get loan application
+        loan = get_object_or_404(
+            LoanApplication,
+            id=loan_id,
+            company=company,
+            status='approved'
+        )
+        
+        # Get payment record
+        payment_id = request.POST.get('payment_id')
+        payment = get_object_or_404(Payment, id=payment_id, loan_application=loan)
+        
+        # Check if already paid
+        if payment.status == 'paid':
+            return JsonResponse({
+                'success': False,
+                'message': 'This payment has already been recorded.'
+            })
+        
+        # Update payment record
+        payment.amount = Decimal(request.POST.get('amount'))
+        payment.paid_date = datetime.strptime(request.POST.get('paid_date'), '%Y-%m-%d').date()
+        payment.method = request.POST.get('method')
+        payment.reference_number = request.POST.get('reference_number', '')
+        payment.status = 'paid'
+        payment.save()
+        
+        # Check if loan is fully paid
+        remaining_balance = loan.remaining_balance
+        if remaining_balance <= 0:
+            # Update loan status to completed/paid
+            loan.status = 'completed'  # You may need to add this status to your STATUS_CHOICES
+            loan.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Payment recorded successfully',
+            'remaining_balance': float(remaining_balance),
+            'is_fully_paid': remaining_balance <= 0
+        })
+        
+    except Payment.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'message': 'Payment record not found.'
         }, status=404)
     except Exception as e:
         return JsonResponse({

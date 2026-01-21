@@ -10,7 +10,6 @@ class RoleBasedAccessMiddleware:
         # Define public URLs that authenticated users shouldn't access
         self.public_only_urls = [
             reverse('user-login'),
-            reverse('borrower-registration'),
             reverse('company-registration'),
         ]
         # URLs that should be accessible to authenticated users without profiles
@@ -45,7 +44,7 @@ class RoleBasedAccessMiddleware:
             return any(request.path == url or request.path.startswith(url) for url in self.public_only_urls)
         except:
             # If reverse() fails, check by path patterns
-            public_patterns = ['/login/', '/register/', '/landing/', '/Borrower-Registration/', '/Company-Registration/']
+            public_patterns = ['/login/', '/register/', '/landing/', '/Company-Registration/']
             return any(request.path.startswith(pattern) for pattern in public_patterns)
 
     def is_borrower_accessing_company(self, request):

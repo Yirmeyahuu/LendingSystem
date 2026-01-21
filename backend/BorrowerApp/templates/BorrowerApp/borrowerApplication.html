@@ -588,11 +588,11 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show checking status
         emailStatus.textContent = '🔍 Checking for existing applications...';
-        emailStatus.classList.remove('hidden', 'text-red-600', 'text-green-600');
+        emailStatus.classList.remove('hidden', 'text-red-600', 'text-green-600', 'text-yellow-600');
         emailStatus.classList.add('text-blue-600');
         
-        // Make AJAX request
-        fetch(`/borrower/check-existing-borrower/${companyId}/`, {
+        // Make AJAX request - Fixed URL to match Django URL pattern (uppercase B)
+        fetch(`/Borrower/check-existing-borrower/${companyId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -600,9 +600,35 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: `email=${encodeURIComponent(email)}&first_name=${encodeURIComponent(firstName)}&last_name=${encodeURIComponent(lastName)}`
         })
-        .then(response => response.json())
+        .then(response => {
+            // Check if response is ok
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            // Check content type
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                return response.text().then(text => {
+                    console.error('Received non-JSON response:', text);
+                    throw new Error('Server returned non-JSON response');
+                });
+            }
+            
+            return response.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             emailStatus.classList.add('hidden');
+            
+            if (data.error) {
+                console.error('Server error:', data.error);
+                emailStatus.textContent = '⚠️ Unable to verify. Please try again.';
+                emailStatus.classList.remove('hidden', 'text-green-600', 'text-blue-600', 'text-yellow-600');
+                emailStatus.classList.add('text-red-600');
+                canProceedWithApplication = true;
+                return;
+            }
             
             if (data.exists && !data.can_proceed) {
                 // Show alert
@@ -610,57 +636,102 @@ document.addEventListener('DOMContentLoaded', function() {
                 alertMessage.textContent = data.message;
                 
                 // Update alert styling based on status
-                if (data.status === 'approved') {
+                if (data.status === 'approved' && data.has_balance) {
+                    // Red alert for outstanding balance
                     alertBox.classList.remove('bg-yellow-50', 'border-yellow-500');
                     alertBox.classList.add('bg-red-50', 'border-red-500');
                     alertMessage.classList.remove('text-yellow-700');
                     alertMessage.classList.add('text-red-700');
+                    
+                    const iconElement = alertBox.querySelector('.fa-exclamation-circle');
+                    if (iconElement) {
+                        iconElement.classList.remove('text-yellow-500');
+                        iconElement.classList.add('text-red-500');
+                    }
+                    
+                    // Enhanced status message for multiple loans
+                    if (data.multiple_loans && data.loan_count > 1) {
+                        emailStatus.textContent = `❌ Outstanding balances with ${data.loan_count} companies detected`;
+                    } else {
+                        emailStatus.textContent = '❌ Outstanding balance detected';
+                    }
+                    emailStatus.classList.remove('hidden', 'text-blue-600', 'text-green-600', 'text-yellow-600');
+                    emailStatus.classList.add('text-red-600');
+                    
                 } else if (data.status === 'pending') {
+                    // Yellow alert for pending application
                     alertBox.classList.remove('bg-red-50', 'border-red-500');
                     alertBox.classList.add('bg-yellow-50', 'border-yellow-500');
                     alertMessage.classList.remove('text-red-700');
                     alertMessage.classList.add('text-yellow-700');
-                    alertBox.querySelector('.fa-exclamation-circle').classList.remove('text-red-500');
-                    alertBox.querySelector('.fa-exclamation-circle').classList.add('text-yellow-500');
+                    
+                    const iconElement = alertBox.querySelector('.fa-exclamation-circle');
+                    if (iconElement) {
+                        iconElement.classList.remove('text-red-500');
+                        iconElement.classList.add('text-yellow-500');
+                    }
+                    
+                    emailStatus.textContent = '⏳ Application pending review';
+                    emailStatus.classList.remove('hidden', 'text-blue-600', 'text-green-600', 'text-red-600');
+                    emailStatus.classList.add('text-yellow-600');
                 }
-                
-                emailStatus.textContent = '❌ Cannot proceed with this application';
-                emailStatus.classList.remove('hidden', 'text-blue-600', 'text-green-600');
-                emailStatus.classList.add('text-red-600');
                 
                 canProceedWithApplication = false;
                 
                 // Disable the next button
-                document.getElementById('step1-next').disabled = true;
-                document.getElementById('step1-next').classList.add('opacity-50', 'cursor-not-allowed');
-            } else if (data.exists && data.can_proceed && data.status === 'rejected') {
-                // Show info message for rejected applications
-                emailStatus.textContent = 'ℹ️ Previous application was rejected. You may apply again.';
-                emailStatus.classList.remove('hidden', 'text-red-600', 'text-green-600');
-                emailStatus.classList.add('text-blue-600');
+                const nextButton = document.getElementById('step1-next');
+                if (nextButton) {
+                    nextButton.disabled = true;
+                    nextButton.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            } else if (data.exists && data.can_proceed) {
+                // Show info message for cases where user can proceed
+                if (data.status === 'rejected') {
+                    emailStatus.textContent = 'ℹ️ Previous application was rejected. You may apply again.';
+                    emailStatus.classList.remove('hidden', 'text-red-600', 'text-green-600', 'text-yellow-600');
+                    emailStatus.classList.add('text-blue-600');
+                } else if (data.status === 'paid') {
+                    emailStatus.textContent = '✓ Previous loans fully paid. You may apply again.';
+                    emailStatus.classList.remove('hidden', 'text-red-600', 'text-blue-600', 'text-yellow-600');
+                    emailStatus.classList.add('text-green-600');
+                }
+                
                 canProceedWithApplication = true;
                 
                 // Enable the next button
-                document.getElementById('step1-next').disabled = false;
-                document.getElementById('step1-next').classList.remove('opacity-50', 'cursor-not-allowed');
+                const nextButton = document.getElementById('step1-next');
+                if (nextButton) {
+                    nextButton.disabled = false;
+                    nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             } else {
                 // No existing application or can proceed
                 emailStatus.textContent = '✓ No existing application found';
-                emailStatus.classList.remove('hidden', 'text-red-600', 'text-blue-600');
+                emailStatus.classList.remove('hidden', 'text-red-600', 'text-blue-600', 'text-yellow-600');
                 emailStatus.classList.add('text-green-600');
                 canProceedWithApplication = true;
                 
                 // Enable the next button
-                document.getElementById('step1-next').disabled = false;
-                document.getElementById('step1-next').classList.remove('opacity-50', 'cursor-not-allowed');
+                const nextButton = document.getElementById('step1-next');
+                if (nextButton) {
+                    nextButton.disabled = false;
+                    nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
             }
         })
         .catch(error => {
             console.error('Error checking existing borrower:', error);
             emailStatus.textContent = '⚠️ Unable to verify. Please try again.';
-            emailStatus.classList.remove('hidden', 'text-green-600', 'text-blue-600');
+            emailStatus.classList.remove('hidden', 'text-green-600', 'text-blue-600', 'text-yellow-600');
             emailStatus.classList.add('text-red-600');
             canProceedWithApplication = true; // Allow proceeding on error
+            
+            // Enable the next button on error
+            const nextButton = document.getElementById('step1-next');
+            if (nextButton) {
+                nextButton.disabled = false;
+                nextButton.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
         });
     }
 
