@@ -1,0 +1,360 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Borrower Balance Report - {{ company.company_name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: #fff;
+            color: #111;
+            font-size: 12px;
+            padding: 24px;
+        }
+
+        /* ── Report Header ── */
+        .report-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            border-bottom: 3px solid #1e3a5f;
+            padding-bottom: 16px;
+            margin-bottom: 20px;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        .report-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-top: 4px;
+        }
+
+        .report-meta {
+            text-align: right;
+            font-size: 11px;
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* ── Summary Cards ── */
+        .summary-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            flex: 1;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px 16px;
+            background: #f9fafb;
+        }
+
+        .summary-card .label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .summary-card .value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e3a5f;
+        }
+
+        /* ── Table ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        thead tr {
+            background-color: #1e3a5f;
+            color: #fff;
+        }
+
+        thead th {
+            padding: 9px 10px;
+            text-align: left;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #f3f4f6;
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        tbody td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+        }
+
+        .borrower-name {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .borrower-id {
+            font-size: 10px;
+            color: #6b7280;
+        }
+
+        .amount {
+            font-weight: 600;
+            color: #1e3a5f;
+        }
+
+        .balance {
+            font-weight: 700;
+            color: #c2410c;
+        }
+
+        .paid {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .status-approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-delinquent {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ── Totals Row ── */
+        .totals-row td {
+            background-color: #1e3a5f !important;
+            color: #fff !important;
+            font-weight: 700;
+            padding: 10px 10px;
+            border-top: 2px solid #1e3a5f;
+        }
+
+        /* ── Footer ── */
+        .report-footer {
+            margin-top: 24px;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: #9ca3af;
+        }
+
+        /* ── No-data ── */
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        /* ── Print overrides ── */
+        @media print {
+            body {
+                padding: 12px;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Print / Download buttons (hidden during actual print) -->
+    <div class="no-print" style="margin-bottom:16px; display:flex; gap:10px;">
+        <button onclick="window.print()"
+                style="padding:8px 18px; background:#1e3a5f; color:#fff; border:none; border-radius:6px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px;">
+            &#128424; Print / Save as PDF
+        </button>
+        <button onclick="window.close()"
+                style="padding:8px 18px; background:#e5e7eb; color:#374151; border:none; border-radius:6px; font-size:13px; cursor:pointer;">
+            &#10006; Close
+        </button>
+    </div>
+
+    <!-- Report Header -->
+    <div class="report-header">
+        <div>
+            <div class="company-name">{{ company.company_name }}</div>
+            <div class="report-title">Borrower Balance Report &mdash; Outstanding Balances</div>
+            <div style="font-size:11px; color:#6b7280; margin-top:4px;">{{ company.street_address }}, {{ company.city }}, {{ company.state }}</div>
+        </div>
+        <div class="report-meta">
+            <div><strong>Report Date:</strong> {{ print_date|date:"F d, Y" }}</div>
+            <div><strong>Time:</strong> {{ print_date|date:"h:i A" }}</div>
+            <div><strong>Total Borrowers:</strong> {{ borrowers|length }}</div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-row">
+        <div class="summary-card">
+            <div class="label">Borrowers with Balance</div>
+            <div class="value">{{ borrowers|length }}</div>
+        </div>
+        <div class="summary-card">
+            <div class="label">Total Loan Portfolio</div>
+            <div class="value">&#8369;{{ total_loans|floatformat:2|intcomma }}</div>
+        </div>
+        <div class="summary-card" style="background:#fff7ed; border-color:#fdba74;">
+            <div class="label" style="color:#9a3412;">Total Remaining Balance</div>
+            <div class="value" style="color:#c2410c;">&#8369;{{ total_remaining|floatformat:2|intcomma }}</div>
+        </div>
+    </div>
+
+    <!-- Borrowers Table -->
+    {% if borrowers %}
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Borrower</th>
+                <th>Contact</th>
+                <th>Loan Type</th>
+                <th>Loan Amount</th>
+                <th>Monthly Payment</th>
+                <th>Total Paid</th>
+                <th>Remaining Balance</th>
+                <th>Status</th>
+                <th>Approved Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for borrower in borrowers %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>
+                    <div class="borrower-name">{{ borrower.full_name }}</div>
+                    <div class="borrower-id">BOR-{{ borrower.id|stringformat:"04d" }}</div>
+                </td>
+                <td>
+                    <div>{{ borrower.email|default:"—" }}</div>
+                    <div style="color:#6b7280;">{{ borrower.mobile_number|default:"—" }}</div>
+                </td>
+                <td>
+                    {% with pt=borrower.loan_application.product_type %}
+                        {% if pt == 'personal_loans' %}Personal Loan
+                        {% elif pt == 'auto_loans' %}Auto Loan
+                        {% elif pt == 'business_loans' %}Business Loan
+                        {% elif pt == 'home_loans' %}Home Loan
+                        {% elif pt == 'salary_loans' %}Salary Loan
+                        {% elif pt == 'payday_loans' %}Payday Loan
+                        {% else %}{{ pt|title|default:"—" }}{% endif %}
+                    {% endwith %}
+                </td>
+                <td class="amount">&#8369;{{ borrower.loan_application.amount|floatformat:2|intcomma }}</td>
+                <td class="amount">
+                    {% if borrower.loan_application.monthly_payment %}
+                        &#8369;{{ borrower.loan_application.monthly_payment|floatformat:2|intcomma }}
+                    {% else %}—{% endif %}
+                </td>
+                <td class="paid">&#8369;{{ borrower.loan_application.total_paid|floatformat:2|intcomma }}</td>
+                <td class="balance">&#8369;{{ borrower.loan_application.remaining_balance|floatformat:2|intcomma }}</td>
+                <td>
+                    {% if borrower.loan_application.status == 'approved' %}
+                        <span class="status-badge status-approved">Active</span>
+                    {% elif borrower.loan_application.status == 'delinquent' %}
+                        <span class="status-badge status-delinquent">Delinquent</span>
+                    {% else %}
+                        <span class="status-badge" style="background:#f3f4f6; color:#374151;">{{ borrower.loan_application.status|title }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if borrower.loan_application.approved_date %}
+                        {{ borrower.loan_application.approved_date|date:"M d, Y" }}
+                    {% else %}—{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="totals-row">
+                <td colspan="4" style="text-align:right; color:#fff !important;">TOTAL</td>
+                <td style="color:#fff !important;">&#8369;{{ total_loans|floatformat:2|intcomma }}</td>
+                <td></td>
+                <td style="color:#86efac !important;">&#8369;{% with total_paid_all=borrowers %}
+                    {# summing total_paid via template filter is not available; display label only #}
+                    —
+                {% endwith %}</td>
+                <td style="color:#fca5a5 !important;">&#8369;{{ total_remaining|floatformat:2|intcomma }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    </table>
+    {% else %}
+    <div class="no-data">
+        <p>&#10004; No borrowers with outstanding balances found.</p>
+        <p style="margin-top:8px; font-size:11px;">All loans have been fully repaid.</p>
+    </div>
+    {% endif %}
+
+    <!-- Report Footer -->
+    <div class="report-footer">
+        <div>Avendro Lending System &mdash; Confidential</div>
+        <div>Generated on {{ print_date|date:"F d, Y \a\t h:i A" }}</div>
+    </div>
+
+    <script>
+        // Auto-trigger print dialog when opened as PDF download view
+        window.addEventListener('load', function () {
+            // Only auto-print if opened via the Download PDF button (has ?autoprint param)
+            if (window.location.search.includes('autoprint=1')) {
+                setTimeout(function () { window.print(); }, 400);
+            }
+        });
+    </script>
+
+</body>
+</html>

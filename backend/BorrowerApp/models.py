@@ -153,3 +153,4 @@ class Borrower(models.Model):
         self.duplicate_check_hash = hashlib.sha256(check_string.encode()).hexdigest()
         
         super().save(*args, **kwargs)
+

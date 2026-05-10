@@ -12,19 +12,113 @@
 </li>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    @media print {
+        /* Hide all layout chrome */
+        aside,
+        header,
+        #mobile-dropdown,
+        #logout-modal,
+        #new-loan-modal,
+        #bulk-actions-modal,
+        #viewLoanModal,
+        #viewLoanModalBorrowerList,
+        #confirmationModal,
+        #viewBorrowerModal,
+        #paymentModal,
+        #recordPaymentModal,
+        .print\:hidden,
+        .no-print {
+            display: none !important;
+        }
+
+        /* Reset the sidebar margin so content fills the page */
+        .lg\:ml-64 {
+            margin-left: 0 !important;
+        }
+
+        /* Ensure the page background is white */
+        body, .bg-gray-50 {
+            background: #fff !important;
+        }
+
+        /* Make table borders visible for print */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        thead {
+            background-color: #1e3a5f !important;
+            color: #fff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Avoid page breaks inside rows */
+        tr { page-break-inside: avoid; }
+        thead { display: table-header-group; }
+
+        /* Hide filter form, stats cards, pagination, action buttons */
+        form[method="get"],
+        .grid.grid-cols-1.md\:grid-cols-2.lg\:grid-cols-4,
+        .bg-white.px-4.py-3.flex.items-center.justify-between.border-t {
+            display: none !important;
+        }
+
+        /* Hide Actions column */
+        th:last-child, td:last-child {
+            display: none !important;
+        }
+
+        /* Print heading */
+        .print-only { display: block !important; }
+    }
+
+    .print-only { display: none; }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Page Header -->
-<div class="mb-8">
+<div class="mb-8 no-print">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Borrowers</h1>
             <p class="mt-1 text-sm text-gray-600">Manage and monitor all your borrowers</p>
         </div>
+        <!-- Print & PDF Buttons -->
+        <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+            <button
+                onclick="window.print()"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors shadow-sm">
+                <i class="fas fa-print mr-2"></i>Print List
+            </button>
+            <a
+                href="{% url 'borrower-list-print' %}?autoprint=1"
+                target="_blank"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
+                <i class="fas fa-file-pdf mr-2"></i>Download PDF
+            </a>
+        </div>
     </div>
 </div>
 
+<!-- Print-only header (visible only during print) -->
+<div class="print-only" style="margin-bottom:16px; border-bottom:2px solid #1e3a5f; padding-bottom:10px;">
+    <h1 style="font-size:18px; font-weight:700; color:#1e3a5f;">Borrower List &mdash; {{ request.user.company_profile.company_name }}</h1>
+    <p style="font-size:11px; color:#6b7280; margin-top:4px;">Printed on: {% now "F d, Y h:i A" %}</p>
+</div>
+
 <!-- Statistics Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 no-print">
     <!-- Total Borrowers -->
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div class="flex items-center justify-between">
@@ -86,7 +180,7 @@
 </div>
 
 <!-- Search and Filters -->
-<form method="get">
+<form method="get" class="no-print">
 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100 mb-8">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Search -->
@@ -143,7 +237,7 @@
     <div class="px-6 py-4 border-b border-gray-200">
         <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900">All Borrowers</h3>
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-2 no-print">
                 <button class="text-sm text-gray-600 hover:text-gray-900" title="Grid View">
                     <i class="fas fa-th"></i>
                 </button>
@@ -294,7 +388,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 no-print">
         <div class="flex-1 flex justify-between sm:hidden">
             {% if has_previous %}
                 <a href="?page={{ previous_page_number }}&search={{ search }}&status={{ status }}"
@@ -880,6 +974,8 @@
 
 
         // Payment Modal Functions
+    let currentPaymentData = null;
+
     function openPaymentModal(loanId) {
         const modal = document.getElementById('paymentModal');
         const modalContent = document.getElementById('paymentModalContent');
@@ -899,6 +995,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    currentPaymentData = data;
                     modalContent.innerHTML = generatePaymentModalContent(data);
                 } else {
                     modalContent.innerHTML = `
@@ -1133,12 +1230,136 @@
 
             <!-- Action Buttons -->
             <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <button onclick="printPaymentSchedule()" 
+                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold">
+                    <i class="fas fa-print mr-2"></i>Print / Download PDF
+                </button>
                 <button onclick="closePaymentModal()" 
                         class="px-6 py-2.5 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
                     Close
                 </button>
             </div>
         `;
+    }
+
+    function printPaymentSchedule() {
+        if (!currentPaymentData) return;
+        const data = currentPaymentData;
+        const loan = data.loan;
+        const borrower = data.borrower;
+        const payments = data.payments || [];
+        const remainingBalance = parseFloat(data.remaining_balance);
+        const totalPaid = parseFloat(data.total_paid);
+        const progressPercent = parseFloat(data.progress_percentage);
+
+        let paymentRows = '';
+        if (payments.length > 0) {
+            payments.forEach((payment, index) => {
+                const rowBg = payment.status === 'paid' ? '#f0fdf4' : payment.status === 'overdue' ? '#fef2f2' : '#fff';
+                const statusLabel = payment.status === 'paid'
+                    ? `<span style="color:#166534;font-weight:600;">&#10003; Paid</span>${payment.paid_date ? '<br><small style="color:#6b7280;">' + payment.paid_date + '</small>' : ''}`
+                    : payment.status === 'overdue'
+                    ? `<span style="color:#991b1b;font-weight:600;">&#9888; Overdue</span>`
+                    : `<span style="color:#92400e;font-weight:600;">&#9679; Pending</span>`;
+                const method = payment.method
+                    ? payment.method.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+                    : '&mdash;';
+                const ref = payment.reference_number
+                    ? `<br><small style="color:#6b7280;">Ref: ${payment.reference_number}</small>`
+                    : '';
+                paymentRows += `
+                    <tr style="background:${rowBg};">
+                        <td>${index + 1}</td>
+                        <td>${payment.due_date}</td>
+                        <td>&#8369;${parseFloat(payment.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
+                        <td>${statusLabel}</td>
+                        <td>${method}${ref}</td>
+                    </tr>`;
+            });
+        } else {
+            paymentRows = '<tr><td colspan="5" style="text-align:center;color:#6b7280;padding:20px;">No payment schedule generated yet.</td></tr>';
+        }
+
+        const printDate = new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit'});
+
+        const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Payment Schedule &mdash; ${borrower.full_name}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #111827; background: #fff; padding: 24px; }
+  .header { border-bottom: 3px solid #1e3a5f; padding-bottom: 12px; margin-bottom: 18px; }
+  .header h1 { font-size: 18px; color: #1e3a5f; font-weight: 700; }
+  .header p { font-size: 11px; color: #6b7280; margin-top: 3px; }
+  .summary { display: flex; gap: 16px; margin-bottom: 18px; }
+  .card { flex: 1; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; text-align: center; }
+  .card .label { font-size: 10px; color: #6b7280; margin-bottom: 4px; }
+  .card .value { font-size: 16px; font-weight: 700; }
+  .card.blue .value { color: #1d4ed8; }
+  .card.green .value { color: #166534; }
+  .card.orange .value { color: #c2410c; }
+  .info { display: flex; gap: 24px; margin-bottom: 18px; }
+  .info-item { flex: 1; }
+  .info-item .label { font-size: 10px; color: #6b7280; }
+  .info-item .val { font-size: 13px; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 18px; }
+  thead { background-color: #1e3a5f; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  th { padding: 8px 10px; text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; }
+  td { padding: 7px 10px; border-bottom: 1px solid #e5e7eb; font-size: 11px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .progress-bar-bg { height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; margin-top: 4px; }
+  .progress-bar-fill { height: 10px; background: linear-gradient(to right, #3b82f6, #22c55e); border-radius: 5px; }
+  .footer { border-top: 1px solid #e5e7eb; padding-top: 10px; font-size: 10px; color: #6b7280; display: flex; justify-content: space-between; }
+  .no-print { margin-bottom: 16px; }
+  @media print { .no-print { display: none !important; } body { padding: 0; } }
+</style>
+</head>
+<body>
+<div class="no-print" style="display:flex;gap:8px;margin-bottom:16px;">
+  <button onclick="window.print()" style="padding:8px 18px;background:#1e3a5f;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;">&#128438; Print / Save as PDF</button>
+  <button onclick="window.close()" style="padding:8px 18px;background:#e5e7eb;color:#374151;border:none;border-radius:6px;cursor:pointer;font-size:13px;">Close</button>
+</div>
+<div class="header">
+  <h1>Payment Schedule &mdash; ${borrower.full_name}</h1>
+  <p>Printed on: ${printDate}</p>
+</div>
+<div class="info">
+  <div class="info-item"><div class="label">Borrower</div><div class="val">${borrower.full_name}</div><div style="font-size:11px;color:#6b7280;">${borrower.email}</div></div>
+  <div class="info-item"><div class="label">Loan Amount</div><div class="val">&#8369;${parseFloat(loan.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</div><div style="font-size:11px;color:#6b7280;">${loan.term} months @ ${loan.interest_rate}%</div></div>
+  <div class="info-item"><div class="label">Monthly Payment</div><div class="val">&#8369;${parseFloat(loan.monthly_payment).toLocaleString('en-US', {minimumFractionDigits: 2})}</div></div>
+  <div class="info-item"><div class="label">Approved Date</div><div class="val">${loan.approved_date}</div></div>
+</div>
+<div class="summary">
+  <div class="card blue"><div class="label">Total Loan</div><div class="value">&#8369;${parseFloat(loan.total_payment).toLocaleString('en-US', {minimumFractionDigits: 2})}</div></div>
+  <div class="card green"><div class="label">Total Paid</div><div class="value">&#8369;${totalPaid.toLocaleString('en-US', {minimumFractionDigits: 2})}</div></div>
+  <div class="card orange"><div class="label">Remaining Balance</div><div class="value">&#8369;${remainingBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</div></div>
+</div>
+<div style="margin-bottom:18px;">
+  <div style="display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:3px;"><span>Payment Progress</span><span>${progressPercent.toFixed(1)}%</span></div>
+  <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min(progressPercent,100)}%;"></div></div>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Due Date</th>
+      <th>Amount</th>
+      <th>Status</th>
+      <th>Payment Info</th>
+    </tr>
+  </thead>
+  <tbody>${paymentRows}</tbody>
+</table>
+<div class="footer"><span>Avendro Lending System &mdash; Payment Schedule Report</span><span>Generated: ${printDate}</span></div>
+<script>window.onload = function() { window.print(); }<\/script>
+</body>
+</html>`;
+
+        const win = window.open('', '_blank', 'width=900,height=700');
+        win.document.write(html);
+        win.document.close();
     }
 
     // Close modals when clicking outside

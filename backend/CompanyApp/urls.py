@@ -19,6 +19,10 @@ urlpatterns = [
     path('Borrower-Lists/loan/<int:loan_id>/payments/', views.viewLoanPayments, name='view-loan-payments'),
     path('Borrower-Lists/loan/<int:loan_id>/record-payment/', views.recordPayment, name='record-payment'),
 
+    # Print / PDF export
+    path('Borrower-Lists/print/', views.borrowerListPrint, name='borrower-list-print'),
+    path('Active-Borrowers/print/', views.activeBorrowerListPrint, name='active-borrower-list-print'),
+
     # Replace the archived borrowers URLs with:
     path('Application-History/', views.applicationHistory, name='company-application-history'),
 

@@ -1289,6 +1289,65 @@ def viewLoanPayments(request, loan_id):
 
 
 @company_required
+def borrowerListPrint(request):
+    """Printable/PDF view of borrowers with remaining balances"""
+    company = request.user.company_profile
+
+    # Fetch all borrowers with approved loans for this company
+    borrowers_qs = Borrower.objects.filter(
+        company=company,
+        loan_application__status='approved'
+    ).distinct().select_related('loan_application').prefetch_related('loan_application__payments')
+
+    # Filter to only borrowers with a remaining balance > 0 (computed property, done in Python)
+    borrowers_with_balance = [
+        b for b in borrowers_qs
+        if b.loan_application.remaining_balance > 0
+    ]
+
+    total_remaining = sum(b.loan_application.remaining_balance for b in borrowers_with_balance)
+    total_loans = sum(b.loan_application.amount for b in borrowers_with_balance if b.loan_application.amount)
+
+    context = {
+        'borrowers': borrowers_with_balance,
+        'company': company,
+        'print_date': timezone.now(),
+        'total_remaining': total_remaining,
+        'total_loans': total_loans,
+    }
+    return render(request, 'CompanyPages/borrowerListPrint.html', context)
+
+
+@company_required
+def activeBorrowerListPrint(request):
+    """Printable/PDF view of active borrowers with remaining balances"""
+    company = request.user.company_profile
+
+    active_borrowers_qs = Borrower.objects.filter(
+        loan_application__company=company,
+        loan_application__status='approved'
+    ).distinct().select_related('loan_application').prefetch_related('loan_application__payments')
+
+    # Filter to only borrowers with a remaining balance > 0
+    borrowers_with_balance = [
+        b for b in active_borrowers_qs
+        if b.loan_application.remaining_balance > 0
+    ]
+
+    total_portfolio = sum(b.loan_application.amount for b in borrowers_with_balance if b.loan_application.amount)
+    total_remaining = sum(b.loan_application.remaining_balance for b in borrowers_with_balance)
+
+    context = {
+        'borrowers': borrowers_with_balance,
+        'company': company,
+        'print_date': timezone.now(),
+        'total_portfolio': total_portfolio,
+        'total_remaining': total_remaining,
+    }
+    return render(request, 'BorrowerSubmenus/activeBorrowerPrint.html', context)
+
+
+@company_required
 def recordPayment(request, loan_id):
     """Record a payment for a loan"""
     if request.method != 'POST':

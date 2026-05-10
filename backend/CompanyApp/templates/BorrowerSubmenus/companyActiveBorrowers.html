@@ -7,9 +7,93 @@
 <li>Active Borrowers</li>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+    @media print {
+        aside,
+        header,
+        #mobile-dropdown,
+        #logout-modal,
+        #new-loan-modal,
+        #bulk-actions-modal,
+        #viewLoanModal,
+        #viewLoanModalBorrowerList,
+        #confirmationModal,
+        #viewBorrowerModal,
+        .print\\:hidden,
+        .no-print {
+            display: none !important;
+        }
+
+        .lg\\:ml-64 {
+            margin-left: 0 !important;
+        }
+
+        body, .bg-gray-50 {
+            background: #fff !important;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #d1d5db;
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        thead {
+            background-color: #065f46 !important;
+            color: #fff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        tr { page-break-inside: avoid; }
+        thead { display: table-header-group; }
+
+        .print-only { display: block !important; }
+    }
+
+    .print-only { display: none; }
+</style>
+{% endblock %}
+
 {% block content %}
+<!-- Page Header -->
+<div class="mb-6 no-print">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Active Borrowers</h1>
+            <p class="mt-1 text-sm text-gray-600">Clients with currently approved and active loans</p>
+        </div>
+        <!-- Print & PDF Buttons -->
+        <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+            <button
+                onclick="window.print()"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-gray-700 rounded-lg hover:bg-gray-800 transition-colors shadow-sm">
+                <i class="fas fa-print mr-2"></i>Print Lists
+            </button>
+            <a
+                href="{% url 'active-borrower-list-print' %}?autoprint=1"
+                target="_blank"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                <i class="fas fa-file-pdf mr-2"></i>Download PDF
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Print-only header -->
+<div class="print-only" style="margin-bottom:16px; border-bottom:2px solid #065f46; padding-bottom:10px;">
+    <h1 style="font-size:18px; font-weight:700; color:#065f46;">Active Borrowers &mdash; {{ request.user.company_profile.company_name }}</h1>
+    <p style="font-size:11px; color:#6b7280; margin-top:4px;">Printed on: {% now "F d, Y h:i A" %}</p>
+</div>
+
 <!-- Statistics Card -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
     <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
         <div>
             <p class="text-sm font-medium text-gray-600">Active Borrowers</p>
@@ -35,7 +119,7 @@
 
 <!-- Active Borrowers Table -->
 <div class="bg-white rounded-xl text-gray-900 shadow-sm border border-gray-100 overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200">
+    <div class="px-6 py-4 border-b border-gray-200 no-print">
         <h3 class="text-lg font-semibold text-gray-900">Clients with approved loans</h3>
     </div>
     <div class="overflow-x-auto">
@@ -53,7 +137,7 @@
                 <tr>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center no-print">
                                 <span class="text-blue-600 font-medium text-sm">
                                     {{ borrower.first_name|slice:":1" }}{{ borrower.last_name|slice:":1" }}
                                 </span>
@@ -80,7 +164,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>
+                            <i class="fas fa-check-circle mr-1 no-print"></i>
                             Active
                         </span>
                     </td>
